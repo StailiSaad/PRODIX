@@ -29,34 +29,15 @@ String _supabaseUrl = '';
 String _supabaseAnonKey = '';
 
 Future<void> bootstrapProdix(AppConfig config) async {
-  await NotificationService().init();
-  await PushNotificationService().init();
-  await Workmanager().initialize(bg.callbackDispatcher, isInDebugMode: false);
-  if (config.hasSupabase) {
-    _supabaseUrl = config.supabaseUrl;
-    _supabaseAnonKey = config.supabaseAnonKey;
-    await Supabase.initialize(
-      url: config.supabaseUrl,
-      anonKey: config.supabaseAnonKey,
-    );
-    Workmanager().registerPeriodicTask(
-      'periodicCallCheck',
-      bg.periodicCheckTask,
-      frequency: const Duration(minutes: 15),
-      constraints: Constraints(networkType: NetworkType.connected),
-      inputData: {
-        'supabaseUrl': config.supabaseUrl,
-        'supabaseAnonKey': config.supabaseAnonKey,
-      },
-    );
-  }
-
   final backenService = SupabaseBackendService(
     isEnabled: config.hasBackendApi,
     baseUrl: config.backendApiUrl,
   );
   globalBackendService = backenService;
 
+  // Set callback BEFORE initializing the plugin so pending
+  // notification responses (e.g. app opened via action button)
+  // are not lost.
   NotificationService().onNotificationAction = (actionId, payload) async {
     if (payload == null) return;
     try {
@@ -138,6 +119,28 @@ Future<void> bootstrapProdix(AppConfig config) async {
       }
     }
   });
+
+  await NotificationService().init();
+  await PushNotificationService().init();
+  await Workmanager().initialize(bg.callbackDispatcher, isInDebugMode: false);
+  if (config.hasSupabase) {
+    _supabaseUrl = config.supabaseUrl;
+    _supabaseAnonKey = config.supabaseAnonKey;
+    await Supabase.initialize(
+      url: config.supabaseUrl,
+      anonKey: config.supabaseAnonKey,
+    );
+    Workmanager().registerPeriodicTask(
+      'periodicCallCheck',
+      bg.periodicCheckTask,
+      frequency: const Duration(minutes: 15),
+      constraints: Constraints(networkType: NetworkType.connected),
+      inputData: {
+        'supabaseUrl': config.supabaseUrl,
+        'supabaseAnonKey': config.supabaseAnonKey,
+      },
+    );
+  }
 
   runApp(ProdixApp(config: config));
 }
