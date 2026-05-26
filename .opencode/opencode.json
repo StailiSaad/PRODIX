@@ -1,0 +1,6 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": [
+    "opencode-copilot-account-switcher@0.14.42"
+  ]
+}
