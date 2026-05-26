@@ -50,6 +50,13 @@ Future<void> bootstrapProdix(AppConfig config) async {
       if (actionId == 'answer' && callId.isNotEmpty && callerId.isNotEmpty) {
         final profile = await backenService.getOtherProfile(callerId);
         final name = profile?['pseudo'] as String? ?? 'Inconnu';
+        NotificationService().showOngoingCallNotification(
+          id: 1004,
+          peerName: name,
+          callType: callType,
+          callState: 'ringing',
+          callId: callId,
+        );
         ProdixApp.navigatorKey.currentState?.push(
           MaterialPageRoute(
             builder: (_) => CallScreen(
@@ -63,11 +70,13 @@ Future<void> bootstrapProdix(AppConfig config) async {
         );
       } else if ((actionId == 'decline' || actionId == 'end_call') && callId.isNotEmpty) {
         await backenService.updateCallStatus(callId, 'ended');
-        // Close the app so the user is not brought to the app
-        // when they just wanted to decline the call.
-        try {
-          await SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-        } catch (_) {}
+        final profile = await backenService.getOtherProfile(callerId);
+        final name = profile?['pseudo'] as String? ?? 'Inconnu';
+        NotificationService().showMessageNotification(
+          id: 1003,
+          title: 'Appel ${callType == 'video' ? 'vidéo' : 'audio'} refusé',
+          body: name,
+        );
       }
     } catch (e) {
       debugPrint('NotificationService action error: $e');

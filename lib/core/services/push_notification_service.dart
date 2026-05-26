@@ -47,7 +47,7 @@ Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
         tag: 'incoming_call',
         actions: [
           AndroidNotificationAction('answer', 'Répondre', showsUserInterface: true),
-          AndroidNotificationAction('decline', 'Refuser', showsUserInterface: true),
+          AndroidNotificationAction('decline', 'Refuser', showsUserInterface: false),
         ],
       );
       await _bgPlugin.show(

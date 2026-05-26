@@ -89,6 +89,12 @@ function buildFcmV1Message(
   data: Record<string, string>,
 ) {
   const channelId = type === "call" ? "incoming_calls_channel" : "messages_channel";
+  // Tell Firebase SDK to use notification ID 1001 for calls so
+  // FCM system notification shares tag+id with local notifications
+  // → they replace each other seamlessly (no duplicate).
+  if (type === "call") {
+    data["gcm.n.notification_id"] = "1001";
+  }
   const msg: Record<string, unknown> = {
     token,
     notification: { title, body },

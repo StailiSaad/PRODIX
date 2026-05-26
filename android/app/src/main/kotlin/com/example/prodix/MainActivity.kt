@@ -2,6 +2,8 @@ package com.example.prodix
 
 import android.content.Intent
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -10,6 +12,7 @@ import io.flutter.plugin.common.MethodChannel
 class MainActivity : FlutterActivity() {
     private val CALL_CHANNEL = "com.example.prodix/call_service"
     private val BG_CHANNEL = "com.example.prodix/background_service"
+    private var pendingIntent: Intent? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -106,11 +109,18 @@ class MainActivity : FlutterActivity() {
                     else -> result.notImplemented()
                 }
             }
-        handleNotificationIntent(intent)
+
+        // Defer intent handling so Flutter's MethodChannel handler is registered
+        pendingIntent = intent
+        Handler(Looper.getMainLooper()).postDelayed({
+            pendingIntent?.let { handleNotificationIntent(it) }
+            pendingIntent = null
+        }, 1500)
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        // Flutter app is already running → handler is registered → handle immediately
         handleNotificationIntent(intent)
     }
 

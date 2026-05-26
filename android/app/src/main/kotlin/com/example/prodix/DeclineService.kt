@@ -1,43 +1,49 @@
 package com.example.prodix
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.BroadcastReceiver
+import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import kotlin.concurrent.thread
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
 
-class NotificationActionReceiver : BroadcastReceiver() {
+class DeclineService : Service() {
 
-    override fun onReceive(context: Context, intent: Intent) {
-        val action = intent.getStringExtra("notificationAction") ?: return
-        val callId = intent.getStringExtra("callId") ?: ""
-        val callType = intent.getStringExtra("callType") ?: "audio"
-        val callerName = intent.getStringExtra("callerName") ?: "Quelqu'un"
+    private val FG_ID = 1005
 
-        when (action) {
-            "decline" -> handleDecline(context, callId, callType, callerName)
-            else -> {
-                val mainIntent = Intent(context, MainActivity::class.java).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                    putExtra("notificationAction", action)
-                    putExtra("callId", callId)
-                }
-                context.startActivity(mainIntent)
-            }
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val callId = intent?.getStringExtra("callId") ?: ""
+        val callType = intent?.getStringExtra("callType") ?: "audio"
+        val callerName = intent?.getStringExtra("callerName") ?: "Quelqu'un"
+
+        ensureChannel()
+
+        // Must call startForeground within 5s when started via getForegroundService
+        val fgNotification = NotificationCompat.Builder(this, "incoming_calls_channel")
+            .setContentTitle("Appel en cours de refus...")
+            .setContentText(callerName)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setPriority(NotificationCompat.PRIORITY_MIN)
+            .setOngoing(true)
+            .build()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(FG_ID, fgNotification,
+                android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        } else {
+            startForeground(FG_ID, fgNotification)
         }
-    }
 
-    private fun handleDecline(context: Context, callId: String, callType: String, callerName: String) {
-        ensureChannel(context)
+        // HTTP call in background thread
         thread {
             try {
-                val prefs = context.getSharedPreferences(BackgroundService.PREF_NAME, Context.MODE_PRIVATE)
+                val prefs = getSharedPreferences(BackgroundService.PREF_NAME, Context.MODE_PRIVATE)
                 val supabaseUrl = prefs.getString(BackgroundService.KEY_URL, "") ?: ""
                 val authToken = prefs.getString(BackgroundService.KEY_TOKEN, "") ?: ""
                 val anonKey = prefs.getString(BackgroundService.KEY_ANON, "") ?: ""
@@ -61,8 +67,9 @@ class NotificationActionReceiver : BroadcastReceiver() {
             } catch (_: Exception) {}
         }
 
+        // Update to "Appel refusé"
         val typeLabel = if (callType == "video") "vidéo" else "audio"
-        val updatedNotification = NotificationCompat.Builder(context, "incoming_calls_channel")
+        val updatedNotification = NotificationCompat.Builder(this, "incoming_calls_channel")
             .setContentTitle("Appel $typeLabel refusé")
             .setContentText(callerName)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
@@ -70,11 +77,16 @@ class NotificationActionReceiver : BroadcastReceiver() {
             .setAutoCancel(true)
             .build()
 
-        val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         nm.notify("incoming_call", 1001, updatedNotification)
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        stopSelf()
+        return START_NOT_STICKY
     }
 
-    private fun ensureChannel(context: Context) {
+    override fun onBind(intent: Intent?): IBinder? = null
+
+    private fun ensureChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 "incoming_calls_channel",
@@ -85,7 +97,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
                 enableVibration(true)
                 setShowBadge(true)
             }
-            val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             nm.createNotificationChannel(channel)
         }
     }

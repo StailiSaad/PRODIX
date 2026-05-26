@@ -123,9 +123,9 @@ class BackgroundService : Service() {
                 }
             )
             nm.createNotificationChannel(
-                NotificationChannel(CHANNEL_CALLS, "Appels",
-                    NotificationManager.IMPORTANCE_HIGH).apply {
-                    description = "Notifications d'appels entrants"
+                NotificationChannel("incoming_calls_channel", "Appels entrants",
+                    NotificationManager.IMPORTANCE_MAX).apply {
+                    description = "Notifications d'appels entrants avec actions"
                     enableVibration(true)
                     setShowBadge(true)
                 }
@@ -276,16 +276,17 @@ class BackgroundService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val declineIntent = Intent(this, NotificationActionReceiver::class.java).apply {
-            putExtra("notificationAction", "decline")
+        val declineIntent = Intent(this, DeclineService::class.java).apply {
             putExtra("callId", callId)
+            putExtra("callType", callType)
+            putExtra("callerName", callerName)
         }
-        val declinePi = PendingIntent.getBroadcast(
+        val declinePi = PendingIntent.getForegroundService(
             this, callId.hashCode() + 1, declineIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val notification = NotificationCompat.Builder(this, CHANNEL_CALLS)
+        val notification = NotificationCompat.Builder(this, "incoming_calls_channel")
             .setContentTitle("Appel $typeLabel de $callerName")
             .setContentText("Appel $typeLabel entrant")
             .setSmallIcon(android.R.drawable.ic_dialog_info)
@@ -298,7 +299,8 @@ class BackgroundService : Service() {
             .build()
 
         val nm = getSystemService(NotificationManager::class.java)
-        nm.notify(2000 + (callId.hashCode() % 1000).coerceAtLeast(0), notification)
+        // Use same ID+tag as flutter_local_notifications so either source replaces the other
+        nm.notify("incoming_call", 1001, notification)
     }
 
     private fun showMessageNotification(msgId: String, senderId: String, content: String) {
