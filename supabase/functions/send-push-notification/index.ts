@@ -84,11 +84,14 @@ async function getAccessToken(sa: ServiceAccount): Promise<string> {
 function buildFcmV1Message(
   token: string,
   type: string,
+  title: string,
+  body: string,
   data: Record<string, string>,
 ) {
   const channelId = type === "call" ? "incoming_calls_channel" : "messages_channel";
   const msg: Record<string, unknown> = {
     token,
+    notification: { title, body },
     data,
     android: {
       priority: "high",
@@ -168,7 +171,7 @@ serve(async (req) => {
 
     const results = await Promise.allSettled(
       payload.devices.map(async (d) => {
-        const fcmBody = buildFcmV1Message(d.token, payload.type, data);
+        const fcmBody = buildFcmV1Message(d.token, payload.type, title, body, data);
         const res = await fetch(fcmUrl, {
           method: "POST",
           headers: {
