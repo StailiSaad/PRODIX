@@ -535,12 +535,14 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border(left: BorderSide(color: theme.colorScheme.primary, width: 4)),
+                    Flexible(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border(left: BorderSide(color: theme.colorScheme.primary, width: 4)),
+                        ),
+                        padding: const EdgeInsets.only(left: 8),
+                        child: Text('Recent Activity', style: theme.textTheme.headlineMedium?.copyWith(color: theme.colorScheme.onSurface)),
                       ),
-                      padding: const EdgeInsets.only(left: 8),
-                      child: Text('Recent Activity', style: theme.textTheme.headlineMedium?.copyWith(color: theme.colorScheme.onSurface)),
                     ),
                     TextButton(
                       onPressed: () => _showNotifications(context),

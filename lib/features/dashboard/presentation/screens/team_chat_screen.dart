@@ -139,19 +139,23 @@ class _TeamChatScreenState extends State<TeamChatScreen> {
     final text = _msgCtrl.text.trim();
     if (text.isEmpty && _pendingMedia.isEmpty) return;
 
+    // Capture services before async gap so they work even if widget is disposed
+    final svc = context.read<SupabaseBackendService>();
+    final ai = context.read<AiGatewayService>();
+
     if (text.isNotEmpty) {
       try {
-        final ai = context.read<AiGatewayService>();
         final (isToxic, reason) = await ai.analyzeToxicity(text);
-        if (!mounted) return;
         if (isToxic) {
-          _msgCtrl.clear();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(reason, style: const TextStyle(color: Colors.white)),
-              backgroundColor: Colors.red.shade800,
-            ),
-          );
+          if (mounted) {
+            _msgCtrl.clear();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(reason, style: const TextStyle(color: Colors.white)),
+                backgroundColor: Colors.red.shade800,
+              ),
+            );
+          }
           return;
         }
       } catch (_) {
@@ -159,19 +163,27 @@ class _TeamChatScreenState extends State<TeamChatScreen> {
       }
     }
 
-    final svc = context.read<SupabaseBackendService>();
-    _msgCtrl.clear();
+    if (mounted) _msgCtrl.clear();
 
     if (_pendingMedia.isEmpty) {
       final ok = await svc.sendMessage(widget.channelId, text);
       if (ok && text.isNotEmpty) {
-        if (mounted) context.read<GamificationCubit>().recordEvent('chat_message_sent');
+        try {
+          context.read<GamificationCubit>().recordEvent('chat_message_sent');
+        } catch (_) {}
+      } else if (!ok && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Erreur lors de l\'envoi du message', style: TextStyle(color: Colors.white)),
+            backgroundColor: Colors.red.shade800,
+          ),
+        );
       }
       return;
     }
 
     final media = List<Map<String, dynamic>>.from(_pendingMedia);
-    setState(() => _pendingMedia.clear());
+    if (mounted) setState(() => _pendingMedia.clear());
 
     for (final m in media) {
       final bytes = m['bytes'] as Uint8List;
@@ -180,12 +192,13 @@ class _TeamChatScreenState extends State<TeamChatScreen> {
       final dur = m['duration'] as int?;
       try {
         final url = await svc.uploadChatMedia(bytes, name);
-        if (!mounted) return;
         final msgText = (m == media.last) ? text : '';
         final ok = await svc.sendMessage(widget.channelId, msgText,
             mediaUrl: url, mediaType: type, mediaName: name, duration: dur);
         if (ok && msgText.isNotEmpty) {
-          if (mounted) context.read<GamificationCubit>().recordEvent('chat_message_sent');
+          try {
+            context.read<GamificationCubit>().recordEvent('chat_message_sent');
+          } catch (_) {}
         }
       } catch (e) {
         if (mounted) {

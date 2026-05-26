@@ -224,7 +224,6 @@ class SupabaseBackendService {
     if (userId == null) return;
     await _db.from('profiles').update({
       'experience_points': xp,
-      'xp': xp,
     }).eq('id', userId!);
   }
 
@@ -857,15 +856,33 @@ class SupabaseBackendService {
   }
 
   /// Fetch DM history between current user and peer
-  Future<List<Map<String, dynamic>>> getMessages(String peerId) async {
+  Future<List<Map<String, dynamic>>> getMessages(String peerId, {int retry = 0}) async {
     if (userId == null) return [];
-    final response = await _db
-        .from('messages')
-        .select()
-        .or('and(sender_id.eq.${userId!},receiver_id.eq.$peerId),and(sender_id.eq.$peerId,receiver_id.eq.${userId!})')
-        .order('created_at', ascending: true)
-        .limit(100);
-    return List<Map<String, dynamic>>.from(response);
+    try {
+      final sent = await _db
+          .from('messages')
+          .select()
+          .eq('sender_id', userId!)
+          .eq('receiver_id', peerId)
+          .order('created_at', ascending: true);
+      final received = await _db
+          .from('messages')
+          .select()
+          .eq('sender_id', peerId)
+          .eq('receiver_id', userId!)
+          .order('created_at', ascending: true);
+      final merged = [...sent, ...received];
+      merged.sort((a, b) => (a['created_at'] as String).compareTo(b['created_at'] as String));
+      developer.log('getMessages: sent=${sent.length} received=${received.length} merged=${merged.length} userId=$userId peer=$peerId');
+      return merged.reversed.take(100).toList().reversed.toList();
+    } catch (e) {
+      developer.log('getMessages error: $e');
+      if (retry < 3) {
+        await Future.delayed(const Duration(seconds: 1));
+        return getMessages(peerId, retry: retry + 1);
+      }
+      return [];
+    }
   }
 
   /// Mark all messages from [peerId] as seen

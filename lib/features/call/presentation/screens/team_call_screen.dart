@@ -42,7 +42,6 @@ class _TeamCallScreenState extends State<TeamCallScreen> {
   bool _speakerEnabled = false;
   bool _callEnded = false;
   bool _hasSentStartedEvent = false;
-  String? _focusedParticipantId;
 
   MediaStream? _localStream;
   final RTCVideoRenderer _localRenderer = RTCVideoRenderer();
@@ -208,12 +207,10 @@ class _TeamCallScreenState extends State<TeamCallScreen> {
     } else if (_myParticipantId != null) {
       _listenForOffer(_myParticipantId!);
       _replayIceCandidates(_myParticipantId!);
-      // Also connect to other participants (mesh topology)
       for (final p in participants) {
         final status = p['status'] as String?;
         final uid = p['user_id'] as String?;
-        final pid = p['id'] as String?;
-        if (status == 'joined' && uid != _currentUserId && pid != _myParticipantId) {
+        if (status == 'joined' && uid != _currentUserId) {
           await _ensureConnection(p);
         }
       }
@@ -223,15 +220,24 @@ class _TeamCallScreenState extends State<TeamCallScreen> {
   void _subscribeToParticipantChanges() {
     _participantsSub = _streamParticipants().listen((list) {
       if (!mounted) return;
-      setState(() => _participants = list);
-      for (final p in list) {
+      setState(() {
+        for (final updated in list) {
+          final idx = _participants.indexWhere((p) => p['id'] == updated['id']);
+          if (idx >= 0) {
+            _participants[idx] = updated;
+          } else {
+            _participants.add(updated);
+          }
+        }
+      });
+      for (final p in _participants) {
         final status = p['status'] as String?;
         final uid = p['user_id'] as String?;
         if (status == 'joined' && uid != _currentUserId) {
           _ensureConnection(p);
         }
       }
-      _checkSendStartedEvent(list);
+      _checkSendStartedEvent(_participants);
     });
   }
 
@@ -370,6 +376,7 @@ class _TeamCallScreenState extends State<TeamCallScreen> {
   }
 
   void _listenForOffer(String participantId) {
+    if (_connections.containsKey(participantId)) return;
     final state = _PeerConnectionState(participantId: participantId);
     _connections[participantId] = state;
 
@@ -573,17 +580,25 @@ class _TeamCallScreenState extends State<TeamCallScreen> {
       orElse: () => null,
     );
 
+    final topInset = MediaQuery.of(context).padding.top;
+    const topBarH = 48.0;
+    const controlsH = 100.0;
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
         children: [
           // Remote participants grid
-          _buildMainContent(remoteParticipants),
+          Positioned.fill(
+            top: topInset + topBarH,
+            bottom: controlsH,
+            child: _buildMainContent(remoteParticipants),
+          ),
 
           // Self-view PIP
           if (selfParticipant != null)
             Positioned(
-              top: 48,
+              top: topInset + topBarH + 8,
               right: 12,
               child: _buildPipTile(selfParticipant),
             ),
@@ -602,7 +617,7 @@ class _TeamCallScreenState extends State<TeamCallScreen> {
             left: 0,
             right: 0,
             child: Container(
-              padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 8, left: 16, right: 16, bottom: 8),
+              padding: EdgeInsets.only(top: topInset + 8, left: 16, right: 16, bottom: 8),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
@@ -637,27 +652,34 @@ class _TeamCallScreenState extends State<TeamCallScreen> {
       );
     }
 
-    final count = remoteParticipants.length;
-    final crossAxisCount = count <= 2 ? count : (count <= 4 ? 2 : 3);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final count = remoteParticipants.length;
+        final availW = constraints.maxWidth;
+        final availH = constraints.maxHeight;
 
-    if (count == 1) {
-      return Padding(
-        padding: const EdgeInsets.only(top: 80, bottom: 80),
-        child: _buildParticipantTile(remoteParticipants.first),
-      );
-    }
+        const spacing = 2.0;
+        int cols, rows;
+        if (count == 1) { cols = 1; rows = 1; }
+        else if (count == 2) { cols = 2; rows = 1; }
+        else { cols = (count <= 4) ? 2 : ((count <= 6) ? 3 : 4); rows = (count + cols - 1) ~/ cols; }
 
-    return Padding(
-      padding: const EdgeInsets.only(top: 80, bottom: 80),
-      child: GridView.builder(
-        padding: EdgeInsets.zero,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: crossAxisCount,
-          childAspectRatio: 1,
-        ),
-        itemCount: count,
-        itemBuilder: (_, i) => _buildParticipantTile(remoteParticipants[i]),
-      ),
+        final tileW = (availW - spacing * (cols - 1)) / cols;
+        final tileH = (availH - spacing * (rows - 1)) / rows;
+
+        return GridView.builder(
+          padding: EdgeInsets.zero,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: cols,
+            childAspectRatio: tileW / tileH,
+            mainAxisSpacing: spacing,
+            crossAxisSpacing: spacing,
+          ),
+          itemCount: count,
+          itemBuilder: (_, i) => _buildParticipantTile(remoteParticipants[i]),
+        );
+      },
     );
   }
 
@@ -726,10 +748,9 @@ class _TeamCallScreenState extends State<TeamCallScreen> {
     final renderer = conn?.remoteRenderer;
     final hasVideo = conn?.hasRemoteVideo == true && conn?.remoteStream != null && isVideoCall;
 
-    return GestureDetector(
-      onTap: () {},
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
       child: Container(
-        margin: const EdgeInsets.all(2),
         color: const Color(0xFF1A1A2E),
         child: Stack(
           children: [
@@ -744,19 +765,19 @@ class _TeamCallScreenState extends State<TeamCallScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     CircleAvatar(
-                      radius: 28,
+                      radius: 24,
                       backgroundColor: AppTheme.cardHighColor,
                       child: Text(name[0].toUpperCase(),
-                          style: const TextStyle(color: AppTheme.primaryColor, fontSize: 24, fontWeight: FontWeight.bold)),
+                          style: const TextStyle(color: AppTheme.primaryColor, fontSize: 22, fontWeight: FontWeight.bold)),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     Text(name, style: const TextStyle(color: Colors.white70, fontSize: 12)),
                   ],
                 ),
               ),
             Positioned(
-              bottom: 8,
-              left: 8,
+              bottom: 6,
+              left: 6,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(4)),
@@ -779,26 +800,29 @@ class _TeamCallScreenState extends State<TeamCallScreen> {
           colors: [Colors.transparent, Colors.black.withValues(alpha: 0.7)],
         ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          _ctrlBtn(_micEnabled ? Icons.mic : Icons.mic_off,
-              _micEnabled ? Colors.white : Colors.red, _toggleMic),
-          const SizedBox(width: 24),
-          if (widget.callType == 'video') ...[
-            _ctrlBtn(_camEnabled ? Icons.videocam : Icons.videocam_off,
-                _camEnabled ? Colors.white : Colors.red, _toggleCam),
-            const SizedBox(width: 24),
-            _ctrlBtn(Icons.flip_camera_android, Colors.white, _switchCamera),
-            const SizedBox(width: 24),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _ctrlBtn(_micEnabled ? Icons.mic : Icons.mic_off,
+                _micEnabled ? Colors.white : Colors.red, _toggleMic),
+            const SizedBox(width: 20),
+            if (widget.callType == 'video') ...[
+              _ctrlBtn(_camEnabled ? Icons.videocam : Icons.videocam_off,
+                  _camEnabled ? Colors.white : Colors.red, _toggleCam),
+              const SizedBox(width: 20),
+              _ctrlBtn(Icons.flip_camera_android, Colors.white, _switchCamera),
+              const SizedBox(width: 20),
+            ],
+            _ctrlBtn(_speakerEnabled ? Icons.volume_up : Icons.volume_down,
+                _speakerEnabled ? AppTheme.primaryColor : Colors.white, _toggleSpeaker),
+            const SizedBox(width: 20),
+            _ctrlBtn(Icons.call_end, Colors.red, _endCall, 36),
+            const SizedBox(width: 20),
+            _ctrlBtn(Icons.people, Colors.white, _showParticipants),
           ],
-          _ctrlBtn(_speakerEnabled ? Icons.volume_up : Icons.volume_down,
-              _speakerEnabled ? AppTheme.primaryColor : Colors.white, _toggleSpeaker),
-          const SizedBox(width: 24),
-          _ctrlBtn(Icons.call_end, Colors.red, _endCall, 36),
-          const SizedBox(width: 24),
-          _ctrlBtn(Icons.people, Colors.white, _showParticipants),
-        ],
+        ),
       ),
     );
   }

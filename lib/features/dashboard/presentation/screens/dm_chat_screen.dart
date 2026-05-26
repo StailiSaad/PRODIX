@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
@@ -49,6 +50,7 @@ class _DmChatScreenState extends State<DmChatScreen> {
   int _peerLevel = 1;
   final AudioPlayer _previewPlayer = AudioPlayer();
   int _previewPlayingIndex = -1;
+  String? _debugInfo;
 
   @override
   void initState() {
@@ -56,32 +58,80 @@ class _DmChatScreenState extends State<DmChatScreen> {
     _load();
   }
 
+  void _retry() {
+    setState(() {
+      _loading = true;
+      _messages = [];
+      _debugInfo = null;
+    });
+    _load();
+  }
+
   Future<void> _load() async {
     final svc = context.read<SupabaseBackendService>();
     _currentUserId = svc.userId;
-    final msgs = await svc.getMessages(widget.peerId);
-    final peerProfile = await svc.getOtherProfile(widget.peerId);
-    final peerXp = peerProfile?['experience_points'] as int? ?? 0;
-    _peerLevel = 1 + (peerXp ~/ 100);
-    if (!mounted) return;
-    setState(() {
-      _messages = msgs;
-      _loading = false;
-    });
-    await svc.markMessagesAsSeen(widget.peerId);
-    _scrollDown();
+    if (_currentUserId == null) {
+      for (var i = 0; i < 30; i++) {
+        await Future.delayed(const Duration(milliseconds: 200));
+        _currentUserId = svc.userId;
+        if (_currentUserId != null) break;
+      }
+    }
+    try {
+      final msgs = await svc.getMessages(widget.peerId);
+      developer.log('DmChatScreen._load: got ${msgs.length} msgs for peer=${widget.peerId}');
+      for (final m in msgs) {
+        developer.log('  msg: id=${m['id']} sender=${m['sender_id']} content=${m['content']}');
+      }
+      final peerProfile = await svc.getOtherProfile(widget.peerId);
+      final peerXp = peerProfile?['experience_points'] as int? ?? 0;
+      _peerLevel = 1 + (peerXp ~/ 100);
+      if (!mounted) return;
+      setState(() {
+        _messages = msgs;
+        _loading = false;
+        _debugInfo = 'userId=$_currentUserId peer=${widget.peerId} msgs=${msgs.length}';
+      });
+      await svc.markMessagesAsSeen(widget.peerId);
+      _scrollDown();
+    } catch (e) {
+      developer.log('DmChatScreen._load error: $e');
+      if (mounted) setState(() {
+        _loading = false;
+        _debugInfo = 'ERR: $e\nuserId=$_currentUserId peer=${widget.peerId}';
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur chargement messages: $e'),
+              backgroundColor: Colors.red.shade800),
+        );
+      }
+      return;
+    }
     _channel = svc.subscribeToMessages(
       'dm_${_currentUserId}_${widget.peerId}',
       (record) {
         final senderId = record['sender_id'] as String?;
-        if (senderId == _currentUserId || senderId == widget.peerId) {
-          if (mounted) {
-            setState(() => _messages.add(record));
-            _scrollDown();
-          }
-          if (senderId == widget.peerId) {
-            svc.markMessagesAsSeen(widget.peerId);
-          }
+        final receiverId = record['receiver_id'] as String?;
+        final belongs = (senderId == _currentUserId && receiverId == widget.peerId) ||
+                        (senderId == widget.peerId && receiverId == _currentUserId);
+        if (!belongs) return;
+        if (mounted) {
+          setState(() {
+            final i = _messages.indexWhere(
+                (m) => (m['id'] as String?)?.startsWith('opt_') == true
+                    && m['sender_id'] == senderId
+                    && m['content'] == record['content']);
+            if (i >= 0) {
+              _messages[i] = record;
+            } else {
+              _messages.add(record);
+            }
+          });
+          _scrollDown();
+        }
+        if (senderId == widget.peerId) {
+          svc.markMessagesAsSeen(widget.peerId);
         }
       },
     );
@@ -139,19 +189,23 @@ class _DmChatScreenState extends State<DmChatScreen> {
     final text = _msgCtrl.text.trim();
     if (text.isEmpty && _pendingMedia.isEmpty) return;
 
+    // Capture services before async gap so they work even if widget is disposed
+    final svc = context.read<SupabaseBackendService>();
+    final ai = context.read<AiGatewayService>();
+
     if (text.isNotEmpty) {
       try {
-        final ai = context.read<AiGatewayService>();
         final (isToxic, reason) = await ai.analyzeToxicity(text);
-        if (!mounted) return;
         if (isToxic) {
-          _msgCtrl.clear();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(reason, style: const TextStyle(color: Colors.white)),
-              backgroundColor: Colors.red.shade800,
-            ),
-          );
+          if (mounted) {
+            _msgCtrl.clear();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(reason, style: const TextStyle(color: Colors.white)),
+                backgroundColor: Colors.red.shade800,
+              ),
+            );
+          }
           return;
         }
       } catch (_) {
@@ -159,14 +213,14 @@ class _DmChatScreenState extends State<DmChatScreen> {
       }
     }
 
-    final svc = context.read<SupabaseBackendService>();
-    _msgCtrl.clear();
-
     if (_pendingMedia.isEmpty) {
       final ok = await svc.sendDirectMessage(widget.peerId, text);
       if (ok && text.isNotEmpty) {
-        if (mounted) {
+        try {
           context.read<GamificationCubit>().recordEvent('chat_message_sent');
+        } catch (_) {}
+        if (mounted) {
+          _msgCtrl.clear();
           final optimistic = <String, dynamic>{
             'id': 'opt_${DateTime.now().millisecondsSinceEpoch}',
             'sender_id': _currentUserId,
@@ -178,12 +232,21 @@ class _DmChatScreenState extends State<DmChatScreen> {
           setState(() => _messages.add(optimistic));
           _scrollDown();
         }
+      } else if (!ok && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Erreur lors de l\'envoi du message', style: TextStyle(color: Colors.white)),
+            backgroundColor: Colors.red.shade800,
+          ),
+        );
       }
       return;
     }
 
+    if (mounted) _msgCtrl.clear();
+
     final media = List<Map<String, dynamic>>.from(_pendingMedia);
-    setState(() => _pendingMedia.clear());
+    if (mounted) setState(() => _pendingMedia.clear());
 
     for (final m in media) {
       final bytes = m['bytes'] as Uint8List;
@@ -192,12 +255,13 @@ class _DmChatScreenState extends State<DmChatScreen> {
       final dur = m['duration'] as int?;
       try {
         final url = await svc.uploadChatMedia(bytes, name);
-        if (!mounted) return;
         final msgText = (m == media.last) ? text : '';
         final ok = await svc.sendDirectMessage(widget.peerId, msgText,
             mediaUrl: url, mediaType: type, mediaName: name, duration: dur);
         if (ok && msgText.isNotEmpty) {
-          if (mounted) context.read<GamificationCubit>().recordEvent('chat_message_sent');
+          try {
+            context.read<GamificationCubit>().recordEvent('chat_message_sent');
+          } catch (_) {}
         }
       } catch (e) {
         if (mounted) {
@@ -491,11 +555,32 @@ class _DmChatScreenState extends State<DmChatScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
+                if (_debugInfo != null)
+                  GestureDetector(
+                    onTap: _retry,
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      color: _debugInfo!.startsWith('ERR:')
+                          ? Colors.red.shade900
+                          : AppTheme.cardHighColor,
+                      child: Text(_debugInfo!,
+                          style: TextStyle(
+                              color: _debugInfo!.startsWith('ERR:')
+                                  ? Colors.red.shade200
+                                  : AppTheme.textVariant,
+                              fontSize: 9,
+                              fontFamily: 'monospace')),
+                    ),
+                  ),
                 Expanded(
                   child: _messages.isEmpty
-                      ? const Center(
-                          child: Text('Start a conversation!',
-                              style: TextStyle(color: AppTheme.textVariant)),
+                      ? Center(
+                          child: GestureDetector(
+                            onTap: _retry,
+                            child: Text('Start a conversation!',
+                                style: TextStyle(color: AppTheme.textVariant)),
+                          ),
                         )
                       : ListView.builder(
                           controller: _scrollCtrl,

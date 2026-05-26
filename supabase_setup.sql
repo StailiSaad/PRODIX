@@ -88,12 +88,17 @@ CREATE TABLE IF NOT EXISTS public.channels (
   created_at timestamptz DEFAULT now()
 );
 
--- 6. Messages
+-- 6. Messages (supports both channel messages AND DMs)
 CREATE TABLE IF NOT EXISTS public.messages (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  channel_id uuid NOT NULL REFERENCES public.channels(id) ON DELETE CASCADE,
+  channel_id uuid REFERENCES public.channels(id) ON DELETE CASCADE,
   sender_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  receiver_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
   content text NOT NULL,
+  status text DEFAULT 'sent',
+  media_url text,
+  media_type text,
+  media_name text,
   duration int,
   created_at timestamptz DEFAULT now()
 );
