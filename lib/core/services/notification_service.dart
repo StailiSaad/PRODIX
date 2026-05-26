@@ -93,7 +93,7 @@ class NotificationService {
       iOS: const DarwinNotificationDetails(),
     );
     await _plugin.show(
-      id,
+      1001,
       'Appel $typeLabel de $callerName',
       'Appel $typeLabel entrant',
       details,
