@@ -2,6 +2,7 @@ package com.example.prodix
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -89,4 +90,17 @@ class NotificationActionReceiver : BroadcastReceiver() {
             nm.createNotificationChannel(channel)
         }
     }
+}
+
+/**
+ * Returns PendingIntent flags compatible with the current API level.
+ * FLAG_IMMUTABLE requires API 31+; omitting it on older APIs works fine.
+ */
+fun pendingIntentFlags(update: Boolean = true): Int {
+    var flags = 0
+    if (update) flags = flags or PendingIntent.FLAG_UPDATE_CURRENT
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        flags = flags or PendingIntent.FLAG_IMMUTABLE
+    }
+    return flags
 }

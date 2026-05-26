@@ -146,7 +146,7 @@ class BackgroundService : Service() {
         }
         val pi = PendingIntent.getActivity(
             this, 0, intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            pendingIntentFlags()
         )
         return NotificationCompat.Builder(this, CHANNEL_PERSISTENT)
             .setContentTitle("Prodix")
@@ -164,7 +164,7 @@ class BackgroundService : Service() {
         }
         val pi = PendingIntent.getBroadcast(
             this, 1001, intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            pendingIntentFlags()
         )
         val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val triggerAt = SystemClock.elapsedRealtime() + WATCHDOG_INTERVAL_MS
@@ -271,9 +271,9 @@ class BackgroundService : Service() {
             putExtra("callerId", callerId)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
+        val piFlags = pendingIntentFlags()
         val answerPi = PendingIntent.getActivity(
-            this, callId.hashCode(), answerIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            this, callId.hashCode(), answerIntent, piFlags
         )
 
         val declineIntent = Intent(this, DeclineService::class.java).apply {
@@ -283,7 +283,7 @@ class BackgroundService : Service() {
         }
         val declinePi = PendingIntent.getForegroundService(
             this, callId.hashCode() + 1, declineIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            pendingIntentFlags()
         )
 
         val notification = NotificationCompat.Builder(this, "incoming_calls_channel")
@@ -313,7 +313,7 @@ class BackgroundService : Service() {
         }
         val pi = PendingIntent.getActivity(
             this, senderId.hashCode(), intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            pendingIntentFlags()
         )
 
         val notification = NotificationCompat.Builder(this, CHANNEL_MESSAGES)

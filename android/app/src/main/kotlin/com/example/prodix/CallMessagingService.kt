@@ -53,9 +53,9 @@ class CallMessagingService : FirebaseMessagingService() {
             putExtra("callerId", callerId)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
+        val piFlags = pendingIntentFlags()
         val answerPi = PendingIntent.getActivity(
-            this, callId.hashCode(), answerIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            this, callId.hashCode(), answerIntent, piFlags
         )
 
         // Refuser: DeclineService handles natively (no app open)
@@ -65,8 +65,7 @@ class CallMessagingService : FirebaseMessagingService() {
             putExtra("callerName", callerName)
         }
         val declinePi = PendingIntent.getForegroundService(
-            this, callId.hashCode() + 1, declineIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            this, callId.hashCode() + 1, declineIntent, piFlags
         )
 
         val notification = NotificationCompat.Builder(this, "incoming_calls_channel")
