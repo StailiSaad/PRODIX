@@ -208,6 +208,15 @@ class _TeamCallScreenState extends State<TeamCallScreen> {
     } else if (_myParticipantId != null) {
       _listenForOffer(_myParticipantId!);
       _replayIceCandidates(_myParticipantId!);
+      // Also connect to other participants (mesh topology)
+      for (final p in participants) {
+        final status = p['status'] as String?;
+        final uid = p['user_id'] as String?;
+        final pid = p['id'] as String?;
+        if (status == 'joined' && uid != _currentUserId && pid != _myParticipantId) {
+          await _ensureConnection(p);
+        }
+      }
     }
   }
 
@@ -215,13 +224,11 @@ class _TeamCallScreenState extends State<TeamCallScreen> {
     _participantsSub = _streamParticipants().listen((list) {
       if (!mounted) return;
       setState(() => _participants = list);
-      if (widget.isCaller) {
-        for (final p in list) {
-          final status = p['status'] as String?;
-          final uid = p['user_id'] as String?;
-          if (status == 'joined' && uid != _currentUserId) {
-            _ensureConnection(p);
-          }
+      for (final p in list) {
+        final status = p['status'] as String?;
+        final uid = p['user_id'] as String?;
+        if (status == 'joined' && uid != _currentUserId) {
+          _ensureConnection(p);
         }
       }
       _checkSendStartedEvent(list);
@@ -881,6 +888,16 @@ class _PeerConnectionState {
       'iceServers': [
         {'urls': 'stun:stun.l.google.com:19302'},
         {'urls': 'stun:stun1.l.google.com:19302'},
+        {
+          'urls': 'turn:openrelay.metered.ca:80',
+          'username': 'openrelayproject',
+          'credential': 'openrelayproject',
+        },
+        {
+          'urls': 'turn:openrelay.metered.ca:443',
+          'username': 'openrelayproject',
+          'credential': 'openrelayproject',
+        },
       ],
     };
     pc = await createPeerConnection(config);

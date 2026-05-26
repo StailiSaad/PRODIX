@@ -8,11 +8,12 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
-    private val CHANNEL = "com.example.prodix/call_service"
+    private val CALL_CHANNEL = "com.example.prodix/call_service"
+    private val BG_CHANNEL = "com.example.prodix/background_service"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CALL_CHANNEL)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
                     "startForegroundService" -> {
@@ -68,6 +69,43 @@ class MainActivity : FlutterActivity() {
                     else -> result.notImplemented()
                 }
             }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, BG_CHANNEL)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "startBackgroundService" -> {
+                        val supabaseUrl = call.argument<String>("supabaseUrl") ?: ""
+                        val anonKey = call.argument<String>("anonKey") ?: ""
+                        val userId = call.argument<String>("userId") ?: ""
+                        val authToken = call.argument<String>("authToken") ?: ""
+                        val intent = Intent(this, BackgroundService::class.java).apply {
+                            putExtra("supabaseUrl", supabaseUrl)
+                            putExtra("anonKey", anonKey)
+                            putExtra("userId", userId)
+                            putExtra("authToken", authToken)
+                        }
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            startForegroundService(intent)
+                        } else {
+                            startService(intent)
+                        }
+                        result.success(true)
+                    }
+                    "stopBackgroundService" -> {
+                        val intent = Intent(this, BackgroundService::class.java)
+                        stopService(intent)
+                        result.success(true)
+                    }
+                    "updateBackgroundToken" -> {
+                        val authToken = call.argument<String>("authToken") ?: ""
+                        val intent = Intent(this, BackgroundService::class.java).apply {
+                            putExtra("authToken", authToken)
+                        }
+                        startService(intent)
+                        result.success(true)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
         handleNotificationIntent(intent)
     }
 
@@ -83,7 +121,7 @@ class MainActivity : FlutterActivity() {
         val callType = intent.getStringExtra("callType") ?: "audio"
 
         val messenger = flutterEngine?.dartExecutor?.binaryMessenger ?: return
-        MethodChannel(messenger, CHANNEL).invokeMethod("onNotificationAction", mapOf(
+        MethodChannel(messenger, CALL_CHANNEL).invokeMethod("onNotificationAction", mapOf(
             "action" to action,
             "callId" to callId,
             "callType" to callType

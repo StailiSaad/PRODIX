@@ -11,7 +11,11 @@ void callbackDispatcher() {
       final url = inputData?['supabaseUrl'] as String?;
       final key = inputData?['supabaseAnonKey'] as String?;
       if (url == null || key == null) return Future.value(false);
-      Supabase.initialize(url: url, anonKey: key);
+      try {
+        await Supabase.initialize(url: url, anonKey: key);
+      } catch (_) {
+        // already initialized in this isolate
+      }
       final client = Supabase.instance.client;
       await _checkNewCallsAndMessages(client);
     }

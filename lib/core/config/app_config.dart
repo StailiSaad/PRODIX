@@ -37,5 +37,5 @@ class AppConfig {
 
   bool get hasSupabase => supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
   bool get hasBackendApi => backendApiUrl.isNotEmpty;
-  bool get hasAiGateway => aiGatewayUrl.isNotEmpty || huggingFaceToken.isNotEmpty;
+  bool get hasAiGateway => aiGatewayUrl.isNotEmpty && huggingFaceToken.isNotEmpty;
 }

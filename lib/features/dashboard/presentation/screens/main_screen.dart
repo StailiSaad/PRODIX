@@ -26,12 +26,10 @@ class MainScreenState extends State<MainScreen> {
   int _pendingInvites = 0;
   int _totalUnread = 0;
   int _teamUnreadCount = 0;
-  int _pollFailures = 0;
-  static const int _maxPollFailures = 5;
-  Duration _pollDelay = const Duration(seconds: 5);
   RealtimeChannel? _callChannel;
   RealtimeChannel? _teamCallChannel;
   RealtimeChannel? _squadCallChannel;
+  RealtimeChannel? _invitationChannel;
 
   void switchToTab(int index) {
     if (index >= 0 && index < _pages.length) {
@@ -51,7 +49,7 @@ class MainScreenState extends State<MainScreen> {
       const _TeammatesTab(),
       const DetailedStatsScreen(),
     ];
-    _pollInvites();
+    _subscribeToInvitations();
     _pollUnread();
     _pollTeamUnread();
     _subscribeToCalls();
@@ -65,6 +63,7 @@ class MainScreenState extends State<MainScreen> {
     _callChannel?.unsubscribe();
     _teamCallChannel?.unsubscribe();
     _squadCallChannel?.unsubscribe();
+    _invitationChannel?.unsubscribe();
     super.dispose();
   }
 
@@ -262,23 +261,21 @@ class MainScreenState extends State<MainScreen> {
     });
   }
 
-  void _pollInvites() {
-    _pollFailures = 0;
-    _pollDelay = const Duration(seconds: 5);
-    Future.microtask(() async {
-      while (mounted && _pollFailures < _maxPollFailures) {
-        try {
-          final count = await context.read<SupabaseBackendService>().getPendingInvitationsCount();
-          _pollFailures = 0;
-          _pollDelay = const Duration(seconds: 5);
-          if (mounted) setState(() => _pendingInvites = count);
-        } catch (_) {
-          _pollFailures++;
-          _pollDelay = Duration(seconds: (_pollDelay.inSeconds * 2).clamp(5, 60));
-        }
-        await Future.delayed(_pollDelay);
-      }
+  void _subscribeToInvitations() {
+    final svc = context.read<SupabaseBackendService>();
+    final uid = svc.userId;
+    if (uid == null) return;
+    _invitationChannel = svc.subscribeToInvitations(uid, (_) {
+      _refreshInviteCount();
     });
+    _refreshInviteCount();
+  }
+
+  Future<void> _refreshInviteCount() async {
+    try {
+      final count = await context.read<SupabaseBackendService>().getPendingInvitationsCount();
+      if (mounted) setState(() => _pendingInvites = count);
+    } catch (_) {}
   }
 
   void _pollUnread() {

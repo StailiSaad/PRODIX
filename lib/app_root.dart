@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,7 +8,9 @@ import 'package:workmanager/workmanager.dart';
 import 'core/config/app_config.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/background_service.dart' as bg;
+import 'core/services/background_service_bridge.dart';
 import 'core/services/foreground_call_service.dart';
+import 'core/services/push_notification_service.dart';
 import 'core/theme/app_theme.dart';
 import 'data/services/ai_gateway_service.dart';
 import 'data/services/supabase_backend_service.dart';
@@ -19,13 +22,19 @@ import 'features/profile/profile_cubit.dart';
 import 'features/profile/presentation/screens/profile_setup_screens.dart';
 import 'features/dashboard/presentation/screens/main_screen.dart';
 import 'features/call/presentation/screens/call_screen.dart';
+import 'features/dashboard/presentation/screens/dm_chat_screen.dart';
 
 SupabaseBackendService? globalBackendService;
+String _supabaseUrl = '';
+String _supabaseAnonKey = '';
 
 Future<void> bootstrapProdix(AppConfig config) async {
   await NotificationService().init();
+  await PushNotificationService().init();
   await Workmanager().initialize(bg.callbackDispatcher, isInDebugMode: false);
   if (config.hasSupabase) {
+    _supabaseUrl = config.supabaseUrl;
+    _supabaseAnonKey = config.supabaseAnonKey;
     await Supabase.initialize(
       url: config.supabaseUrl,
       anonKey: config.supabaseAnonKey,
@@ -83,6 +92,7 @@ Future<void> bootstrapProdix(AppConfig config) async {
       final action = args?['action'] as String?;
       final callId = args?['callId'] as String? ?? '';
       final callType = args?['callType'] as String? ?? 'audio';
+      final peerId = args?['peerId'] as String? ?? '';
       if (action == 'answer' && callId.isNotEmpty) {
         try {
           final call = await backenService.getCall(callId);
@@ -112,6 +122,19 @@ Future<void> bootstrapProdix(AppConfig config) async {
         CallActionBus.add(CallAction.toggleMute);
       } else if ((action == 'speaker' || action == 'speaker_off') && callId.isNotEmpty) {
         CallActionBus.add(CallAction.toggleSpeaker);
+      } else if (action == 'open_dm' && peerId.isNotEmpty) {
+        final profile = await backenService.getOtherProfile(peerId);
+        final name = profile?['pseudo'] as String? ?? 'Inconnu';
+        final avatar = profile?['avatar_url'] as String?;
+        ProdixApp.navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (_) => DmChatScreen(
+              peerId: peerId,
+              peerName: name,
+              peerAvatar: avatar,
+            ),
+          ),
+        );
       }
     }
   });
@@ -174,8 +197,42 @@ class ProdixApp extends StatelessWidget {
   }
 }
 
-class _RootView extends StatelessWidget {
+class _RootView extends StatefulWidget {
   const _RootView();
+
+  @override
+  State<_RootView> createState() => _RootViewState();
+}
+
+class _RootViewState extends State<_RootView> {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    try {
+      final authCubit = context.read<AuthCubit>();
+      if (authCubit.state.status == AuthStatus.authenticated) {
+        _doRegister();
+      }
+    } catch (_) {}
+  }
+
+  void _doRegister() {
+    context.read<GamificationCubit>().init();
+    try {
+      final session = Supabase.instance.client.auth.currentSession;
+      if (session != null) {
+        PushNotificationService().register(session.user.id);
+        if (_supabaseUrl.isNotEmpty) {
+          BackgroundServiceBridge.start(
+            supabaseUrl: _supabaseUrl,
+            anonKey: _supabaseAnonKey,
+            userId: session.user.id,
+            authToken: session.accessToken,
+          );
+        }
+      }
+    } catch (_) {}
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -184,8 +241,10 @@ class _RootView extends StatelessWidget {
         if (state.status == AuthStatus.unauthenticated) {
           context.read<ProfileCubit>().reset();
           context.read<GamificationCubit>().reset();
+          BackgroundServiceBridge.stop();
+          PushNotificationService().unregister();
         } else if (state.status == AuthStatus.authenticated) {
-          context.read<GamificationCubit>().init();
+          _doRegister();
         }
       },
       child: BlocBuilder<AuthCubit, AuthState>(

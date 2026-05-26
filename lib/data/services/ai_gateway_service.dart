@@ -20,7 +20,7 @@ class AiGatewayService {
           'Authorization': 'Bearer $huggingFaceToken',
       };
 
-  bool get isEnabled => gatewayUrl.isNotEmpty;
+  bool get isEnabled => gatewayUrl.isNotEmpty && huggingFaceToken.isNotEmpty;
 
   /// Returns (isToxic, explanation).
   Future<(bool, String)> analyzeToxicity(String text) async {

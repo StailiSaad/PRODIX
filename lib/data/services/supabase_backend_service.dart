@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/config/profile_defaults.dart';
@@ -69,7 +70,7 @@ class SupabaseBackendService {
           .eq('id', userId!)
           .maybeSingle();
     } catch (e) {
-      debugPrint('SupabaseBackendService error: $e');
+      developer.log('SupabaseBackendService error: $e');
       return null;
     }
   }
@@ -134,7 +135,7 @@ class SupabaseBackendService {
           .eq('profile_id', userId!);
       return rows.map((r) => r['game'] as String).toList();
     } catch (e) {
-      debugPrint('SupabaseBackendService error: $e');
+      developer.log('SupabaseBackendService error: $e');
       return [];
     }
   }
@@ -159,7 +160,7 @@ class SupabaseBackendService {
           .eq('profile_id', targetUserId);
       return rows.map((r) => r['game'] as String).toList();
     } catch (e) {
-      debugPrint('getOtherFavoriteGames error: $e');
+      developer.log('getOtherFavoriteGames error: $e');
       return [];
     }
   }
@@ -188,7 +189,7 @@ class SupabaseBackendService {
           .eq('id', targetUserId)
           .maybeSingle();
     } catch (e) {
-      debugPrint('getOtherProfile error: $e');
+      developer.log('getOtherProfile error: $e');
       return null;
     }
   }
@@ -212,15 +213,19 @@ class SupabaseBackendService {
       await _db.from('teams').update({'avatar_url': url}).eq('id', teamId);
       return url;
     } catch (e) {
-      debugPrint('updateTeamAvatar error: $e');
+      developer.log('updateTeamAvatar error: $e');
       return null;
     }
   }
 
-  /// Update only the xp field on the current user's profile
+  /// Update XP on the current user's profile (writes to both columns
+  /// for backward compatibility with existing schema).
   Future<void> updateXp(int xp) async {
     if (userId == null) return;
-    await _db.from('profiles').update({'experience_points': xp}).eq('id', userId!);
+    await _db.from('profiles').update({
+      'experience_points': xp,
+      'xp': xp,
+    }).eq('id', userId!);
   }
 
   // ─── Matching ────────────────────────────────────────────────────────────────
@@ -277,7 +282,7 @@ class SupabaseBackendService {
         ..sort((a, b) => (b['compatibilityScore'] as double)
             .compareTo(a['compatibilityScore'] as double));
     } catch (e) {
-      debugPrint('SupabaseBackendService error: $e');
+      developer.log('SupabaseBackendService error: $e');
       return [];
     }
   }
@@ -293,7 +298,7 @@ class SupabaseBackendService {
       return List<Map<String, dynamic>>.from(
           await _db.from('games').select().order('name'));
     } catch (e) {
-      debugPrint('SupabaseBackendService error: $e');
+      developer.log('SupabaseBackendService error: $e');
       return [];
     }
   }
@@ -497,7 +502,7 @@ class SupabaseBackendService {
       });
     } catch (e) {
       // Fallback if team_id column doesn't exist
-      debugPrint('inviteToTeam (team_id fallback): $e');
+      developer.log('inviteToTeam (team_id fallback): $e');
       await _db.from('invitations').insert({
         'sender_id': userId,
         'receiver_id': receiverProfileId,
@@ -625,7 +630,7 @@ class SupabaseBackendService {
           .where((f) => !memberIds.contains(f['id'] as String))
           .toList();
     } catch (e) {
-      debugPrint('getTeamInvitableFriends error: $e');
+      developer.log('getTeamInvitableFriends error: $e');
       return [];
     }
   }
@@ -654,7 +659,7 @@ class SupabaseBackendService {
       }
       return rows;
     } catch (e) {
-      debugPrint('SupabaseBackendService error: $e');
+      developer.log('SupabaseBackendService error: $e');
       return [];
     }
   }
@@ -705,7 +710,7 @@ class SupabaseBackendService {
       }
       return members;
     } catch (e) {
-      debugPrint('SupabaseBackendService error: $e');
+      developer.log('SupabaseBackendService error: $e');
       return [];
     }
   }
@@ -732,7 +737,7 @@ class SupabaseBackendService {
       }
       return msgs;
     } catch (e) {
-      debugPrint('SupabaseBackendService error: $e');
+      developer.log('SupabaseBackendService error: $e');
       return [];
     }
   }
@@ -777,7 +782,7 @@ class SupabaseBackendService {
       });
       return true;
     } catch (e) {
-      debugPrint('sendDirectMessage error: $e');
+      developer.log('sendDirectMessage error: $e');
       return false;
     }
   }
@@ -805,7 +810,7 @@ class SupabaseBackendService {
       });
       return true;
     } catch (e) {
-      debugPrint('sendMessage error: $e');
+      developer.log('sendMessage error: $e');
       return false;
     }
   }
@@ -836,7 +841,7 @@ class SupabaseBackendService {
       });
       return true;
     } catch (e) {
-      debugPrint('sendCallEventMessage error: $e');
+      developer.log('sendCallEventMessage error: $e');
       return false;
     }
   }
@@ -847,7 +852,7 @@ class SupabaseBackendService {
     try {
       await _db.from('messages').delete().eq('id', messageId);
     } catch (e) {
-      debugPrint('deleteMessage error: $e');
+      developer.log('deleteMessage error: $e');
     }
   }
 
@@ -874,7 +879,7 @@ class SupabaseBackendService {
           .eq('receiver_id', userId!)
           .neq('status', 'seen');
     } catch (e) {
-      debugPrint('markMessagesAsSeen error: $e');
+      developer.log('markMessagesAsSeen error: $e');
     }
   }
 
@@ -909,7 +914,7 @@ class SupabaseBackendService {
       }
       return counts;
     } catch (e) {
-      debugPrint('getUnreadCounts error: $e');
+      developer.log('getUnreadCounts error: $e');
       return {};
     }
   }
@@ -943,7 +948,7 @@ class SupabaseBackendService {
       }
       return result;
     } catch (e) {
-      debugPrint('getTeamUnreadCounts error: $e');
+      developer.log('getTeamUnreadCounts error: $e');
       return {};
     }
   }
@@ -1006,7 +1011,7 @@ class SupabaseBackendService {
       }).select().single();
       return res['id'] as String?;
     } catch (e) {
-      debugPrint('initiateCall error: $e');
+      developer.log('initiateCall error: $e');
       return null;
     }
   }
@@ -1016,7 +1021,7 @@ class SupabaseBackendService {
     try {
       await _db.from('calls').update({'status': status}).eq('id', callId);
     } catch (e) {
-      debugPrint('updateCallStatus error: $e');
+      developer.log('updateCallStatus error: $e');
     }
   }
 
@@ -1045,7 +1050,7 @@ class SupabaseBackendService {
     try {
       return await _db.from('calls').select().eq('id', callId).maybeSingle();
     } catch (e) {
-      debugPrint('getCall error: $e');
+      developer.log('getCall error: $e');
       return null;
     }
   }
@@ -1058,7 +1063,7 @@ class SupabaseBackendService {
           : {'answer_sdp': sdpJson};
       await _db.from('calls').update(update).eq('id', callId);
     } catch (e) {
-      debugPrint('updateCallSdp error: $e');
+      developer.log('updateCallSdp error: $e');
     }
   }
 
@@ -1079,7 +1084,7 @@ class SupabaseBackendService {
         'sdp_mline_index': sdpMLineIndex,
       });
     } catch (e) {
-      debugPrint('addIceCandidate error: $e');
+      developer.log('addIceCandidate error: $e');
     }
   }
 
@@ -1095,7 +1100,7 @@ class SupabaseBackendService {
             .order('created_at', ascending: true),
       );
     } catch (e) {
-      debugPrint('getIceCandidates error: $e');
+      developer.log('getIceCandidates error: $e');
       return [];
     }
   }
@@ -1194,7 +1199,7 @@ class SupabaseBackendService {
       });
       return callId;
     } catch (e) {
-      debugPrint('initiateTeamCall error: $e');
+      developer.log('initiateTeamCall error: $e');
       return null;
     }
   }
@@ -1204,7 +1209,7 @@ class SupabaseBackendService {
     try {
       return await _db.from('team_calls').select().eq('id', callId).maybeSingle();
     } catch (e) {
-      debugPrint('getTeamCall error: $e');
+      developer.log('getTeamCall error: $e');
       return null;
     }
   }
@@ -1225,7 +1230,7 @@ class SupabaseBackendService {
       }
       return rows;
     } catch (e) {
-      debugPrint('getTeamCallParticipants error: $e');
+      developer.log('getTeamCallParticipants error: $e');
       return [];
     }
   }
@@ -1266,7 +1271,7 @@ class SupabaseBackendService {
         .eq('call_id', callId)
         .eq('user_id', userId!);
     } catch (e) {
-      debugPrint('joinTeamCall error: $e');
+      developer.log('joinTeamCall error: $e');
     }
   }
 
@@ -1279,7 +1284,7 @@ class SupabaseBackendService {
         .eq('call_id', callId)
         .eq('user_id', userId!);
     } catch (e) {
-      debugPrint('declineTeamCall error: $e');
+      developer.log('declineTeamCall error: $e');
     }
   }
 
@@ -1292,7 +1297,7 @@ class SupabaseBackendService {
         .eq('id', callId)
         .eq('caller_id', userId!);
     } catch (e) {
-      debugPrint('endTeamCall error: $e');
+      developer.log('endTeamCall error: $e');
     }
   }
 
@@ -1305,7 +1310,7 @@ class SupabaseBackendService {
         .eq('call_id', callId)
         .eq('user_id', userId!);
     } catch (e) {
-      debugPrint('leaveTeamCall error: $e');
+      developer.log('leaveTeamCall error: $e');
     }
   }
 
@@ -1315,7 +1320,7 @@ class SupabaseBackendService {
       final update = type == 'offer' ? {'offer_sdp': sdpJson} : {'answer_sdp': sdpJson};
       await _db.from('team_call_participants').update(update).eq('id', participantId);
     } catch (e) {
-      debugPrint('updateTeamCallParticipantSdp error: $e');
+      developer.log('updateTeamCallParticipantSdp error: $e');
     }
   }
 
@@ -1422,7 +1427,7 @@ class SupabaseBackendService {
         'sdp_mline_index': sdpMLineIndex,
       });
     } catch (e) {
-      debugPrint('addTeamCallIceCandidate error: $e');
+      developer.log('addTeamCallIceCandidate error: $e');
     }
   }
 
@@ -1437,7 +1442,7 @@ class SupabaseBackendService {
           .order('created_at', ascending: true),
       );
     } catch (e) {
-      debugPrint('getTeamCallIceCandidates error: $e');
+      developer.log('getTeamCallIceCandidates error: $e');
       return [];
     }
   }
@@ -1474,7 +1479,7 @@ class SupabaseBackendService {
         .eq('user_id', userId)
         .maybeSingle();
     } catch (e) {
-      debugPrint('getTeamCallParticipant error: $e');
+      developer.log('getTeamCallParticipant error: $e');
       return null;
     }
   }
@@ -1510,7 +1515,7 @@ class SupabaseBackendService {
       });
       return callId;
     } catch (e) {
-      debugPrint('initiateSquadCall error: $e');
+      developer.log('initiateSquadCall error: $e');
       return null;
     }
   }
@@ -1519,7 +1524,7 @@ class SupabaseBackendService {
     try {
       return await _db.from('squad_calls').select().eq('id', callId).maybeSingle();
     } catch (e) {
-      debugPrint('getSquadCall error: $e');
+      developer.log('getSquadCall error: $e');
       return null;
     }
   }
@@ -1539,7 +1544,7 @@ class SupabaseBackendService {
       }
       return rows;
     } catch (e) {
-      debugPrint('getSquadCallParticipants error: $e');
+      developer.log('getSquadCallParticipants error: $e');
       return [];
     }
   }
@@ -1578,7 +1583,7 @@ class SupabaseBackendService {
         .eq('call_id', callId)
         .eq('user_id', userId!);
     } catch (e) {
-      debugPrint('joinSquadCall error: $e');
+      developer.log('joinSquadCall error: $e');
     }
   }
 
@@ -1590,7 +1595,7 @@ class SupabaseBackendService {
         .eq('call_id', callId)
         .eq('user_id', userId!);
     } catch (e) {
-      debugPrint('declineSquadCall error: $e');
+      developer.log('declineSquadCall error: $e');
     }
   }
 
@@ -1602,7 +1607,7 @@ class SupabaseBackendService {
         .eq('id', callId)
         .eq('caller_id', userId!);
     } catch (e) {
-      debugPrint('endSquadCall error: $e');
+      developer.log('endSquadCall error: $e');
     }
   }
 
@@ -1614,7 +1619,7 @@ class SupabaseBackendService {
         .eq('call_id', callId)
         .eq('user_id', userId!);
     } catch (e) {
-      debugPrint('leaveSquadCall error: $e');
+      developer.log('leaveSquadCall error: $e');
     }
   }
 
@@ -1623,7 +1628,7 @@ class SupabaseBackendService {
       final update = type == 'offer' ? {'offer_sdp': sdpJson} : {'answer_sdp': sdpJson};
       await _db.from('squad_call_participants').update(update).eq('id', participantId);
     } catch (e) {
-      debugPrint('updateSquadCallParticipantSdp error: $e');
+      developer.log('updateSquadCallParticipantSdp error: $e');
     }
   }
 
@@ -1705,7 +1710,7 @@ class SupabaseBackendService {
         'sdp_mline_index': sdpMLineIndex,
       });
     } catch (e) {
-      debugPrint('addSquadCallIceCandidate error: $e');
+      developer.log('addSquadCallIceCandidate error: $e');
     }
   }
 
@@ -1719,7 +1724,7 @@ class SupabaseBackendService {
           .order('created_at', ascending: true),
       );
     } catch (e) {
-      debugPrint('getSquadCallIceCandidates error: $e');
+      developer.log('getSquadCallIceCandidates error: $e');
       return [];
     }
   }
@@ -1754,7 +1759,7 @@ class SupabaseBackendService {
         .eq('user_id', userId)
         .maybeSingle();
     } catch (e) {
-      debugPrint('getSquadCallParticipant error: $e');
+      developer.log('getSquadCallParticipant error: $e');
       return null;
     }
   }
@@ -1882,6 +1887,38 @@ class SupabaseBackendService {
     await createChannel(res['id'] as String, 'général');
   }
 
+  /// Subscribe to invitation changes for the current user (insert + update).
+  /// Returns a [RealtimeChannel] that fires [onChange] with each new/updated record.
+  RealtimeChannel subscribeToInvitations(
+    String userId,
+    void Function(Map<String, dynamic>) onChange,
+  ) {
+    final channel = _db.channel('invitations_$userId');
+    channel
+        .onPostgresChanges(
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'invitations',
+          callback: (payload) {
+            if (payload.newRecord['receiver_id'] == userId) {
+              onChange(payload.newRecord);
+            }
+          },
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.update,
+          schema: 'public',
+          table: 'invitations',
+          callback: (payload) {
+            if (payload.newRecord['receiver_id'] == userId) {
+              onChange(payload.newRecord);
+            }
+          },
+        )
+        .subscribe();
+    return channel;
+  }
+
   /// Get pending invitations count
   Future<int> getPendingInvitationsCount() async {
     if (userId == null) return 0;
@@ -1893,7 +1930,7 @@ class SupabaseBackendService {
           .eq('status', 'pending');
       return rows.length;
     } catch (e) {
-      debugPrint('SupabaseBackendService error: $e');
+      developer.log('SupabaseBackendService error: $e');
       return 0;
     }
   }
@@ -1908,7 +1945,7 @@ class SupabaseBackendService {
           .eq('user_id', userId!);
       return rows.map((r) => r['friend_id'] as String).toList();
     } catch (e) {
-      debugPrint('_getFriendIds error: $e');
+      developer.log('_getFriendIds error: $e');
       return [];
     }
   }
@@ -1927,7 +1964,7 @@ class SupabaseBackendService {
         await _db.from('profiles').select('id, pseudo, avatar_url, game_type, region, rank_mmr').filter('id', 'in', '(${ids.join(",")})'),
       );
     } catch (e) {
-      debugPrint('SupabaseBackendService error: $e');
+      developer.log('SupabaseBackendService error: $e');
       return [];
     }
   }
@@ -1985,7 +2022,7 @@ class SupabaseBackendService {
         'total_reviews': reviews.length,
       };
     } catch (e) {
-      debugPrint('SupabaseBackendService error: $e');
+      developer.log('SupabaseBackendService error: $e');
       return null;
     }
   }
@@ -2021,7 +2058,7 @@ class SupabaseBackendService {
             .limit(30),
       );
     } catch (e) {
-      debugPrint('SupabaseBackendService error: $e');
+      developer.log('SupabaseBackendService error: $e');
       return [];
     }
   }
@@ -2030,7 +2067,7 @@ class SupabaseBackendService {
     try {
       await _db.from('notifications').update({'is_read': true}).eq('id', id);
     } catch (e) {
-      debugPrint('SupabaseBackendService error: $e');
+      developer.log('SupabaseBackendService error: $e');
     }
   }
 
@@ -2045,7 +2082,7 @@ class SupabaseBackendService {
           .eq('status', 'active')
           .maybeSingle();
     } catch (e) {
-      debugPrint('SupabaseBackendService error: $e');
+      developer.log('SupabaseBackendService error: $e');
       return null;
     }
   }
@@ -2066,7 +2103,7 @@ class SupabaseBackendService {
         });
       }
     } catch (e) {
-      debugPrint('SupabaseBackendService error: $e');
+      developer.log('SupabaseBackendService error: $e');
     }
 
     return {

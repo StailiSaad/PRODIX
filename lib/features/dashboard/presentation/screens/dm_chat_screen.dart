@@ -165,7 +165,19 @@ class _DmChatScreenState extends State<DmChatScreen> {
     if (_pendingMedia.isEmpty) {
       final ok = await svc.sendDirectMessage(widget.peerId, text);
       if (ok && text.isNotEmpty) {
-        if (mounted) context.read<GamificationCubit>().recordEvent('chat_message_sent');
+        if (mounted) {
+          context.read<GamificationCubit>().recordEvent('chat_message_sent');
+          final optimistic = <String, dynamic>{
+            'id': 'opt_${DateTime.now().millisecondsSinceEpoch}',
+            'sender_id': _currentUserId,
+            'receiver_id': widget.peerId,
+            'content': text,
+            'status': 'sent',
+            'created_at': DateTime.now().toIso8601String(),
+          };
+          setState(() => _messages.add(optimistic));
+          _scrollDown();
+        }
       }
       return;
     }

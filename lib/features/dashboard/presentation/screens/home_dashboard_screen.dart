@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show RealtimeChannel;
 import '../../../profile/profile_cubit.dart';
 import '../../../../data/services/supabase_backend_service.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -20,16 +21,20 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   List<Map<String, dynamic>> _games = [];
   bool _loadingGames = true;
   List<Map<String, dynamic>> _pendingInvitations = [];
-  int _pollFailures = 0;
-  static const int _maxPollFailures = 5;
-  Duration _pollDelay = const Duration(seconds: 5);
+  RealtimeChannel? _invitationChannel;
 
   @override
   void initState() {
     super.initState();
     _loadGames();
-    _pollInvitations();
+    _subscribeToInvitations();
     _awardDailyLogin();
+  }
+
+  @override
+  void dispose() {
+    _invitationChannel?.unsubscribe();
+    super.dispose();
   }
 
   Future<void> _awardDailyLogin() async {
@@ -44,28 +49,22 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     }
   }
 
-  void _pollInvitations() {
-    _pollFailures = 0;
-    _pollDelay = const Duration(seconds: 5);
-    Future.microtask(() async {
-      while (mounted && _pollFailures < _maxPollFailures) {
-        await _loadInvitations();
-        await Future.delayed(_pollDelay);
-      }
+  void _subscribeToInvitations() {
+    final svc = context.read<SupabaseBackendService>();
+    final uid = svc.userId;
+    if (uid == null) return;
+    _invitationChannel = svc.subscribeToInvitations(uid, (_) {
+      _refreshInvitations();
     });
+    _refreshInvitations();
   }
 
-  Future<void> _loadInvitations() async {
+  Future<void> _refreshInvitations() async {
     final svc = context.read<SupabaseBackendService>();
     try {
       final invites = await svc.getInvitations();
-      _pollFailures = 0;
-      _pollDelay = const Duration(seconds: 5);
       if (mounted) setState(() { _pendingInvitations = invites; });
-    } catch (_) {
-      _pollFailures++;
-      _pollDelay = Duration(seconds: (_pollDelay.inSeconds * 2).clamp(5, 60));
-    }
+    } catch (_) {}
   }
 
   Future<void> _respondInvite(String invitationId, bool accept) async {
@@ -81,7 +80,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           context.read<GamificationCubit>().recordEvent('invitation_accepted');
           context.read<GamificationCubit>().recordEvent('friend_added');
         }
-        _loadInvitations();
+        _refreshInvitations();
         // Trigger profile reload to update squads
         if (mounted) context.read<ProfileCubit>().loadProfile();
       }
