@@ -294,7 +294,60 @@ BEGIN
 END;
 $$;
 
--- 7. Helper: create trigger only if the table exists
+-- 7. Function to notify on missed call (when caller hangs up while callee is ringing)
+CREATE OR REPLACE FUNCTION public.notify_missed_call_on_update()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  push_url text;
+  callee_devices json;
+  caller_name text;
+BEGIN
+  -- Only fire when status changes from 'ringing' to a non-connected state
+  IF OLD.status <> 'ringing' OR NEW.status IN ('ringing', 'connected') THEN
+    RETURN NEW;
+  END IF;
+
+  push_url := 'https://edlxuaoldmdabteiqjfa.functions.supabase.co/send-push-notification';
+
+  SELECT p.pseudo INTO caller_name
+  FROM public.profiles p
+  WHERE p.id = NEW.caller_id;
+
+  SELECT json_agg(json_build_object('token', d.token, 'platform', d.platform))
+  INTO callee_devices
+  FROM public.devices d
+  WHERE d.user_id = NEW.callee_id;
+
+  IF callee_devices IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  BEGIN
+    PERFORM net.http_post(
+      url := push_url,
+      headers := '{"Content-Type": "application/json"}'::jsonb,
+      body := json_build_object(
+        'type', 'missed_call',
+        'recipient_id', NEW.callee_id,
+        'caller_id', NEW.caller_id,
+        'caller_name', caller_name,
+        'call_id', NEW.id,
+        'devices', callee_devices
+      )::jsonb
+    );
+  EXCEPTION WHEN OTHERS THEN
+    NULL;
+  END;
+
+  RETURN NEW;
+END;
+$$;
+
+-- 8. Helper: create trigger only if the table exists
 CREATE OR REPLACE FUNCTION _prodix_create_trigger_if_table_exists(
   trigger_name text,
   table_name text,
@@ -315,6 +368,14 @@ SELECT _prodix_create_trigger_if_table_exists('trg_notify_push_call', 'calls', '
 SELECT _prodix_create_trigger_if_table_exists('trg_notify_push_invitation', 'invitations', 'notify_push_on_invitation');
 SELECT _prodix_create_trigger_if_table_exists('trg_notify_push_team_call', 'team_call_participants', 'notify_push_on_team_call_participant');
 SELECT _prodix_create_trigger_if_table_exists('trg_notify_push_squad_call', 'squad_call_participants', 'notify_push_on_squad_call_participant');
+
+SELECT _prodix_create_trigger_if_table_exists('trg_notify_missed_call', 'calls', 'notify_missed_call_on_update');
+-- For missed calls, we need an UPDATE trigger instead of INSERT
+DROP TRIGGER IF EXISTS trg_notify_missed_call ON public.calls;
+CREATE TRIGGER trg_notify_missed_call
+  AFTER UPDATE OF status ON public.calls
+  FOR EACH ROW
+  EXECUTE FUNCTION public.notify_missed_call_on_update();
 
 DROP FUNCTION IF EXISTS _prodix_create_trigger_if_table_exists;
 

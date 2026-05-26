@@ -47,11 +47,11 @@ Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
         tag: 'incoming_call',
         actions: [
           AndroidNotificationAction('answer', 'Répondre', showsUserInterface: true),
-          AndroidNotificationAction('decline', 'Refuser'),
+          AndroidNotificationAction('decline', 'Refuser', showsUserInterface: true),
         ],
       );
       await _bgPlugin.show(
-        DateTime.now().millisecondsSinceEpoch.remainder(100000),
+        1001, // fixed ID for incoming call
         callerName,
         'Appel $typeLabel entrant',
         NotificationDetails(android: androidDetails),
@@ -61,6 +61,22 @@ Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
           'callType': callType,
           'type': 'incoming_call',
         }),
+      );
+    } else if (type == 'missed_call') {
+      final callerName = data['caller_name'] ?? 'Someone';
+      await _bgPlugin.cancel(1001);
+      final androidDetails = AndroidNotificationDetails(
+        'messages_channel',
+        'Messages',
+        channelDescription: 'Notifications de messages',
+        importance: Importance.defaultImportance,
+        priority: Priority.defaultPriority,
+      );
+      await _bgPlugin.show(
+        1002, // fixed ID for missed call
+        'Missed call',
+        'from $callerName',
+        NotificationDetails(android: androidDetails),
       );
     } else if (type == 'message') {
       final senderName = data['sender_name'] ?? 'Someone';
@@ -209,6 +225,14 @@ class PushNotificationService {
           callerId: callerId,
         );
       }
+    } else if (type == 'missed_call') {
+      final callerName = data['caller_name'] ?? 'Someone';
+      NotificationService().cancelNotification(1001);
+      NotificationService().showMessageNotification(
+        id: 1002,
+        title: 'Missed call',
+        body: 'from $callerName',
+      );
     } else if (type == 'message') {
       final senderName = data['sender_name'] ?? 'Someone';
       final content = data['content'] ?? '';

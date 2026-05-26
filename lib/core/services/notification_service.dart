@@ -84,7 +84,8 @@ class NotificationService {
       actions: [
         AndroidNotificationAction('answer', 'Répondre',
             showsUserInterface: true),
-        AndroidNotificationAction('decline', 'Refuser'),
+        AndroidNotificationAction('decline', 'Refuser',
+            showsUserInterface: true),
       ],
     );
     final details = NotificationDetails(

@@ -7,7 +7,7 @@ interface Device {
 }
 
 interface PushPayload {
-  type: "message" | "call" | "invitation";
+  type: "message" | "call" | "missed_call" | "invitation";
   recipient_id: string;
   sender_id?: string;
   sender_name?: string;
@@ -139,6 +139,12 @@ function buildNotification(payload: PushPayload): { title: string; body: string;
         body: `Incoming ${typeLabel} call`,
         data,
       };
+    case "missed_call":
+      data["caller_id"] = payload.caller_id ?? "";
+      data["caller_name"] = payload.caller_name ?? "";
+      data["call_id"] = payload.call_id ?? "";
+      const missedCallerName = payload.caller_name ?? "Someone";
+      return { title: "Missed call", body: `from ${missedCallerName}`, data };
     case "invitation":
       data["sender_id"] = payload.sender_id ?? "";
       data["invitation_id"] = payload.invitation_id ?? "";
