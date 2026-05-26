@@ -10,6 +10,7 @@ interface PushPayload {
   type: "message" | "call" | "invitation";
   recipient_id: string;
   sender_id?: string;
+  sender_name?: string;
   content?: string;
   call_type?: string;
   call_id?: string;
@@ -83,14 +84,11 @@ async function getAccessToken(sa: ServiceAccount): Promise<string> {
 function buildFcmV1Message(
   token: string,
   type: string,
-  title: string,
-  body: string,
   data: Record<string, string>,
 ) {
   const channelId = type === "call" ? "incoming_calls_channel" : "messages_channel";
   const msg: Record<string, unknown> = {
     token,
-    notification: { title, body },
     data,
     android: {
       priority: "high",
@@ -105,6 +103,7 @@ function buildFcmV1Message(
         aps: {
           sound: "default",
           badge: 1,
+          "content-available": 1,
         },
       },
     },
@@ -119,18 +118,22 @@ function buildNotification(payload: PushPayload): { title: string; body: string;
   switch (payload.type) {
     case "message":
       data["sender_id"] = payload.sender_id ?? "";
+      data["sender_name"] = payload.sender_name ?? "";
       data["message_id"] = payload.message_id ?? "";
-      return { title: "New Message", body: payload.content ?? "", data };
+      data["content"] = payload.content ?? "";
+      const senderName = payload.sender_name ?? "Someone";
+      return { title: senderName, body: payload.content ?? "", data };
     case "call":
       data["call_id"] = payload.call_id ?? "";
       data["caller_id"] = payload.caller_id ?? payload.sender_id ?? "";
       data["call_type"] = payload.call_type ?? "audio";
+      data["caller_name"] = payload.caller_name ?? "Someone";
       const typeLabel = payload.call_type === "video" ? "video" : "audio";
       const groupName = payload.group_name ?? "";
       const callerName = payload.caller_name ?? "Someone";
       return {
-        title: groupName ? `Incoming ${typeLabel} call: ${groupName}` : `Incoming ${typeLabel} call`,
-        body: `${callerName} is calling you`,
+        title: groupName ? `${callerName} (${groupName})` : callerName,
+        body: `Incoming ${typeLabel} call`,
         data,
       };
     case "invitation":
@@ -165,7 +168,7 @@ serve(async (req) => {
 
     const results = await Promise.allSettled(
       payload.devices.map(async (d) => {
-        const fcmBody = buildFcmV1Message(d.token, payload.type, title, body, data);
+        const fcmBody = buildFcmV1Message(d.token, payload.type, data);
         const res = await fetch(fcmUrl, {
           method: "POST",
           headers: {

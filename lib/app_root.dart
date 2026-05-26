@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' show Supabase;
+import 'package:supabase_flutter/supabase_flutter.dart' show Supabase, AuthChangeEvent;
 import 'package:workmanager/workmanager.dart';
 
 import 'core/config/app_config.dart';
@@ -216,6 +216,14 @@ class _RootViewState extends State<_RootView> {
     } catch (_) {}
   }
 
+  @override
+  void dispose() {
+    _authSub?.cancel();
+    super.dispose();
+  }
+
+  StreamSubscription? _authSub;
+
   void _doRegister() {
     context.read<GamificationCubit>().init();
     try {
@@ -232,6 +240,16 @@ class _RootViewState extends State<_RootView> {
         }
       }
     } catch (_) {}
+
+    _authSub?.cancel();
+    _authSub = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      if (data.event == AuthChangeEvent.tokenRefreshed) {
+        final token = data.session?.accessToken;
+        if (token != null) {
+          BackgroundServiceBridge.updateToken(token);
+        }
+      }
+    });
   }
 
   @override

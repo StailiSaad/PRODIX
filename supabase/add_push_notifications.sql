@@ -39,6 +39,7 @@ AS $$
 DECLARE
   push_url text;
   receiver_devices json;
+  sender_name text;
 BEGIN
   -- Only notify for DMs (receiver_id set), not channel messages
   IF NEW.receiver_id IS NULL THEN
@@ -46,6 +47,10 @@ BEGIN
   END IF;
 
   push_url := 'https://edlxuaoldmdabteiqjfa.functions.supabase.co/send-push-notification';
+
+  SELECT p.pseudo INTO sender_name
+  FROM public.profiles p
+  WHERE p.id = NEW.sender_id;
 
   -- Gather FCM tokens for the receiver
   SELECT json_agg(json_build_object('token', d.token, 'platform', d.platform))
@@ -67,6 +72,7 @@ BEGIN
         'type', 'message',
         'recipient_id', NEW.receiver_id,
         'sender_id', NEW.sender_id,
+        'sender_name', sender_name,
         'content', LEFT(NEW.content, 200),
         'devices', receiver_devices,
         'message_id', NEW.id
@@ -91,8 +97,13 @@ AS $$
 DECLARE
   push_url text;
   callee_devices json;
+  caller_name text;
 BEGIN
   push_url := 'https://edlxuaoldmdabteiqjfa.functions.supabase.co/send-push-notification';
+
+  SELECT p.pseudo INTO caller_name
+  FROM public.profiles p
+  WHERE p.id = NEW.caller_id;
 
   SELECT json_agg(json_build_object('token', d.token, 'platform', d.platform))
   INTO callee_devices
@@ -111,6 +122,7 @@ BEGIN
         'type', 'call',
         'recipient_id', NEW.callee_id,
         'caller_id', NEW.caller_id,
+        'caller_name', caller_name,
         'call_type', NEW.call_type,
         'call_id', NEW.id,
         'devices', callee_devices

@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -13,24 +15,76 @@ import '../../features/dashboard/presentation/screens/dm_chat_screen.dart';
 import '../../firebase_options.dart';
 import 'notification_service.dart';
 
-/// Top-level background message handler for FCM.
-/// The system FCM notification handles display when app is in background.
-/// This handler just ensures the app is ready for when the user taps the notification.
+final FlutterLocalNotificationsPlugin _bgPlugin = FlutterLocalNotificationsPlugin();
+
 @pragma('vm:entry-point')
 Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    // No need to show a notification here — the FCM system notification
-    // (with title + body) is already displayed by Android.
-    // When the user taps it, onMessageOpenedApp / getInitialMessage handles navigation.
+
+    final data = message.data;
+    final type = data['type'];
+
+    if (type == 'call') {
+      final callerName = data['caller_name'] ?? 'Someone';
+      final callType = data['call_type'] ?? 'audio';
+      final typeLabel = callType == 'video' ? 'vidéo' : 'audio';
+      final callId = data['call_id'] ?? '';
+      final callerId = data['caller_id'] ?? '';
+
+      final androidDetails = AndroidNotificationDetails(
+        'incoming_calls_channel',
+        'Appels entrants',
+        channelDescription: "Notifications d'appels entrants avec actions",
+        importance: Importance.max,
+        priority: Priority.max,
+        fullScreenIntent: true,
+        playSound: true,
+        enableVibration: true,
+        category: AndroidNotificationCategory.call,
+        tag: 'incoming_call',
+        actions: [
+          AndroidNotificationAction('answer', 'Répondre', showsUserInterface: true),
+          AndroidNotificationAction('decline', 'Refuser'),
+        ],
+      );
+      await _bgPlugin.show(
+        DateTime.now().millisecondsSinceEpoch.remainder(100000),
+        callerName,
+        'Appel $typeLabel entrant',
+        NotificationDetails(android: androidDetails),
+        payload: jsonEncode({
+          'callId': callId,
+          'callerId': callerId,
+          'callType': callType,
+          'type': 'incoming_call',
+        }),
+      );
+    } else if (type == 'message') {
+      final senderName = data['sender_name'] ?? 'Someone';
+      final content = data['content'] ?? '';
+
+      final androidDetails = AndroidNotificationDetails(
+        'messages_channel',
+        'Messages',
+        channelDescription: 'Notifications de messages',
+        importance: Importance.defaultImportance,
+        priority: Priority.defaultPriority,
+      );
+      await _bgPlugin.show(
+        DateTime.now().millisecondsSinceEpoch.remainder(100000),
+        senderName,
+        content,
+        NotificationDetails(android: androidDetails),
+      );
+    }
   } catch (e) {
     debugPrint('firebaseBackgroundHandler error: $e');
   }
 }
 
-/// Bus for navigation events triggered by push notification taps.
 class PushNavigationBus {
   static final _controller = StreamController<Map<String, dynamic>>.broadcast();
   static void add(Map<String, dynamic> data) => _controller.add(data);
@@ -38,8 +92,6 @@ class PushNavigationBus {
   static void dispose() => _controller.close();
 }
 
-/// Handles Firebase Cloud Messaging: token registration, receiving push
-/// notifications in foreground, and routing notification taps.
 class PushNotificationService {
   static final PushNotificationService _instance = PushNotificationService._();
   factory PushNotificationService() => _instance;
@@ -48,11 +100,8 @@ class PushNotificationService {
   FirebaseMessaging? _messaging;
   StreamSubscription? _tokenSub;
 
-  /// Whether FCM is available and initialized.
   bool get isAvailable => _messaging != null;
 
-  /// Initialize Firebase + FCM.
-  /// Call once at app startup.
   Future<void> init() async {
     try {
       await Firebase.initializeApp(
@@ -60,15 +109,12 @@ class PushNotificationService {
       );
       _messaging = FirebaseMessaging.instance;
 
-      // Register background message handler
       FirebaseMessaging.onBackgroundMessage(firebaseBackgroundHandler);
     } catch (e) {
       debugPrint('PushNotificationService.init error: $e');
     }
   }
 
-  /// Register for push notifications.
-  /// Call after user is authenticated.
   Future<void> register(String userId) async {
     if (_messaging == null) return;
 
@@ -94,31 +140,25 @@ class PushNotificationService {
       debugPrint('PushNotificationService.getToken error: $e');
     }
 
-    // Listen for token refresh
     _tokenSub?.cancel();
     _tokenSub = _messaging!.onTokenRefresh.listen((token) {
       _upsertDeviceToken(userId, token);
     });
 
-    // Handle foreground messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       _handleForegroundMessage(message);
     });
 
-    // Handle notification tap when app is in background
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       _handleNotificationTap(message.data);
     });
 
-    // Handle notification tap when app was terminated
     final initialMessage = await _messaging!.getInitialMessage();
     if (initialMessage != null) {
       _handleNotificationTap(initialMessage.data);
     }
   }
 
-  /// Unregister this device's push token.
-  /// Call on sign-out.
   Future<void> unregister() async {
     _tokenSub?.cancel();
     try {
@@ -153,27 +193,29 @@ class PushNotificationService {
 
   void _handleForegroundMessage(RemoteMessage message) {
     final data = message.data;
-    final notification = message.notification;
     final type = data['type'];
 
     if (type == 'call') {
       final callId = data['call_id'] ?? '';
       final callerId = data['caller_id'] ?? '';
       final callType = data['call_type'] ?? 'audio';
+      final callerName = data['caller_name'] ?? 'Someone';
       if (callId.isNotEmpty && callerId.isNotEmpty) {
         NotificationService().showIncomingCallNotification(
           id: DateTime.now().millisecondsSinceEpoch.remainder(100000),
-          callerName: notification?.title ?? 'Unknown',
+          callerName: callerName,
           callType: callType,
           callId: callId,
           callerId: callerId,
         );
       }
     } else if (type == 'message') {
+      final senderName = data['sender_name'] ?? 'Someone';
+      final content = data['content'] ?? '';
       NotificationService().showMessageNotification(
         id: DateTime.now().millisecondsSinceEpoch.remainder(100000),
-        title: notification?.title ?? 'New Message',
-        body: notification?.body ?? '',
+        title: senderName,
+        body: content,
       );
     }
   }
@@ -185,25 +227,8 @@ class PushNotificationService {
     if (context == null) return;
 
     if (type == 'call') {
-      final callId = data['call_id'] as String? ?? '';
-      final callerId = data['caller_id'] as String? ?? '';
-      final callType = data['call_type'] as String? ?? 'audio';
-      if (callId.isNotEmpty && callerId.isNotEmpty) {
-        context.read<SupabaseBackendService>().getOtherProfile(callerId).then((profile) {
-          final name = profile?['pseudo'] as String? ?? 'Inconnu';
-          navKey.currentState?.push(
-            MaterialPageRoute(
-              builder: (_) => CallScreen(
-                callId: callId,
-                peerId: callerId,
-                peerName: name,
-                callType: callType,
-                isCaller: false,
-              ),
-            ),
-          );
-        });
-      }
+      // Just open the app — the call is NOT accepted.
+      // The user must press "Répondre" action button to answer.
     } else if (type == 'message') {
       final senderId = data['sender_id'] as String? ?? '';
       if (senderId.isNotEmpty) {
