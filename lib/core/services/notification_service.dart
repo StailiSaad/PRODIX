@@ -69,6 +69,9 @@ class NotificationService {
     required String callType,
     required String callId,
     required String callerId,
+    String? teamId,
+    String? squadId,
+    String? groupName,
   }) async {
     final typeLabel = callType == 'video' ? 'vidéo' : 'audio';
     final androidDetails = AndroidNotificationDetails(
@@ -94,14 +97,17 @@ class NotificationService {
     );
     await _plugin.show(
       1001,
-      'Appel $typeLabel de $callerName',
-      'Appel $typeLabel entrant',
+      groupName != null ? 'Appel de groupe: $groupName' : 'Appel $typeLabel de $callerName',
+      groupName != null ? 'Appel $typeLabel de $callerName' : 'Appel $typeLabel entrant',
       details,
       payload: jsonEncode({
         'callId': callId,
         'callerId': callerId,
         'callType': callType,
         'type': 'incoming_call',
+        if (teamId != null) 'teamId': teamId,
+        if (squadId != null) 'squadId': squadId,
+        if (groupName != null) 'groupName': groupName,
       }),
     );
   }

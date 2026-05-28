@@ -52,6 +52,7 @@ class _TeamCallScreenState extends State<TeamCallScreen> {
   String? _currentUserId;
   String? _myParticipantId;
   StreamSubscription<CallAction>? _callActionSub;
+  String? _activeSpeakerId;
 
   @override
   void initState() {
@@ -207,13 +208,6 @@ class _TeamCallScreenState extends State<TeamCallScreen> {
     } else if (_myParticipantId != null) {
       _listenForOffer(_myParticipantId!);
       _replayIceCandidates(_myParticipantId!);
-      for (final p in participants) {
-        final status = p['status'] as String?;
-        final uid = p['user_id'] as String?;
-        if (status == 'joined' && uid != _currentUserId) {
-          await _ensureConnection(p);
-        }
-      }
     }
   }
 
@@ -233,7 +227,7 @@ class _TeamCallScreenState extends State<TeamCallScreen> {
       for (final p in _participants) {
         final status = p['status'] as String?;
         final uid = p['user_id'] as String?;
-        if (status == 'joined' && uid != _currentUserId) {
+        if (status == 'joined' && uid != _currentUserId && widget.isCaller) {
           _ensureConnection(p);
         }
       }
@@ -280,7 +274,7 @@ class _TeamCallScreenState extends State<TeamCallScreen> {
   Future<void> _ensureConnection(Map<String, dynamic> participant) async {
     final pid = participant['id'] as String;
     if (_connections.containsKey(pid)) return;
-    if (_localStream == null) return;
+    if (_localStream == null || _myParticipantId == null) return;
 
     final renderer = RTCVideoRenderer();
     await renderer.initialize();
@@ -301,7 +295,7 @@ class _TeamCallScreenState extends State<TeamCallScreen> {
         if (mounted) {
           state.remoteStream = event.streams[0];
           state.remoteRenderer?.srcObject = state.remoteStream;
-          setState(() {});
+          setState(() => _activeSpeakerId ??= pid);
         }
       };
 
@@ -317,7 +311,9 @@ class _TeamCallScreenState extends State<TeamCallScreen> {
 
       final offer = await state.pc!.createOffer();
       await state.pc!.setLocalDescription(offer);
-      _updateSdp(pid, jsonEncode(offer.toMap()), 'offer');
+      final offerMap = offer.toMap();
+      offerMap['_senderPid'] = _myParticipantId;
+      _updateSdp(pid, jsonEncode(offerMap), 'offer');
 
       state.sdpSub = _subscribeSdp(pid, (record) {
         final answer = record['answer_sdp'] as String?;
@@ -375,85 +371,99 @@ class _TeamCallScreenState extends State<TeamCallScreen> {
     }
   }
 
+  RealtimeChannel? _offerSdpSub;
+  bool _initialOfferChecked = false;
+
   void _listenForOffer(String participantId) {
-    if (_connections.containsKey(participantId)) return;
-    final state = _PeerConnectionState(participantId: participantId);
-    _connections[participantId] = state;
-
-    Future.microtask(() async {
-      try {
-        final participant = await _getMyParticipant();
-        if (participant != null && participant['offer_sdp'] != null && !state.offerHandled) {
-          await _handleParticipantOffer(participantId, participant['offer_sdp'] as String, state);
-        }
-      } catch (e) {
-        developer.log('checkExistingOffer error: $e');
-      }
-    });
-
-    state.sdpSub = _subscribeSdp(participantId, (record) async {
+    _offerSdpSub = _subscribeSdp(participantId, (record) async {
       final offer = record['offer_sdp'] as String?;
-      if (offer != null && !state.offerHandled && _localStream != null) {
-        await _handleParticipantOffer(participantId, offer, state);
-      }
+      final answer = record['answer_sdp'] as String?;
+      if (offer == null || answer != null || _localStream == null) return;
+      await _handleIncomingOffer(participantId, offer);
     });
 
-    state.iceSub = _subscribeIce(participantId, _currentUserId!, (data) {
-      try {
-        state.pc?.addCandidate(RTCIceCandidate(
-          data['candidate'] as String,
-          data['sdp_mid'] as String?,
-          (data['sdp_mline_index'] as num?)?.toInt(),
-        ));
-      } catch (e) {
-        developer.log('addIceCandidate error: $e');
-      }
-    });
-
-    _replayIceCandidates(participantId);
+    if (!_initialOfferChecked) {
+      _initialOfferChecked = true;
+      _checkExistingOffer(participantId);
+    }
   }
 
-  Future<void> _handleParticipantOffer(
-      String participantId, String offerJson, _PeerConnectionState state) async {
-    if (_localStream == null) return;
-    state.offerHandled = true;
-
-    final renderer = RTCVideoRenderer();
-    await renderer.initialize();
-    state.remoteRenderer = renderer;
-
+  Future<void> _checkExistingOffer(String participantId) async {
     try {
-      await state.initConnection(_localStream!);
+      final p = await _getMyParticipant();
+      if (p == null || _localStream == null) return;
+      final existingOffer = p['offer_sdp'] as String?;
+      final existingAnswer = p['answer_sdp'] as String?;
+      if (existingOffer != null && existingAnswer == null) {
+        final offerMap = jsonDecode(existingOffer) as Map<String, dynamic>;
+        final senderPid = offerMap['_senderPid'] as String?;
+        if (senderPid != null && !_connections.containsKey(senderPid)) {
+          await _handleIncomingOffer(participantId, existingOffer);
+        }
+      }
+    } catch (_) {}
+  }
 
-      state.pc!.onTrack = (event) {
+  Future<void> _handleIncomingOffer(String participantId, String offerJson) async {
+    try {
+      final offerMap = jsonDecode(offerJson) as Map<String, dynamic>;
+      final senderPid = offerMap['_senderPid'] as String?;
+      if (senderPid == null || _localStream == null) return;
+      if (_connections.containsKey(senderPid)) return;
+      final renderer = RTCVideoRenderer();
+      await renderer.initialize();
+      final st = _PeerConnectionState(
+        participantId: senderPid,
+        remoteRenderer: renderer,
+      );
+      _connections[senderPid] = st;
+      await st.initConnection(_localStream!);
+
+      st.pc!.onTrack = (event) {
         if (event.track.kind == 'video') {
-          state.hasRemoteVideo = true;
+          st.hasRemoteVideo = true;
         }
         if (mounted) {
-          state.remoteStream = event.streams[0];
-          state.remoteRenderer?.srcObject = state.remoteStream;
-          setState(() {});
+          st.remoteStream = event.streams[0];
+          st.remoteRenderer?.srcObject = st.remoteStream;
+          setState(() => _activeSpeakerId ??= senderPid);
         }
       };
 
-      state.pc!.onIceCandidate = (candidate) {
+      st.pc!.onIceCandidate = (candidate) {
         final c = candidate.candidate;
         if (c == null || c.isEmpty) return;
         _addIceCandidate(participantId, c, candidate.sdpMid, candidate.sdpMLineIndex);
       };
 
-      state.pc!.onIceConnectionState = (s) {
+      st.pc!.onIceConnectionState = (s) {
         if (mounted) setState(() {});
       };
 
-      final sdp = jsonDecode(offerJson)['sdp'] as String?;
+      st.iceSub = _subscribeIce(participantId, _currentUserId!, (data) {
+        try {
+          st.pc?.addCandidate(RTCIceCandidate(
+            data['candidate'] as String,
+            data['sdp_mid'] as String?,
+            (data['sdp_mline_index'] as num?)?.toInt(),
+          ));
+        } catch (e) {
+          developer.log('addIceCandidate error: $e');
+        }
+      });
+
+      final sdp = offerMap['sdp'] as String?;
       if (sdp == null) return;
-      await state.pc!.setRemoteDescription(RTCSessionDescription(sdp, 'offer'));
-      final answer = await state.pc!.createAnswer();
-      await state.pc!.setLocalDescription(answer);
-      _updateSdp(participantId, jsonEncode(answer.toMap()), 'answer');
+      await st.pc!.setRemoteDescription(RTCSessionDescription(sdp, 'offer'));
+      final answerSdp = await st.pc!.createAnswer();
+      await st.pc!.setLocalDescription(answerSdp);
+      final answerMap = answerSdp.toMap();
+      answerMap['_senderPid'] = _myParticipantId;
+      _updateSdp(participantId, jsonEncode(answerMap), 'answer');
+
+      _replayIceCandidates(participantId);
     } catch (e) {
-      developer.log('handleOffer error: $e');
+      developer.log('handleIncomingOffer error: $e');
     }
   }
 
@@ -541,6 +551,7 @@ class _TeamCallScreenState extends State<TeamCallScreen> {
   void _cleanup() {
     _participantsSub?.cancel();
     _statusChannel?.unsubscribe();
+    _offerSdpSub?.unsubscribe();
     for (final entry in _connections.values) {
       entry.dispose();
     }
@@ -652,34 +663,45 @@ class _TeamCallScreenState extends State<TeamCallScreen> {
       );
     }
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final count = remoteParticipants.length;
-        final availW = constraints.maxWidth;
-        final availH = constraints.maxHeight;
+    if (_activeSpeakerId == null ||
+        !remoteParticipants.any((p) => p['id'] == _activeSpeakerId)) {
+      _activeSpeakerId = remoteParticipants.first['id'] as String?;
+    }
 
-        const spacing = 2.0;
-        int cols, rows;
-        if (count == 1) { cols = 1; rows = 1; }
-        else if (count == 2) { cols = 2; rows = 1; }
-        else { cols = (count <= 4) ? 2 : ((count <= 6) ? 3 : 4); rows = (count + cols - 1) ~/ cols; }
+    final active = remoteParticipants.firstWhere(
+      (p) => p['id'] == _activeSpeakerId,
+      orElse: () => remoteParticipants.first,
+    );
+    final others = remoteParticipants.where((p) => p['id'] != active['id']).toList();
 
-        final tileW = (availW - spacing * (cols - 1)) / cols;
-        final tileH = (availH - spacing * (rows - 1)) / rows;
-
-        return GridView.builder(
-          padding: EdgeInsets.zero,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: cols,
-            childAspectRatio: tileW / tileH,
-            mainAxisSpacing: spacing,
-            crossAxisSpacing: spacing,
+    return Column(
+      children: [
+        Expanded(
+          child: _buildParticipantTile(active, isLarge: true),
+        ),
+        if (others.isNotEmpty)
+          SizedBox(
+            height: 130,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                itemCount: others.length,
+                itemBuilder: (_, i) => Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: GestureDetector(
+                    onTap: () => setState(() => _activeSpeakerId = others[i]['id'] as String?),
+                    child: SizedBox(
+                      width: 100,
+                      child: _buildParticipantTile(others[i], isLarge: false),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
-          itemCount: count,
-          itemBuilder: (_, i) => _buildParticipantTile(remoteParticipants[i]),
-        );
-      },
+      ],
     );
   }
 
@@ -739,7 +761,7 @@ class _TeamCallScreenState extends State<TeamCallScreen> {
     );
   }
 
-  Widget _buildParticipantTile(Map<String, dynamic> p) {
+  Widget _buildParticipantTile(Map<String, dynamic> p, {bool isLarge = false}) {
     final profile = p['profiles'] as Map<String, dynamic>? ?? {};
     final name = profile['pseudo'] as String? ?? 'Membre';
     final isVideoCall = widget.callType == 'video';
@@ -747,6 +769,58 @@ class _TeamCallScreenState extends State<TeamCallScreen> {
     final conn = _connections[pid];
     final renderer = conn?.remoteRenderer;
     final hasVideo = conn?.hasRemoteVideo == true && conn?.remoteStream != null && isVideoCall;
+
+    if (isLarge) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(4),
+        child: Container(
+          color: const Color(0xFF1A1A2E),
+          child: Stack(
+            children: [
+              if (hasVideo && renderer != null)
+                RTCVideoView(
+                  renderer,
+                  objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                )
+              else
+                Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircleAvatar(
+                        radius: 40,
+                        backgroundColor: AppTheme.cardHighColor,
+                        child: Text(name[0].toUpperCase(),
+                            style: const TextStyle(color: AppTheme.primaryColor, fontSize: 36, fontWeight: FontWeight.bold)),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(name, style: const TextStyle(color: Colors.white70, fontSize: 18)),
+                    ],
+                  ),
+                ),
+              Positioned(
+                bottom: 8,
+                left: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(4)),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (!_micEnabled) ...[
+                        const Icon(Icons.mic_off, color: Colors.red, size: 12),
+                        const SizedBox(width: 4),
+                      ],
+                      Text(name, style: const TextStyle(color: Colors.white, fontSize: 12)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
@@ -765,25 +839,31 @@ class _TeamCallScreenState extends State<TeamCallScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     CircleAvatar(
-                      radius: 24,
+                      radius: 18,
                       backgroundColor: AppTheme.cardHighColor,
                       child: Text(name[0].toUpperCase(),
-                          style: const TextStyle(color: AppTheme.primaryColor, fontSize: 22, fontWeight: FontWeight.bold)),
+                          style: const TextStyle(color: AppTheme.primaryColor, fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
-                    const SizedBox(height: 6),
-                    Text(name, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                    const SizedBox(height: 4),
+                    Text(name, style: const TextStyle(color: Colors.white70, fontSize: 10)),
                   ],
                 ),
               ),
             Positioned(
-              bottom: 6,
-              left: 6,
+              bottom: 4,
+              left: 4,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(4)),
-                child: Text(name, style: const TextStyle(color: Colors.white, fontSize: 11)),
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(3)),
+                child: Text(name, style: const TextStyle(color: Colors.white, fontSize: 9)),
               ),
             ),
+            if (p['user_id'] == _currentUserId)
+              const Positioned(
+                top: 4,
+                right: 4,
+                child: Icon(Icons.person_pin, color: Colors.greenAccent, size: 14),
+              ),
           ],
         ),
       ),

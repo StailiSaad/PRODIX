@@ -37,6 +37,19 @@ Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
       final typeLabel = callType == 'video' ? 'vidéo' : 'audio';
       final callId = data['call_id'] ?? '';
       final callerId = data['caller_id'] ?? '';
+      final teamId = data['team_id'] as String?;
+      final squadId = data['squad_id'] as String?;
+      final groupName = data['group_name'] as String?;
+
+      final payload = jsonEncode({
+        'callId': callId,
+        'callerId': callerId,
+        'callType': callType,
+        'type': 'incoming_call',
+        if (teamId != null) 'teamId': teamId,
+        if (squadId != null) 'squadId': squadId,
+        if (groupName != null) 'groupName': groupName,
+      });
 
       final androidDetails = AndroidNotificationDetails(
         'incoming_calls_channel',
@@ -56,15 +69,10 @@ Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
       );
       await _bgPlugin.show(
         1001, // fixed ID for incoming call
-        callerName,
-        'Appel $typeLabel entrant',
+        groupName != null ? 'Appel de groupe: $groupName' : callerName,
+        groupName != null ? 'Appel $typeLabel de $callerName' : 'Appel $typeLabel entrant',
         NotificationDetails(android: androidDetails),
-        payload: jsonEncode({
-          'callId': callId,
-          'callerId': callerId,
-          'callType': callType,
-          'type': 'incoming_call',
-        }),
+        payload: payload,
       );
     } else if (type == 'missed_call') {
       final callerName = data['caller_name'] ?? 'Someone';
@@ -236,6 +244,9 @@ class PushNotificationService {
       final callerId = data['caller_id'] ?? '';
       final callType = data['call_type'] ?? 'audio';
       final callerName = data['caller_name'] ?? 'Someone';
+      final teamId = data['team_id'] as String?;
+      final squadId = data['squad_id'] as String?;
+      final groupName = data['group_name'] as String?;
       if (callId.isNotEmpty && callerId.isNotEmpty) {
         NotificationService().showIncomingCallNotification(
           id: DateTime.now().millisecondsSinceEpoch.remainder(100000),
@@ -243,6 +254,9 @@ class PushNotificationService {
           callType: callType,
           callId: callId,
           callerId: callerId,
+          teamId: teamId,
+          squadId: squadId,
+          groupName: groupName,
         );
       }
     } else if (type == 'missed_call') {

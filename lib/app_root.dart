@@ -23,6 +23,7 @@ import 'features/profile/profile_cubit.dart';
 import 'features/profile/presentation/screens/profile_setup_screens.dart';
 import 'features/dashboard/presentation/screens/main_screen.dart';
 import 'features/call/presentation/screens/call_screen.dart';
+import 'features/call/presentation/screens/team_call_screen.dart';
 import 'features/dashboard/presentation/screens/dm_chat_screen.dart';
 
 SupabaseBackendService? globalBackendService;
@@ -47,37 +48,52 @@ Future<void> bootstrapProdix(AppConfig config) async {
       final callId = data['callId'] as String? ?? '';
       final callerId = data['callerId'] as String? ?? '';
       final callType = data['callType'] as String? ?? 'audio';
+      final teamId = data['teamId'] as String?;
+      final squadId = data['squadId'] as String?;
+      final groupName = data['groupName'] as String?;
       NotificationService().cancelNotification(1001);
+
       if (actionId == 'answer' && callId.isNotEmpty && callerId.isNotEmpty) {
-        final profile = await backenService.getOtherProfile(callerId);
-        final name = profile?['pseudo'] as String? ?? 'Inconnu';
-        NotificationService().showOngoingCallNotification(
-          id: 1004,
-          peerName: name,
-          callType: callType,
-          callState: 'ringing',
-          callId: callId,
-        );
-        ProdixApp.navigatorKey.currentState?.push(
-          MaterialPageRoute(
-            builder: (_) => CallScreen(
-              callId: callId,
-              peerId: callerId,
-              peerName: name,
-              callType: callType,
-              isCaller: false,
+        if (teamId != null || squadId != null) {
+          final channelId = teamId != null
+              ? (await backenService.getTeamChannelId(teamId))
+              : (await backenService.getSquadChannelId(squadId!));
+          ProdixApp.navigatorKey.currentState?.push(
+            MaterialPageRoute(
+              builder: (_) => TeamCallScreen(
+                callId: callId,
+                groupId: teamId ?? squadId!,
+                groupName: groupName ?? 'Groupe',
+                callType: callType,
+                channelId: channelId ?? '',
+                isCaller: false,
+                isTeamCall: teamId != null,
+              ),
             ),
-          ),
-        );
+          );
+        } else {
+          final profile = await backenService.getOtherProfile(callerId);
+          final name = profile?['pseudo'] as String? ?? 'Inconnu';
+          ProdixApp.navigatorKey.currentState?.push(
+            MaterialPageRoute(
+              builder: (_) => CallScreen(
+                callId: callId,
+                peerId: callerId,
+                peerName: name,
+                callType: callType,
+                isCaller: false,
+              ),
+            ),
+          );
+        }
       } else if ((actionId == 'decline' || actionId == 'end_call') && callId.isNotEmpty) {
-        await backenService.updateCallStatus(callId, 'ended');
-        final profile = await backenService.getOtherProfile(callerId);
-        final name = profile?['pseudo'] as String? ?? 'Inconnu';
-        NotificationService().showMessageNotification(
-          id: 1003,
-          title: 'Appel ${callType == 'video' ? 'vidéo' : 'audio'} refusé',
-          body: name,
-        );
+        if (teamId != null) {
+          await backenService.declineTeamCall(callId);
+        } else if (squadId != null) {
+          await backenService.declineSquadCall(callId);
+        } else {
+          await backenService.updateCallStatus(callId, 'ended');
+        }
       }
     } catch (e) {
       debugPrint('NotificationService action error: $e');
