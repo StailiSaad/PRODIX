@@ -53,6 +53,7 @@ class MainScreenState extends State<MainScreen> {
     _pollUnread();
     _pollTeamUnread();
     _subscribeToCalls();
+    _cleanStaleCalls();
     _subscribeToTeamCalls();
     _subscribeToSquadCalls();
   }
@@ -77,6 +78,12 @@ class MainScreenState extends State<MainScreen> {
       final callType = record['call_type'] as String? ?? 'audio';
       final callId = record['id'] as String? ?? '';
       if (callerId == null || callerId == uid) return;
+      // Ignore calls older than 60 seconds (stale/ghost calls)
+      final createdAt = record['created_at'] as String?;
+      if (createdAt != null) {
+        final created = DateTime.tryParse(createdAt);
+        if (created != null && DateTime.now().difference(created).inSeconds > 60) return;
+      }
       _showIncomingCall(callerId, callType, callId);
     });
   }
@@ -132,6 +139,10 @@ class MainScreenState extends State<MainScreen> {
         ),
       );
     });
+  }
+
+  void _cleanStaleCalls() {
+    context.read<SupabaseBackendService>().cleanStaleCalls();
   }
 
   void _subscribeToTeamCalls() {

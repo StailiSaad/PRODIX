@@ -1047,6 +1047,22 @@ class SupabaseBackendService {
     }
   }
 
+  /// Mark stale ringing calls (older than 2 minutes) as missed
+  Future<void> cleanStaleCalls() async {
+    if (userId == null) return;
+    try {
+      final cutoff = DateTime.now().toUtc().subtract(const Duration(minutes: 2)).toIso8601String();
+      await _db
+          .from('calls')
+          .update({'status': 'missed'})
+          .eq('callee_id', userId!)
+          .eq('status', 'ringing')
+          .lt('created_at', cutoff);
+    } catch (e) {
+      developer.log('cleanStaleCalls error: $e');
+    }
+  }
+
   /// Subscribe to incoming calls
   RealtimeChannel subscribeToCalls(
     String userId,

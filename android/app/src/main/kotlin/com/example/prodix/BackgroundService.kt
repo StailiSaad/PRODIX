@@ -21,6 +21,9 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class BackgroundService : Service() {
     companion object {
@@ -28,7 +31,7 @@ class BackgroundService : Service() {
         const val CHANNEL_CALLS = "prodix_bg_calls"
         const val CHANNEL_MESSAGES = "prodix_bg_messages"
         const val NOTIFICATION_ID = 1001
-        const val POLL_INTERVAL_MS = 2000L // 2 secondes
+        const val POLL_INTERVAL_MS = 30000L // 30 secondes
         const val WATCHDOG_INTERVAL_MS = 600_000L // 10 minutes
         const val PREF_NAME = "prodix_bg_prefs"
         const val KEY_URL = "supabase_url"
@@ -176,10 +179,13 @@ class BackgroundService : Service() {
     }
 
     private fun checkNewCalls() {
+        val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
+        val recent = sdf.format(Date(System.currentTimeMillis() - 60_000))
         val url = URL(
             "$supabaseUrl/rest/v1/calls" +
             "?callee_id=eq.$userId" +
             "&status=eq.ringing" +
+            "&created_at=gte.$recent" +
             "&select=id,caller_id,call_type,created_at" +
             "&order=created_at.desc&limit=5"
         )
