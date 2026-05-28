@@ -39,6 +39,7 @@ class _CallScreenState extends State<CallScreen> {
   RealtimeChannel? _iceChannel;
   RealtimeChannel? _sdpChannel;
   RealtimeChannel? _statusChannel;
+  Timer? _statusPollTimer;
   bool _micEnabled = true;
   bool _camEnabled = true;
   bool _speakerEnabled = false;
@@ -107,6 +108,7 @@ class _CallScreenState extends State<CallScreen> {
       _replayExistingIceCandidates();
       _subscribeToIceCandidates();
       _subscribeToCallStatus();
+      _startStatusPolling();
     } catch (e) {
       developer.log('CallScreen init error: $e');
       _safeShowError('Erreur de connexion: $e');
@@ -398,6 +400,20 @@ class _CallScreenState extends State<CallScreen> {
     });
   }
 
+  void _startStatusPolling() {
+    _statusPollTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
+      if (_callEnded) return;
+      try {
+        final svc = context.read<SupabaseBackendService>();
+        final call = await svc.getCall(widget.callId);
+        final status = call?['status'] as String?;
+        if ((status == 'ended' || status == 'missed') && mounted) {
+          _endCall();
+        }
+      } catch (_) {}
+    });
+  }
+
   Future<void> _endCall() async {
     if (_callEnded) return;
     _callEnded = true;
@@ -415,6 +431,7 @@ class _CallScreenState extends State<CallScreen> {
   void _cleanup() {
     try {
       _missedTimer?.cancel();
+      _statusPollTimer?.cancel();
       _iceChannel?.unsubscribe();
       _sdpChannel?.unsubscribe();
       _statusChannel?.unsubscribe();
