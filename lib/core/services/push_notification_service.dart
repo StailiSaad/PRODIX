@@ -23,6 +23,10 @@ Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    await _bgPlugin.initialize(
+      const InitializationSettings(android: androidSettings),
+    );
 
     final data = message.data;
     final type = data['type'];
@@ -82,6 +86,22 @@ Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
       final senderName = data['sender_name'] ?? 'Someone';
       final content = data['content'] ?? '';
 
+      final androidDetails = AndroidNotificationDetails(
+        'messages_channel',
+        'Messages',
+        channelDescription: 'Notifications de messages',
+        importance: Importance.defaultImportance,
+        priority: Priority.defaultPriority,
+      );
+      await _bgPlugin.show(
+        DateTime.now().millisecondsSinceEpoch.remainder(100000),
+        senderName,
+        content,
+        NotificationDetails(android: androidDetails),
+      );
+    } else if (type == 'post_like' || type == 'post_comment' || type == 'comment_like' || type == 'comment_reply') {
+      final senderName = data['sender_name'] ?? 'Someone';
+      final content = data['content'] ?? '';
       final androidDetails = AndroidNotificationDetails(
         'messages_channel',
         'Messages',
@@ -234,6 +254,14 @@ class PushNotificationService {
         body: 'from $callerName',
       );
     } else if (type == 'message') {
+      final senderName = data['sender_name'] ?? 'Someone';
+      final content = data['content'] ?? '';
+      NotificationService().showMessageNotification(
+        id: DateTime.now().millisecondsSinceEpoch.remainder(100000),
+        title: senderName,
+        body: content,
+      );
+    } else if (type == 'post_like' || type == 'post_comment' || type == 'comment_like' || type == 'comment_reply') {
       final senderName = data['sender_name'] ?? 'Someone';
       final content = data['content'] ?? '';
       NotificationService().showMessageNotification(

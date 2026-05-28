@@ -33,6 +33,7 @@ Future<void> bootstrapProdix(AppConfig config) async {
   final backenService = SupabaseBackendService(
     isEnabled: config.hasBackendApi,
     baseUrl: config.backendApiUrl,
+    supabaseUrl: config.supabaseUrl,
   );
   globalBackendService = backenService;
 
@@ -176,6 +177,7 @@ class ProdixApp extends StatelessWidget {
           create: (_) => SupabaseBackendService(
             isEnabled: config.hasBackendApi,
             baseUrl: config.backendApiUrl,
+            supabaseUrl: config.supabaseUrl,
           ),
         ),
         RepositoryProvider(

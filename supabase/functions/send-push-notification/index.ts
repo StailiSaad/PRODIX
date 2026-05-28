@@ -7,7 +7,7 @@ interface Device {
 }
 
 interface PushPayload {
-  type: "message" | "call" | "missed_call" | "invitation";
+  type: "message" | "call" | "missed_call" | "invitation" | "post_like" | "post_comment" | "comment_like" | "comment_reply";
   recipient_id: string;
   sender_id?: string;
   sender_name?: string;
@@ -155,6 +155,15 @@ function buildNotification(payload: PushPayload): { title: string; body: string;
       data["sender_id"] = payload.sender_id ?? "";
       data["invitation_id"] = payload.invitation_id ?? "";
       return { title: "New invitation", body: "You received a new invitation", data };
+    case "post_like":
+    case "post_comment":
+    case "comment_like":
+    case "comment_reply":
+      data["sender_id"] = payload.sender_id ?? "";
+      data["sender_name"] = payload.sender_name ?? "";
+      data["content"] = payload.content ?? "";
+      const actor = payload.sender_name ?? "Someone";
+      return { title: actor, body: payload.content ?? "", data };
   }
 }
 

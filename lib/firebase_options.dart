@@ -1,20 +1,14 @@
 import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
-    if (Platform.isMacOS) {
-      return macos;
-    }
-    if (Platform.isIOS) {
-      return ios;
-    }
-    if (Platform.isAndroid) {
-      return android;
-    }
-    // Fallback for desktop/web
+    if (kIsWeb) return web;
+    if (Platform.isMacOS) return macos;
+    if (Platform.isIOS) return ios;
+    if (Platform.isAndroid) return android;
     return android;
-
   }
 
   static const FirebaseOptions android = FirebaseOptions(

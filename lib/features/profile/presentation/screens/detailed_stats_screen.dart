@@ -11,6 +11,7 @@ import '../../../gamification/gamification_cubit.dart';
 import '../../../../data/services/games_service.dart';
 import '../../../../core/config/profile_defaults.dart';
 import '../../../../shared/widgets/animated_badge.dart';
+import '../../../posts/presentation/screens/user_posts_screen.dart';
 
 
 class DetailedStatsScreen extends StatefulWidget {
@@ -515,6 +516,25 @@ class _DetailedStatsScreenState extends State<DetailedStatsScreen> {
                       style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12),
                     ),
                   ],
+                )),
+                const SizedBox(height: 16),
+
+                // ── MY POSTS ──
+                _buildGlassCard(theme, child: InkWell(
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const UserPostsScreen()),
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      children: [
+                        _sectionTitle(theme, Icons.photo_library, 'My Posts'),
+                        const Spacer(),
+                        const Icon(Icons.chevron_right, color: Color(0xFF7C3AED)),
+                      ],
+                    ),
+                  ),
                 )),
 
                 const SizedBox(height: 100),
