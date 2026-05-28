@@ -27,32 +27,8 @@ Future<void> _checkNewCallsAndMessages(SupabaseClient supabase) async {
   final userId = supabase.auth.currentUser?.id;
   if (userId == null) return;
     final notif = NotificationService();
-  final calls = await supabase
-      .from('calls')
-      .select('id, caller_id, call_type, status, created_at')
-      .eq('callee_id', userId)
-      .eq('status', 'ringing')
-      .order('created_at', ascending: false)
-      .limit(5);
-  for (final call in calls) {
-    final callerId = call['caller_id'] as String?;
-    if (callerId == null) continue;
-    final profile = await supabase
-        .from('profiles')
-        .select('pseudo')
-        .eq('id', callerId)
-        .single();
-    final name = profile['pseudo'] as String? ?? 'Quelqu\'un';
-    final callType = call['call_type'] as String? ?? 'audio';
-    final callId = call['id'] as String;
-    await notif.showIncomingCallNotification(
-      id: 100 + (callId.hashCode % 100),
-      callerName: name,
-      callType: callType,
-      callId: callId,
-      callerId: callerId,
-    );
-  }
+  // Calls are detected via Realtime subscription (foreground) and FCM push
+  // (background). Periodic polling is redundant and causes duplicates/phantoms.
   final conversations = await supabase
       .from('conversations')
       .select(

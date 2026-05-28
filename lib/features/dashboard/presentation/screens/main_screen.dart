@@ -79,11 +79,14 @@ class MainScreenState extends State<MainScreen> {
       final callId = record['id'] as String? ?? '';
       if (callerId == null || callerId == uid) return;
       // Ignore calls older than 60 seconds (stale/ghost calls)
-      final createdAt = record['created_at'] as String?;
-      if (createdAt != null) {
-        final created = DateTime.tryParse(createdAt);
-        if (created != null && DateTime.now().difference(created).inSeconds > 60) return;
+      final raw = record['created_at'];
+      DateTime? created;
+      if (raw is int) {
+        created = DateTime.fromMillisecondsSinceEpoch(raw, isUtc: true);
+      } else if (raw is String) {
+        created = DateTime.tryParse(raw);
       }
+      if (created != null && DateTime.now().toUtc().difference(created).inSeconds > 60) return;
       _showIncomingCall(callerId, callType, callId);
     });
   }
@@ -156,6 +159,11 @@ class MainScreenState extends State<MainScreen> {
       final callType = record['call_type'] as String? ?? 'audio';
       final callerId = record['caller_id'] as String? ?? '';
       if (callId.isEmpty || teamId.isEmpty || callerId.isEmpty || callerId == uid) return;
+      final raw = record['created_at'];
+      DateTime? created;
+      if (raw is int) created = DateTime.fromMillisecondsSinceEpoch(raw, isUtc: true);
+      else if (raw is String) created = DateTime.tryParse(raw);
+      if (created != null && DateTime.now().toUtc().difference(created).inSeconds > 60) return;
       _showIncomingTeamCall(callId, teamId, callType, callerId);
     });
   }
@@ -222,6 +230,11 @@ class MainScreenState extends State<MainScreen> {
       final callType = record['call_type'] as String? ?? 'audio';
       final callerId = record['caller_id'] as String? ?? '';
       if (callId.isEmpty || squadId.isEmpty || callerId.isEmpty || callerId == uid) return;
+      final raw = record['created_at'];
+      DateTime? created;
+      if (raw is int) created = DateTime.fromMillisecondsSinceEpoch(raw, isUtc: true);
+      else if (raw is String) created = DateTime.tryParse(raw);
+      if (created != null && DateTime.now().toUtc().difference(created).inSeconds > 60) return;
       _showIncomingSquadCall(callId, squadId, callType, callerId);
     });
   }

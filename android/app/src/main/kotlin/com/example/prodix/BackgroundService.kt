@@ -53,7 +53,10 @@ class BackgroundService : Service() {
         override fun run() {
             if (!polling) return
             if (userId.isNotEmpty() && authToken.isNotEmpty()) {
-                try { checkNewCalls() } catch (_: Exception) {}
+                // Calls are detected via Realtime subscription (foreground) and
+                // FCM push via DB trigger (background). Polling for calls causes
+                // duplicates and phantom notifications from stale rows.
+                // try { checkNewCalls() } catch (_: Exception) {}
                 try { checkNewMessages() } catch (_: Exception) {}
             }
             handler.postDelayed(this, POLL_INTERVAL_MS)
