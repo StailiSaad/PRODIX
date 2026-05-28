@@ -248,50 +248,47 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       );
                     }
 
-                    final topComments = comments.where((c) => c['parent_id'] == null).toList();
-                    final replies = comments.where((c) => c['parent_id'] != null).toList();
+                    final childrenOf = <String?, List<Map<String, dynamic>>>{};
+                    for (final c in comments) {
+                      final pid = c['parent_id'] as String?;
+                      childrenOf.putIfAbsent(pid, () => []).add(c);
+                    }
 
-                    return ListView.builder(
+                    Widget buildCommentTree(String? parentId, int depth) {
+                      final list = childrenOf[parentId] ?? [];
+                      if (list.isEmpty) return const SizedBox.shrink();
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: list.map((c) => Padding(
+                          padding: EdgeInsets.only(left: depth > 0 ? depth * 24.0 : 0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _CommentTile(
+                                comment: c,
+                                isReply: depth > 0,
+                                onReply: (id, name) {
+                                  setState(() {
+                                    _replyingTo = id;
+                                    _replyingToName = name;
+                                  });
+                                },
+                              ),
+                              buildCommentTree(c['id'] as String?, depth + 1),
+                              const Divider(color: AppTheme.cardHighestColor, height: 1),
+                            ],
+                          ),
+                        )).toList(),
+                      );
+                    }
+
+                    return ListView(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       padding: const EdgeInsets.symmetric(horizontal: 12),
-                      itemCount: topComments.length,
-                      itemBuilder: (context, i) {
-                        final comment = topComments[i];
-                        final commentReplies = replies.where((r) => r['parent_id'] == comment['id']).toList();
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _CommentTile(
-                              comment: comment,
-                              onReply: (id, name) {
-                                setState(() {
-                                  _replyingTo = id;
-                                  _replyingToName = name;
-                                });
-                              },
-                            ),
-                            if (commentReplies.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(left: 40),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: commentReplies.map((reply) => _CommentTile(
-                                    comment: reply,
-                                    isReply: true,
-                                    onReply: (id, name) {
-                                      setState(() {
-                                        _replyingTo = id;
-                                        _replyingToName = name;
-                                      });
-                                    },
-                                  )).toList(),
-                                ),
-                              ),
-                            const Divider(color: AppTheme.cardHighestColor, height: 1),
-                          ],
-                        );
-                      },
+                      children: [
+                        buildCommentTree(null, 0),
+                      ],
                     );
                   },
                 ),

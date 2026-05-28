@@ -93,8 +93,11 @@ class MainScreenState extends State<MainScreen> {
 
   void _showIncomingCall(String callerId, String callType, String callId) {
     final svc = context.read<SupabaseBackendService>();
+    // Verify this call is still ringing and is actually for the current user
     svc.getOtherProfile(callerId).then((profile) {
       if (!mounted) return;
+      // Double-check: skip if caller is self (safety guard)
+      if (callerId == svc.userId) return;
       final callerName = profile?['pseudo'] as String? ?? 'Inconnu';
       ForegroundCallService.start(
         peerName: callerName,
@@ -115,9 +118,11 @@ class MainScreenState extends State<MainScreen> {
             _navigateToCall(callerId, callType, callId);
           },
           onDecline: () {
-            svc.updateCallStatus(callId, 'ended');
-            svc.sendDirectMessage(callerId, 'Appel refusé',
-                mediaType: 'call_event', mediaName: 'refused');
+            try {
+              svc.updateCallStatus(callId, 'ended');
+              svc.sendDirectMessage(callerId, 'Appel refusé',
+                  mediaType: 'call_event', mediaName: 'refused');
+            } catch (_) {}
             ForegroundCallService.stop();
             Navigator.pop(ctx);
           },

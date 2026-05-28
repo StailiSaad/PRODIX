@@ -89,6 +89,13 @@ class _CallScreenState extends State<CallScreen> {
 
   Future<void> _start() async {
     try {
+      final svc = context.read<SupabaseBackendService>();
+      final call = await svc.getCall(widget.callId);
+      final status = call?['status'] as String?;
+      if (status == 'ended' || status == 'missed') {
+        if (mounted) Navigator.of(context).pop();
+        return;
+      }
       await _localRenderer.initialize();
       await _remoteRenderer.initialize();
       await _createPeerConnection();
