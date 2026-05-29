@@ -24,10 +24,10 @@ class NotificationService {
 
   void Function(String actionId, String? payload)? onNotificationAction;
 
-  static const _incomingCallChannel = 'incoming_calls_channel';
-  static const _ongoingCallChannel = 'ongoing_call_channel';
-  static const _callsChannel = 'calls_channel';
-  static const _messagesChannel = 'messages_channel';
+  static const incomingCallChannel = 'incoming_calls_channel';
+  static const ongoingCallChannel = 'ongoing_call_channel';
+  static const callsChannel = 'calls_channel';
+  static const messagesChannel = 'messages_channel';
 
   Future<void> init() async {
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -75,7 +75,7 @@ class NotificationService {
   }) async {
     final typeLabel = callType == 'video' ? 'vidéo' : 'audio';
     final androidDetails = AndroidNotificationDetails(
-      _incomingCallChannel,
+      incomingCallChannel,
       'Appels entrants',
       channelDescription: 'Notifications d\'appels entrants avec actions',
       importance: Importance.max,
@@ -139,7 +139,7 @@ class NotificationService {
       AndroidNotificationAction('end_call', 'Raccrocher'),
     ];
     final androidDetails = AndroidNotificationDetails(
-      _ongoingCallChannel,
+      ongoingCallChannel,
       'Appel en cours',
       channelDescription: 'Notification persistante pour appel actif',
       importance: Importance.low,
@@ -167,7 +167,7 @@ class NotificationService {
     String? payload,
   }) async {
     final androidDetails = AndroidNotificationDetails(
-      _callsChannel,
+      callsChannel,
       'Appels',
       channelDescription: 'Notifications d\'appels entrants',
       importance: Importance.high,
@@ -189,7 +189,7 @@ class NotificationService {
     required String body,
   }) async {
     final androidDetails = AndroidNotificationDetails(
-      _messagesChannel,
+      messagesChannel,
       'Messages',
       channelDescription: 'Notifications de messages',
       importance: Importance.defaultImportance,

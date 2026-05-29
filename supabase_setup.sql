@@ -127,7 +127,7 @@ CREATE TABLE IF NOT EXISTS public.invitations (
 ALTER TABLE public.invitations ADD COLUMN IF NOT EXISTS team_id uuid REFERENCES public.teams(id) ON DELETE CASCADE;
 
 -- ============================================================
--- Row Level Security (RLS) — Allow all authenticated users
+-- Row Level Security (RLS) — Fine-grained policies
 -- ============================================================
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
@@ -139,25 +139,573 @@ ALTER TABLE public.channels ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.invitations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.squad_invitations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.calls ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.call_ice_candidates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.team_calls ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.team_call_participants ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.squad_calls ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.squad_call_participants ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.posts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.post_comments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.post_likes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.post_comment_likes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.friends ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.profile_favorite_games ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.reputation_reviews ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.devices ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.match_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_progress ENABLE ROW LEVEL SECURITY;
 
--- Simple policies: authenticated users can do everything
--- (You can tighten these later for production)
-DO $$
-DECLARE
-  tbl text;
-BEGIN
-  FOR tbl IN SELECT unnest(ARRAY['users','profiles','teams','team_members','squads','squad_members','channels','messages','invitations','squad_invitations'])
-  LOOP
-    EXECUTE format('DROP POLICY IF EXISTS "%s_all_auth" ON public.%I;', tbl, tbl);
-    EXECUTE format('
-      CREATE POLICY "%s_all_auth" ON public.%I
-        FOR ALL
-        TO authenticated
-        USING (true)
-        WITH CHECK (true);
-    ', tbl, tbl);
-  END LOOP;
-END $$;
+-- ── users: own record only ──────────────────────────────────────
+DROP POLICY IF EXISTS "users_own" ON public.users;
+CREATE POLICY "users_own" ON public.users
+  FOR ALL TO authenticated
+  USING (id = auth.uid())
+  WITH CHECK (id = auth.uid());
+
+-- ── profiles: all can read (social app), own profile write ──────
+DROP POLICY IF EXISTS "profiles_read_all" ON public.profiles;
+CREATE POLICY "profiles_read_all" ON public.profiles
+  FOR SELECT TO authenticated
+  USING (true);
+
+DROP POLICY IF EXISTS "profiles_own_write" ON public.profiles;
+CREATE POLICY "profiles_own_write" ON public.profiles
+  FOR INSERT TO authenticated
+  WITH CHECK (id = auth.uid());
+
+DROP POLICY IF EXISTS "profiles_own_update" ON public.profiles;
+CREATE POLICY "profiles_own_update" ON public.profiles
+  FOR UPDATE TO authenticated
+  USING (id = auth.uid())
+  WITH CHECK (id = auth.uid());
+
+DROP POLICY IF EXISTS "profiles_own_delete" ON public.profiles;
+CREATE POLICY "profiles_own_delete" ON public.profiles
+  FOR DELETE TO authenticated
+  USING (id = auth.uid());
+
+-- ── teams: members can view; owner can manage ───────────────────
+DROP POLICY IF EXISTS "teams_read_member" ON public.teams;
+CREATE POLICY "teams_read_member" ON public.teams
+  FOR SELECT TO authenticated
+  USING (
+    owner_id = auth.uid()
+    OR id IN (
+      SELECT team_id FROM public.team_members WHERE user_id = auth.uid()
+    )
+  );
+
+DROP POLICY IF EXISTS "teams_insert" ON public.teams;
+CREATE POLICY "teams_insert" ON public.teams
+  FOR INSERT TO authenticated
+  WITH CHECK (owner_id = auth.uid());
+
+DROP POLICY IF EXISTS "teams_update_owner" ON public.teams;
+CREATE POLICY "teams_update_owner" ON public.teams
+  FOR UPDATE TO authenticated
+  USING (owner_id = auth.uid())
+  WITH CHECK (owner_id = auth.uid());
+
+DROP POLICY IF EXISTS "teams_delete_owner" ON public.teams;
+CREATE POLICY "teams_delete_owner" ON public.teams
+  FOR DELETE TO authenticated
+  USING (owner_id = auth.uid());
+
+-- ── team_members: members can view; owner/admin can manage ──────
+DROP POLICY IF EXISTS "team_members_read" ON public.team_members;
+CREATE POLICY "team_members_read" ON public.team_members
+  FOR SELECT TO authenticated
+  USING (
+    user_id = auth.uid()
+    OR team_id IN (
+      SELECT team_id FROM public.team_members WHERE user_id = auth.uid()
+    )
+  );
+
+DROP POLICY IF EXISTS "team_members_insert" ON public.team_members;
+CREATE POLICY "team_members_insert" ON public.team_members
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    team_id IN (
+      SELECT team_id FROM public.team_members
+      WHERE user_id = auth.uid() AND role IN ('leader', 'owner')
+    )
+    OR user_id = auth.uid()
+  );
+
+DROP POLICY IF EXISTS "team_members_update" ON public.team_members;
+CREATE POLICY "team_members_update" ON public.team_members
+  FOR UPDATE TO authenticated
+  USING (
+    team_id IN (
+      SELECT team_id FROM public.team_members
+      WHERE user_id = auth.uid() AND role IN ('leader', 'owner')
+    )
+    OR user_id = auth.uid()
+  );
+
+DROP POLICY IF EXISTS "team_members_delete" ON public.team_members;
+CREATE POLICY "team_members_delete" ON public.team_members
+  FOR DELETE TO authenticated
+  USING (
+    team_id IN (
+      SELECT team_id FROM public.team_members
+      WHERE user_id = auth.uid() AND role IN ('leader', 'owner')
+    )
+    OR user_id = auth.uid()
+  );
+
+-- ── squads: members can view; owner can manage ──────────────────
+DROP POLICY IF EXISTS "squads_read_member" ON public.squads;
+CREATE POLICY "squads_read_member" ON public.squads
+  FOR SELECT TO authenticated
+  USING (
+    owner_id = auth.uid()
+    OR id IN (
+      SELECT squad_id FROM public.squad_members WHERE user_id = auth.uid()
+    )
+  );
+
+DROP POLICY IF EXISTS "squads_insert" ON public.squads;
+CREATE POLICY "squads_insert" ON public.squads
+  FOR INSERT TO authenticated
+  WITH CHECK (owner_id = auth.uid());
+
+DROP POLICY IF EXISTS "squads_update_owner" ON public.squads;
+CREATE POLICY "squads_update_owner" ON public.squads
+  FOR UPDATE TO authenticated
+  USING (owner_id = auth.uid())
+  WITH CHECK (owner_id = auth.uid());
+
+DROP POLICY IF EXISTS "squads_delete_owner" ON public.squads;
+CREATE POLICY "squads_delete_owner" ON public.squads
+  FOR DELETE TO authenticated
+  USING (owner_id = auth.uid());
+
+-- ── squad_members: members can view; owner can manage ───────────
+DROP POLICY IF EXISTS "squad_members_read" ON public.squad_members;
+CREATE POLICY "squad_members_read" ON public.squad_members
+  FOR SELECT TO authenticated
+  USING (
+    user_id = auth.uid()
+    OR squad_id IN (
+      SELECT squad_id FROM public.squad_members WHERE user_id = auth.uid()
+    )
+  );
+
+DROP POLICY IF EXISTS "squad_members_insert" ON public.squad_members;
+CREATE POLICY "squad_members_insert" ON public.squad_members
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    squad_id IN (
+      SELECT squad_id FROM public.squad_members
+      WHERE user_id = auth.uid() AND role = 'owner'
+    )
+    OR user_id = auth.uid()
+  );
+
+DROP POLICY IF EXISTS "squad_members_update" ON public.squad_members;
+CREATE POLICY "squad_members_update" ON public.squad_members
+  FOR UPDATE TO authenticated
+  USING (
+    squad_id IN (
+      SELECT squad_id FROM public.squad_members
+      WHERE user_id = auth.uid() AND role = 'owner'
+    )
+    OR user_id = auth.uid()
+  );
+
+DROP POLICY IF EXISTS "squad_members_delete" ON public.squad_members;
+CREATE POLICY "squad_members_delete" ON public.squad_members
+  FOR DELETE TO authenticated
+  USING (
+    squad_id IN (
+      SELECT squad_id FROM public.squad_members
+      WHERE user_id = auth.uid() AND role = 'owner'
+    )
+    OR user_id = auth.uid()
+  );
+
+-- ── channels: squad members can view; squad owner can manage ────
+DROP POLICY IF EXISTS "channels_read" ON public.channels;
+CREATE POLICY "channels_read" ON public.channels
+  FOR SELECT TO authenticated
+  USING (
+    squad_id IN (
+      SELECT squad_id FROM public.squad_members WHERE user_id = auth.uid()
+    )
+  );
+
+DROP POLICY IF EXISTS "channels_insert" ON public.channels;
+CREATE POLICY "channels_insert" ON public.channels
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    squad_id IN (
+      SELECT squad_id FROM public.squad_members
+      WHERE user_id = auth.uid() AND role = 'owner'
+    )
+  );
+
+DROP POLICY IF EXISTS "channels_update" ON public.channels;
+CREATE POLICY "channels_update" ON public.channels
+  FOR UPDATE TO authenticated
+  USING (
+    squad_id IN (
+      SELECT squad_id FROM public.squad_members
+      WHERE user_id = auth.uid() AND role = 'owner'
+    )
+  );
+
+DROP POLICY IF EXISTS "channels_delete" ON public.channels;
+CREATE POLICY "channels_delete" ON public.channels
+  FOR DELETE TO authenticated
+  USING (
+    squad_id IN (
+      SELECT squad_id FROM public.squad_members
+      WHERE user_id = auth.uid() AND role = 'owner'
+    )
+  );
+
+-- ── messages: participants can view; sender can manage ──────────
+DROP POLICY IF EXISTS "messages_read" ON public.messages;
+CREATE POLICY "messages_read" ON public.messages
+  FOR SELECT TO authenticated
+  USING (
+    sender_id = auth.uid()
+    OR receiver_id = auth.uid()
+    OR channel_id IN (
+      SELECT c.id FROM public.channels c
+      WHERE c.squad_id IN (
+        SELECT squad_id FROM public.squad_members WHERE user_id = auth.uid()
+      )
+    )
+  );
+
+DROP POLICY IF EXISTS "messages_insert" ON public.messages;
+CREATE POLICY "messages_insert" ON public.messages
+  FOR INSERT TO authenticated
+  WITH CHECK (sender_id = auth.uid());
+
+DROP POLICY IF EXISTS "messages_update" ON public.messages;
+CREATE POLICY "messages_update" ON public.messages
+  FOR UPDATE TO authenticated
+  USING (sender_id = auth.uid());
+
+DROP POLICY IF EXISTS "messages_delete" ON public.messages;
+CREATE POLICY "messages_delete" ON public.messages
+  FOR DELETE TO authenticated
+  USING (sender_id = auth.uid());
+
+-- ── invitations: sender or receiver can view/manage ─────────────
+DROP POLICY IF EXISTS "invitations_read" ON public.invitations;
+CREATE POLICY "invitations_read" ON public.invitations
+  FOR SELECT TO authenticated
+  USING (
+    sender_id = auth.uid()
+    OR receiver_id = auth.uid()
+  );
+
+DROP POLICY IF EXISTS "invitations_insert" ON public.invitations;
+CREATE POLICY "invitations_insert" ON public.invitations
+  FOR INSERT TO authenticated
+  WITH CHECK (sender_id = auth.uid());
+
+DROP POLICY IF EXISTS "invitations_update" ON public.invitations;
+CREATE POLICY "invitations_update" ON public.invitations
+  FOR UPDATE TO authenticated
+  USING (
+    sender_id = auth.uid()
+    OR receiver_id = auth.uid()
+  );
+
+DROP POLICY IF EXISTS "invitations_delete" ON public.invitations;
+CREATE POLICY "invitations_delete" ON public.invitations
+  FOR DELETE TO authenticated
+  USING (
+    sender_id = auth.uid()
+    OR receiver_id = auth.uid()
+  );
+
+-- ── squad_invitations: sender, receiver, or squad owner ─────────
+DROP POLICY IF EXISTS "squad_invitations_read" ON public.squad_invitations;
+CREATE POLICY "squad_invitations_read" ON public.squad_invitations
+  FOR SELECT TO authenticated
+  USING (
+    sender_id = auth.uid()
+    OR receiver_id = auth.uid()
+    OR squad_id IN (
+      SELECT squad_id FROM public.squad_members
+      WHERE user_id = auth.uid() AND role = 'owner'
+    )
+  );
+
+DROP POLICY IF EXISTS "squad_invitations_insert" ON public.squad_invitations;
+CREATE POLICY "squad_invitations_insert" ON public.squad_invitations
+  FOR INSERT TO authenticated
+  WITH CHECK (sender_id = auth.uid());
+
+DROP POLICY IF EXISTS "squad_invitations_update" ON public.squad_invitations;
+CREATE POLICY "squad_invitations_update" ON public.squad_invitations
+  FOR UPDATE TO authenticated
+  USING (
+    receiver_id = auth.uid()
+    OR squad_id IN (
+      SELECT squad_id FROM public.squad_members
+      WHERE user_id = auth.uid() AND role = 'owner'
+    )
+  );
+
+DROP POLICY IF EXISTS "squad_invitations_delete" ON public.squad_invitations;
+CREATE POLICY "squad_invitations_delete" ON public.squad_invitations
+  FOR DELETE TO authenticated
+  USING (
+    sender_id = auth.uid()
+    OR receiver_id = auth.uid()
+    OR squad_id IN (
+      SELECT squad_id FROM public.squad_members
+      WHERE user_id = auth.uid() AND role = 'owner'
+    )
+  );
+
+-- ── calls: caller or callee can view; participants manage ───────
+DROP POLICY IF EXISTS "calls_read" ON public.calls;
+CREATE POLICY "calls_read" ON public.calls
+  FOR SELECT TO authenticated
+  USING (
+    caller_id = auth.uid()
+    OR callee_id = auth.uid()
+  );
+
+DROP POLICY IF EXISTS "calls_insert" ON public.calls;
+CREATE POLICY "calls_insert" ON public.calls
+  FOR INSERT TO authenticated
+  WITH CHECK (caller_id = auth.uid());
+
+DROP POLICY IF EXISTS "calls_update" ON public.calls;
+CREATE POLICY "calls_update" ON public.calls
+  FOR UPDATE TO authenticated
+  USING (
+    caller_id = auth.uid()
+    OR callee_id = auth.uid()
+  );
+
+DROP POLICY IF EXISTS "calls_delete" ON public.calls;
+CREATE POLICY "calls_delete" ON public.calls
+  FOR DELETE TO authenticated
+  USING (
+    caller_id = auth.uid()
+    OR callee_id = auth.uid()
+  );
+
+-- ── call_ice_candidates: call participants ──────────────────────
+DROP POLICY IF EXISTS "call_ice_candidates_read" ON public.call_ice_candidates;
+CREATE POLICY "call_ice_candidates_read" ON public.call_ice_candidates
+  FOR SELECT TO authenticated
+  USING (
+    call_id IN (
+      SELECT id FROM public.calls
+      WHERE caller_id = auth.uid() OR callee_id = auth.uid()
+    )
+  );
+
+DROP POLICY IF EXISTS "call_ice_candidates_insert" ON public.call_ice_candidates;
+CREATE POLICY "call_ice_candidates_insert" ON public.call_ice_candidates
+  FOR INSERT TO authenticated
+  WITH CHECK (sender_id = auth.uid());
+
+-- ── team_calls: team members can view; caller can manage ────────
+DROP POLICY IF EXISTS "team_calls_read" ON public.team_calls;
+CREATE POLICY "team_calls_read" ON public.team_calls
+  FOR SELECT TO authenticated
+  USING (
+    caller_id = auth.uid()
+    OR team_id IN (
+      SELECT team_id FROM public.team_members WHERE user_id = auth.uid()
+    )
+  );
+
+DROP POLICY IF EXISTS "team_calls_insert" ON public.team_calls;
+CREATE POLICY "team_calls_insert" ON public.team_calls
+  FOR INSERT TO authenticated
+  WITH CHECK (caller_id = auth.uid());
+
+DROP POLICY IF EXISTS "team_calls_update" ON public.team_calls;
+CREATE POLICY "team_calls_update" ON public.team_calls
+  FOR UPDATE TO authenticated
+  USING (caller_id = auth.uid());
+
+-- ── team_call_participants: use RLS from fix_team_call_rls.sql ──
+
+-- ── squad_calls: squad members can view; caller can manage ──────
+DROP POLICY IF EXISTS "squad_calls_read" ON public.squad_calls;
+CREATE POLICY "squad_calls_read" ON public.squad_calls
+  FOR SELECT TO authenticated
+  USING (
+    caller_id = auth.uid()
+    OR squad_id IN (
+      SELECT squad_id FROM public.squad_members WHERE user_id = auth.uid()
+    )
+  );
+
+DROP POLICY IF EXISTS "squad_calls_insert" ON public.squad_calls;
+CREATE POLICY "squad_calls_insert" ON public.squad_calls
+  FOR INSERT TO authenticated
+  WITH CHECK (caller_id = auth.uid());
+
+DROP POLICY IF EXISTS "squad_calls_update" ON public.squad_calls;
+CREATE POLICY "squad_calls_update" ON public.squad_calls
+  FOR UPDATE TO authenticated
+  USING (caller_id = auth.uid());
+
+-- ── squad_call_participants: use RLS from fix_team_call_rls.sql ──
+
+-- ── notifications: only the receiving user ───────────────────────
+DROP POLICY IF EXISTS "notifications_own" ON public.notifications;
+CREATE POLICY "notifications_own" ON public.notifications
+  FOR ALL TO authenticated
+  USING (user_id = auth.uid())
+  WITH CHECK (user_id = auth.uid());
+
+-- ── posts: public read; own write ────────────────────────────────
+DROP POLICY IF EXISTS "posts_read" ON public.posts;
+CREATE POLICY "posts_read" ON public.posts
+  FOR SELECT TO authenticated
+  USING (visibility = 'public' OR user_id = auth.uid());
+
+DROP POLICY IF EXISTS "posts_insert" ON public.posts;
+CREATE POLICY "posts_insert" ON public.posts
+  FOR INSERT TO authenticated
+  WITH CHECK (user_id = auth.uid());
+
+DROP POLICY IF EXISTS "posts_update" ON public.posts;
+CREATE POLICY "posts_update" ON public.posts
+  FOR UPDATE TO authenticated
+  USING (user_id = auth.uid());
+
+DROP POLICY IF EXISTS "posts_delete" ON public.posts;
+CREATE POLICY "posts_delete" ON public.posts
+  FOR DELETE TO authenticated
+  USING (user_id = auth.uid());
+
+-- ── post_comments: public read; own write ────────────────────────
+DROP POLICY IF EXISTS "post_comments_read" ON public.post_comments;
+CREATE POLICY "post_comments_read" ON public.post_comments
+  FOR SELECT TO authenticated
+  USING (true);
+
+DROP POLICY IF EXISTS "post_comments_insert" ON public.post_comments;
+CREATE POLICY "post_comments_insert" ON public.post_comments
+  FOR INSERT TO authenticated
+  WITH CHECK (user_id = auth.uid());
+
+DROP POLICY IF EXISTS "post_comments_delete" ON public.post_comments;
+CREATE POLICY "post_comments_delete" ON public.post_comments
+  FOR DELETE TO authenticated
+  USING (user_id = auth.uid());
+
+-- ── post_likes: public read; own write ───────────────────────────
+DROP POLICY IF EXISTS "post_likes_read" ON public.post_likes;
+CREATE POLICY "post_likes_read" ON public.post_likes
+  FOR SELECT TO authenticated
+  USING (true);
+
+DROP POLICY IF EXISTS "post_likes_insert" ON public.post_likes;
+CREATE POLICY "post_likes_insert" ON public.post_likes
+  FOR INSERT TO authenticated
+  WITH CHECK (user_id = auth.uid());
+
+DROP POLICY IF EXISTS "post_likes_delete" ON public.post_likes;
+CREATE POLICY "post_likes_delete" ON public.post_likes
+  FOR DELETE TO authenticated
+  USING (user_id = auth.uid());
+
+-- ── post_comment_likes: public read; own write ───────────────────
+DROP POLICY IF EXISTS "post_comment_likes_read" ON public.post_comment_likes;
+CREATE POLICY "post_comment_likes_read" ON public.post_comment_likes
+  FOR SELECT TO authenticated
+  USING (true);
+
+DROP POLICY IF EXISTS "post_comment_likes_insert" ON public.post_comment_likes;
+CREATE POLICY "post_comment_likes_insert" ON public.post_comment_likes
+  FOR INSERT TO authenticated
+  WITH CHECK (user_id = auth.uid());
+
+DROP POLICY IF EXISTS "post_comment_likes_delete" ON public.post_comment_likes;
+CREATE POLICY "post_comment_likes_delete" ON public.post_comment_likes
+  FOR DELETE TO authenticated
+  USING (user_id = auth.uid());
+
+-- ── friends: only the two users ──────────────────────────────────
+DROP POLICY IF EXISTS "friends_read" ON public.friends;
+CREATE POLICY "friends_read" ON public.friends
+  FOR SELECT TO authenticated
+  USING (user_id = auth.uid() OR friend_id = auth.uid());
+
+DROP POLICY IF EXISTS "friends_insert" ON public.friends;
+CREATE POLICY "friends_insert" ON public.friends
+  FOR INSERT TO authenticated
+  WITH CHECK (user_id = auth.uid() OR friend_id = auth.uid());
+
+DROP POLICY IF EXISTS "friends_delete" ON public.friends;
+CREATE POLICY "friends_delete" ON public.friends
+  FOR DELETE TO authenticated
+  USING (user_id = auth.uid() OR friend_id = auth.uid());
+
+-- ── profile_favorite_games: public read; own write ───────────────
+DROP POLICY IF EXISTS "profile_favorite_games_read" ON public.profile_favorite_games;
+CREATE POLICY "profile_favorite_games_read" ON public.profile_favorite_games
+  FOR SELECT TO authenticated
+  USING (true);
+
+DROP POLICY IF EXISTS "profile_favorite_games_write" ON public.profile_favorite_games;
+CREATE POLICY "profile_favorite_games_write" ON public.profile_favorite_games
+  FOR ALL TO authenticated
+  USING (profile_id = auth.uid())
+  WITH CHECK (profile_id = auth.uid());
+
+-- ── reputation_reviews: reviewer and reviewed can read ───────────
+DROP POLICY IF EXISTS "reputation_reviews_read" ON public.reputation_reviews;
+CREATE POLICY "reputation_reviews_read" ON public.reputation_reviews
+  FOR SELECT TO authenticated
+  USING (
+    reviewer_id = auth.uid()
+    OR reviewed_id = auth.uid()
+  );
+
+DROP POLICY IF EXISTS "reputation_reviews_insert" ON public.reputation_reviews;
+CREATE POLICY "reputation_reviews_insert" ON public.reputation_reviews
+  FOR INSERT TO authenticated
+  WITH CHECK (reviewer_id = auth.uid());
+
+-- ── devices: own device tokens only ──────────────────────────────
+DROP POLICY IF EXISTS "devices_own" ON public.devices;
+CREATE POLICY "devices_own" ON public.devices
+  FOR ALL TO authenticated
+  USING (user_id = auth.uid())
+  WITH CHECK (user_id = auth.uid());
+
+-- ── match_events: participants can read ──────────────────────────
+DROP POLICY IF EXISTS "match_events_read" ON public.match_events;
+CREATE POLICY "match_events_read" ON public.match_events
+  FOR SELECT TO authenticated
+  USING (
+    user_id = auth.uid()
+    OR matched_user_id = auth.uid()
+  );
+
+DROP POLICY IF EXISTS "match_events_insert" ON public.match_events;
+CREATE POLICY "match_events_insert" ON public.match_events
+  FOR INSERT TO authenticated
+  WITH CHECK (user_id = auth.uid());
+
+-- ── user_progress: own record only ───────────────────────────────
+DROP POLICY IF EXISTS "user_progress_own" ON public.user_progress;
+CREATE POLICY "user_progress_own" ON public.user_progress
+  FOR ALL TO authenticated
+  USING (user_id = auth.uid())
+  WITH CHECK (user_id = auth.uid());
 
 -- Enable Realtime for messages
 DO $$

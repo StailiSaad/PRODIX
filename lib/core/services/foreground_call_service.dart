@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 class ForegroundCallService {
@@ -20,20 +21,26 @@ class ForegroundCallService {
         'isMuted': isMuted,
         'isSpeaker': isSpeaker,
       });
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('ForegroundCallService.start error: $e');
+    }
   }
 
   static Future<void> stop() async {
     try {
       await _channel.invokeMethod('stopForegroundService');
       await _channel.invokeMethod('stopOverlay');
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('ForegroundCallService.stop error: $e');
+    }
   }
 
   static Future<void> startOverlay() async {
     try {
       await _channel.invokeMethod('startOverlay');
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('ForegroundCallService.startOverlay error: $e');
+    }
   }
 
   static Future<void> stopOverlay() async {
@@ -46,7 +53,8 @@ class ForegroundCallService {
     try {
       final result = await _channel.invokeMethod<bool>('canDrawOverlays');
       return result ?? false;
-    } catch (_) {
+    } catch (e) {
+      debugPrint('ForegroundCallService.canDrawOverlays error: $e');
       return false;
     }
   }
@@ -54,7 +62,9 @@ class ForegroundCallService {
   static Future<void> openOverlaySettings() async {
     try {
       await _channel.invokeMethod('openOverlaySettings');
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('ForegroundCallService.openOverlaySettings error: $e');
+    }
   }
 
   static void setMethodCallHandler(Future<dynamic> Function(MethodCall) handler) {

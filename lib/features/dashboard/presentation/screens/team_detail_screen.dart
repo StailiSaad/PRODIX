@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../data/services/supabase_backend_service.dart';
+import '../../../../shared/widgets/animated_badge.dart';
 import '../../../call/presentation/screens/call_screen.dart';
 import 'dm_chat_screen.dart';
 import 'team_chat_screen.dart';
@@ -504,6 +505,8 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
                                       '';
                                   final isMe = userId == _currentUserId;
                                   final isLeader = role == 'leader';
+                                  final xp = profile['experience_points'] as int? ?? 0;
+                                  final memberLevel = 1 + (xp ~/ 100);
 
                                   return Container(
                                     margin: const EdgeInsets.only(bottom: 12),
@@ -542,13 +545,15 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
                                               Row(
                                                 children: [
                                                   Text(pseudo,
-                                                      style: const TextStyle(
-                                                          color:
-                                                              AppTheme.textMain,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 15)),
-                                                  const SizedBox(width: 8),
+                                                       style: const TextStyle(
+                                                           color:
+                                                               AppTheme.textMain,
+                                                           fontWeight:
+                                                               FontWeight.bold,
+                                                           fontSize: 15)),
+                                                  const SizedBox(width: 4),
+                                                  AnimatedBadge(level: memberLevel, size: 18),
+                                                  const SizedBox(width: 4),
                                                   if (isLeader)
                                                     Container(
                                                       padding: const EdgeInsets

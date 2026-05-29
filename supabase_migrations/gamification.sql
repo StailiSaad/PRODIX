@@ -8,8 +8,11 @@ CREATE TABLE IF NOT EXISTS public.user_progress (
 ALTER TABLE public.user_progress ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "user_progress_all_auth" ON public.user_progress;
-CREATE POLICY "user_progress_all_auth" ON public.user_progress
-  FOR ALL TO authenticated USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "user_progress_own" ON public.user_progress;
+CREATE POLICY "user_progress_own" ON public.user_progress
+  FOR ALL TO authenticated
+  USING (user_id = auth.uid())
+  WITH CHECK (user_id = auth.uid());
 
 CREATE OR REPLACE FUNCTION update_user_progress_updated_at()
 RETURNS TRIGGER AS $$

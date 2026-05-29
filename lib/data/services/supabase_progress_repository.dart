@@ -10,7 +10,6 @@ class SupabaseProgressRepository implements ProgressRepository {
 
   @override
   Future<UserProgress?> load() async {
-    if (_cached != null) return _cached;
     try {
       final response = await Supabase.instance.client
           .from('user_progress')
@@ -51,8 +50,9 @@ class SupabaseProgressRepository implements ProgressRepository {
           .map((rows) {
         if (rows.isEmpty) return null;
         final data = rows.first['data'] as Map<String, dynamic>?;
-        if (data == null) return null;
-        return UserProgress.fromMap(data);
+        if (data == null || data.isEmpty) return null;
+        _cached = UserProgress.fromMap(data);
+        return _cached;
       });
     } catch (e) {
       debugPrint('SupabaseProgressRepository.watch error: $e');

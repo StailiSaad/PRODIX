@@ -3,7 +3,7 @@ import 'dart:developer' as developer;
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' show RealtimeChannel;
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:record/record.dart';
 import 'package:image_picker/image_picker.dart';
@@ -1103,6 +1103,8 @@ class _OtherProfileScreenState extends State<_OtherProfileScreen> {
   Map<String, dynamic>? _profile;
   List<String> _favGames = [];
   bool _loading = true;
+  bool _isFriend = false;
+  int _level = 1;
 
   @override
   void initState() {
@@ -1113,11 +1115,31 @@ class _OtherProfileScreenState extends State<_OtherProfileScreen> {
   Future<void> _load() async {
     final svc = context.read<SupabaseBackendService>();
     final profile = await svc.getOtherProfile(widget.peerId);
-    final games = await svc.getFavoriteGames();
+    final games = await svc.getOtherFavoriteGames(widget.peerId);
+    final xp = profile?['experience_points'] as int? ?? 0;
+    final computedLevel = 1 + (xp ~/ 100);
+
+    bool friend = false;
+    try {
+      final db = Supabase.instance.client;
+      final uid = svc.userId;
+      if (uid != null) {
+        final result = await db
+            .from('friends')
+            .select('user_id')
+            .eq('user_id', uid)
+            .eq('friend_id', widget.peerId)
+            .maybeSingle();
+        friend = result != null;
+      }
+    } catch (_) {}
+
     if (mounted) {
       setState(() {
         _profile = profile;
         _favGames = games;
+        _level = computedLevel;
+        _isFriend = friend;
         _loading = false;
       });
     }
@@ -1158,19 +1180,24 @@ class _OtherProfileScreenState extends State<_OtherProfileScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Center(
-                      child: Text(widget.peerName,
-                          style: const TextStyle(
-                              color: AppTheme.textMain,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(widget.peerName,
+                            style: const TextStyle(
+                                color: AppTheme.textMain,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold)),
+                        const SizedBox(width: 8),
+                        AnimatedBadge(level: _level, size: 24),
+                      ],
                     ),
                     const SizedBox(height: 24),
                     _section('INFORMATIONS'),
                     const SizedBox(height: 8),
                     _infoCard([
                       _infoRow('Pseudo', widget.peerName),
-                      _infoRow('Rang', _profile!['level'] ?? 'N/A'),
+                      _infoRow('Rang', 'Level $_level'),
                       _infoRow('Rôle', _profile!['role'] ?? 'N/A'),
                       _infoRow('Région', _profile!['region'] ?? 'N/A'),
                       _infoRow('Disponibilité', _profile!['availability'] ?? 'N/A'),
@@ -1180,10 +1207,12 @@ class _OtherProfileScreenState extends State<_OtherProfileScreen> {
                           (_profile!['bio'] as String).isNotEmpty)
                         _infoRow('Bio', _profile!['bio']),
                     ]),
-                    const SizedBox(height: 24),
-                    _section('RÉSEAUX SOCIAUX'),
-                    const SizedBox(height: 8),
-                    _socialsCard(),
+                    if (_isFriend) ...[
+                      const SizedBox(height: 24),
+                      _section('RÉSEAUX SOCIAUX'),
+                      const SizedBox(height: 8),
+                      _socialsCard(),
+                    ],
                     const SizedBox(height: 24),
                     if (_favGames.isNotEmpty) ...[
                       _section('JEUX FAVORIS'),

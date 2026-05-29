@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:prodix/core/services/notification_service.dart';
@@ -13,8 +14,8 @@ void callbackDispatcher() {
       if (url == null || key == null) return Future.value(false);
       try {
         await Supabase.initialize(url: url, anonKey: key);
-      } catch (_) {
-        // already initialized in this isolate
+      } catch (e) {
+        debugPrint('background_service: Supabase init (likely already initialized): $e');
       }
       final client = Supabase.instance.client;
       await _checkNewCallsAndMessages(client);
@@ -26,37 +27,42 @@ void callbackDispatcher() {
 Future<void> _checkNewCallsAndMessages(SupabaseClient supabase) async {
   final userId = supabase.auth.currentUser?.id;
   if (userId == null) return;
+  // NOTE: Calls are detected via Realtime subscription (foreground) and FCM push
+  // (background). This periodic check is a fallback only — may produce duplicates.
+  // TODO: Remove this polling once FCM delivery is reliable.
+  try {
+    final conversations = await supabase
+        .from('conversations')
+        .select(
+            '*, profiles!conversations_participant1_id_fkey(pseudo), profiles!conversations_participant2_id_fkey(pseudo)')
+        .or('participant1_id.eq.$userId,participant2_id.eq.$userId');
     final notif = NotificationService();
-  // Calls are detected via Realtime subscription (foreground) and FCM push
-  // (background). Periodic polling is redundant and causes duplicates/phantoms.
-  final conversations = await supabase
-      .from('conversations')
-      .select(
-          '*, profiles!conversations_participant1_id_fkey(pseudo), profiles!conversations_participant2_id_fkey(pseudo)')
-      .or('participant1_id.eq.$userId,participant2_id.eq.$userId');
-  int msgIndex = 0;
-  for (final conv in conversations) {
-    final otherProfile = conv['participant1_id'] == userId
-        ? (conv['profiles!conversations_participant2_id_fkey'] as Map?)
-        : (conv['profiles!conversations_participant1_id_fkey'] as Map?);
-    final otherName = otherProfile?['pseudo'] as String? ?? 'Quelqu\'un';
-    final msgs = await supabase
-        .from('messages')
-        .select('content')
-        .eq('conversation_id', conv['id'])
-        .neq('sender_id', userId)
-        .neq('media_type', 'call_event')
-        .order('created_at', ascending: false)
-        .limit(3);
-    for (final msg in msgs) {
-      final content = msg['content'] as String? ?? '';
-      if (content.isEmpty) continue;
-      await notif.showMessageNotification(
-        id: 200 + msgIndex,
-        title: otherName,
-        body: content,
-      );
-      msgIndex++;
+    int msgIndex = 0;
+    for (final conv in conversations) {
+      final otherProfile = conv['participant1_id'] == userId
+          ? (conv['profiles!conversations_participant2_id_fkey'] as Map?)
+          : (conv['profiles!conversations_participant1_id_fkey'] as Map?);
+      final otherName = otherProfile?['pseudo'] as String? ?? 'Quelqu\'un';
+      final msgs = await supabase
+          .from('messages')
+          .select('content')
+          .eq('conversation_id', conv['id'])
+          .neq('sender_id', userId)
+          .neq('media_type', 'call_event')
+          .order('created_at', ascending: false)
+          .limit(3);
+      for (final msg in msgs) {
+        final content = msg['content'] as String? ?? '';
+        if (content.isEmpty) continue;
+        await notif.showMessageNotification(
+          id: 200 + msgIndex,
+          title: otherName,
+          body: content,
+        );
+        msgIndex++;
+      }
     }
+  } catch (e) {
+    debugPrint('background_service._checkNewCallsAndMessages error: $e');
   }
 }

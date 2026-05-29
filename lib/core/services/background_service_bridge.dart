@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 class BackgroundServiceBridge {
@@ -16,13 +17,17 @@ class BackgroundServiceBridge {
         'userId': userId,
         'authToken': authToken,
       });
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('BackgroundServiceBridge.start error: $e');
+    }
   }
 
   static Future<void> stop() async {
     try {
       await _channel.invokeMethod('stopBackgroundService');
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('BackgroundServiceBridge.stop error: $e');
+    }
   }
 
   static Future<void> updateToken(String authToken) async {
@@ -30,6 +35,8 @@ class BackgroundServiceBridge {
       await _channel.invokeMethod('updateBackgroundToken', {
         'authToken': authToken,
       });
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('BackgroundServiceBridge.updateToken error: $e');
+    }
   }
 }

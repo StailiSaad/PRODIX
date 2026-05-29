@@ -12,7 +12,13 @@ class AiGatewayService {
   final String gatewayUrl;
   final String huggingFaceToken;
 
-  Uri get _apiUri => Uri.parse('$gatewayUrl/api/ai/analyze');
+  Uri get _apiUri {
+    final uri = Uri.parse(gatewayUrl);
+    if (uri.scheme != 'https') {
+      debugPrint('WARNING: AI gateway URL is not HTTPS — security risk');
+    }
+    return Uri.parse('$gatewayUrl/api/ai/analyze');
+  }
 
   Map<String, String> get _headers => {
         'Content-Type': 'application/json',

@@ -34,7 +34,7 @@ class _ProfilePageState extends State<ProfilePage>
   final _githubCtrl = TextEditingController();
 
   // Dropdowns
-  String _availability = 'Soirée';
+  String _availability = 'evening';
   String _gameType = 'FPS';
   String _role = 'Support';
   String _region = 'EU';

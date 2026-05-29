@@ -25,6 +25,7 @@ class _TeamListScreenState extends State<TeamListScreen> {
     _pollUnread();
   }
 
+  // TODO: Replace polling with Realtime subscription to messages table
   void _pollUnread() {
     Future.microtask(() async {
       while (mounted) {
@@ -32,7 +33,7 @@ class _TeamListScreenState extends State<TeamListScreen> {
           final counts = await context.read<SupabaseBackendService>().getTeamUnreadCounts();
           if (mounted) setState(() => _unreadCounts = counts);
         } catch (_) {}
-        await Future.delayed(const Duration(seconds: 10));
+        await Future.delayed(const Duration(seconds: 60));
       }
     });
   }

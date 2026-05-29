@@ -83,7 +83,7 @@ class SocialService {
       );
       final ids = rows.map((r) => r['user_id'] as String).toList();
       if (ids.isEmpty) return rows;
-      final profiles = await _db.from('profiles').select('id, pseudo, avatar_url');
+      final profiles = await _db.from('profiles').select('id, pseudo, avatar_url, experience_points');
       final profileMap = {for (final p in profiles) p['id'] as String: p};
       for (final r in rows) {
         r['profiles'] = profileMap[r['user_id'] as String] ?? {};

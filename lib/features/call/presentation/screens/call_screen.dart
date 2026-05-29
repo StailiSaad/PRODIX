@@ -51,8 +51,10 @@ class _CallScreenState extends State<CallScreen> {
   String _callStatus = 'connecting';
   bool _sdpHandled = false;
   bool _hasSentStartedEvent = false;
+  bool _remoteDescriptionSet = false;
   Timer? _missedTimer;
   StreamSubscription<CallAction>? _callActionSub;
+  final List<RTCIceCandidate> _pendingIceCandidates = [];
 
   @override
   void initState() {
@@ -100,14 +102,14 @@ class _CallScreenState extends State<CallScreen> {
       await _localRenderer.initialize();
       await _remoteRenderer.initialize();
       await _createPeerConnection();
+      _subscribeToIceCandidates();
+      _subscribeToCallStatus();
       if (widget.isCaller) {
         await _createOffer();
       } else {
         await _fetchAndHandleOffer();
       }
       _replayExistingIceCandidates();
-      _subscribeToIceCandidates();
-      _subscribeToCallStatus();
       _startStatusPolling();
     } catch (e) {
       developer.log('CallScreen init error: $e');
@@ -120,16 +122,35 @@ class _CallScreenState extends State<CallScreen> {
     final candidates = await svc.getIceCandidates(widget.callId);
     for (final data in candidates) {
       if (data['sender_id'] == svc.userId) continue;
+      _addIceCandidate(RTCIceCandidate(
+        data['candidate'] as String,
+        data['sdp_mid'] as String?,
+        (data['sdp_mline_index'] as num?)?.toInt(),
+      ));
+    }
+  }
+
+  void _addIceCandidate(RTCIceCandidate candidate) {
+    if (_remoteDescriptionSet) {
       try {
-        _pc?.addCandidate(RTCIceCandidate(
-          data['candidate'] as String,
-          data['sdp_mid'] as String?,
-          (data['sdp_mline_index'] as num?)?.toInt(),
-        ));
+        _pc?.addCandidate(candidate);
       } catch (e) {
-        developer.log('replayIceCandidate error: $e');
+        developer.log('addIceCandidate error: $e');
+      }
+    } else {
+      _pendingIceCandidates.add(candidate);
+    }
+  }
+
+  void _flushPendingIceCandidates() {
+    for (final c in _pendingIceCandidates) {
+      try {
+        _pc?.addCandidate(c);
+      } catch (e) {
+        developer.log('flushIceCandidate error: $e');
       }
     }
+    _pendingIceCandidates.clear();
   }
 
   void _safeShowError(String msg) {
@@ -310,6 +331,8 @@ class _CallScreenState extends State<CallScreen> {
       final sdp = jsonDecode(offerJson)['sdp'] as String?;
       if (sdp == null) return;
       await _pc!.setRemoteDescription(RTCSessionDescription(sdp, 'offer'));
+      _remoteDescriptionSet = true;
+      _flushPendingIceCandidates();
       final answer = await _pc!.createAnswer();
       await _pc!.setLocalDescription(answer);
       final svc = context.read<SupabaseBackendService>();
@@ -328,6 +351,8 @@ class _CallScreenState extends State<CallScreen> {
       final sdp = jsonDecode(answerJson)['sdp'] as String?;
       if (sdp == null) return;
       await _pc!.setRemoteDescription(RTCSessionDescription(sdp, 'answer'));
+      _remoteDescriptionSet = true;
+      _flushPendingIceCandidates();
       await context
           .read<SupabaseBackendService>()
           .updateCallStatus(widget.callId, 'ongoing');
@@ -377,15 +402,11 @@ class _CallScreenState extends State<CallScreen> {
   void _subscribeToIceCandidates() {
     final svc = context.read<SupabaseBackendService>();
     _iceChannel = svc.subscribeToIceCandidates(widget.callId, (data) {
-      try {
-        _pc?.addCandidate(RTCIceCandidate(
-          data['candidate'] as String,
-          data['sdp_mid'] as String?,
-          (data['sdp_mline_index'] as num?)?.toInt(),
-        ));
-      } catch (e) {
-        developer.log('addIceCandidate error: $e');
-      }
+      _addIceCandidate(RTCIceCandidate(
+        data['candidate'] as String,
+        data['sdp_mid'] as String?,
+        (data['sdp_mline_index'] as num?)?.toInt(),
+      ));
     });
   }
 
@@ -400,8 +421,9 @@ class _CallScreenState extends State<CallScreen> {
     });
   }
 
+  // Fallback poller; status changes are already delivered via Realtime _statusChannel
   void _startStatusPolling() {
-    _statusPollTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
+    _statusPollTimer = Timer.periodic(const Duration(seconds: 30), (_) async {
       if (_callEnded) return;
       try {
         final svc = context.read<SupabaseBackendService>();
