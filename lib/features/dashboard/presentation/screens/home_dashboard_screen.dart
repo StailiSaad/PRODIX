@@ -94,7 +94,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                 child: Text('Notifications', style: theme.textTheme.headlineMedium?.copyWith(color: theme.colorScheme.primary)),
               ),
               if (notifs.isEmpty)
-                const Expanded(
+                Expanded(
                   child: Center(child: Text('No notifications yet', style: TextStyle(color: AppTheme.textVariant))),
                 )
               else
@@ -124,11 +124,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                         ),
                         title: Text(
                           title,
-                          style: const TextStyle(color: AppTheme.textMain, fontWeight: FontWeight.w600),
+                          style: TextStyle(color: AppTheme.textMain, fontWeight: FontWeight.w600),
                         ),
                         subtitle: Text(
                           body.isNotEmpty ? '$body • $time' : time,
-                          style: const TextStyle(color: AppTheme.textVariant, fontSize: 12),
+                          style: TextStyle(color: AppTheme.textVariant, fontSize: 12),
                         ),
                         onTap: () {
                           Navigator.of(ctx).pop();

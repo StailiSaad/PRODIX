@@ -14,7 +14,7 @@ class SquadChatScreen extends StatefulWidget {
   final String squadName;
   final String channelId;
 
-  const SquadChatScreen({
+  SquadChatScreen({
     super.key,
     required this.squadId,
     required this.squadName,
@@ -163,7 +163,7 @@ class _SquadChatScreenState extends State<SquadChatScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppTheme.cardColor,
-      shape: const RoundedRectangleBorder(
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => SafeArea(
@@ -183,7 +183,7 @@ class _SquadChatScreenState extends State<SquadChatScreen> {
               child: Row(
                 children: [
                   Text('Appeler un membre',
-                      style: const TextStyle(
+                      style: TextStyle(
                           color: AppTheme.textMain,
                           fontSize: 18,
                           fontWeight: FontWeight.bold)),
@@ -204,17 +204,17 @@ class _SquadChatScreenState extends State<SquadChatScreen> {
                       : null,
                   child: (avatar == null || avatar.isEmpty)
                       ? Text(name[0].toUpperCase(),
-                          style: const TextStyle(
+                          style: TextStyle(
                               color: AppTheme.primaryColor, fontSize: 14))
                       : null,
                 ),
                 title: Text(name,
-                    style: const TextStyle(color: AppTheme.textMain)),
+                    style: TextStyle(color: AppTheme.textMain)),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.phone,
+                      icon: Icon(Icons.phone,
                           color: AppTheme.tertiaryColor),
                       onPressed: () {
                         Navigator.pop(ctx);
@@ -222,7 +222,7 @@ class _SquadChatScreenState extends State<SquadChatScreen> {
                       },
                     ),
                     IconButton(
-                      icon: const Icon(Icons.videocam,
+                      icon: Icon(Icons.videocam,
                           color: AppTheme.tertiaryColor),
                       onPressed: () {
                         Navigator.pop(ctx);
@@ -250,18 +250,18 @@ class _SquadChatScreenState extends State<SquadChatScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(widget.squadName, style: const TextStyle(color: AppTheme.textMain, fontSize: 16)),
-            Text('${_members.length} members', style: const TextStyle(color: AppTheme.textVariant, fontSize: 11)),
+            Text(widget.squadName, style: TextStyle(color: AppTheme.textMain, fontSize: 16)),
+            Text('${_members.length} members', style: TextStyle(color: AppTheme.textVariant, fontSize: 11)),
           ],
         ),
         actions: [
           if (_members.any((m) => m['user_id'] != currentUserId)) ...[
             IconButton(
-              icon: const Icon(Icons.phone, color: AppTheme.tertiaryColor),
+              icon: Icon(Icons.phone, color: AppTheme.tertiaryColor),
               onPressed: () => _startSquadCall('audio'),
             ),
             IconButton(
-              icon: const Icon(Icons.videocam, color: AppTheme.tertiaryColor),
+              icon: Icon(Icons.videocam, color: AppTheme.tertiaryColor),
               onPressed: () => _startSquadCall('video'),
             ),
           ],
@@ -292,19 +292,19 @@ class _SquadChatScreenState extends State<SquadChatScreen> {
                                 : null,
                             child: (avatar == null || avatar.isEmpty)
                                 ? Text(pseudo[0].toUpperCase(),
-                                    style: const TextStyle(color: AppTheme.primaryColor, fontSize: 12))
+                                    style: TextStyle(color: AppTheme.primaryColor, fontSize: 12))
                                 : null,
                           ),
                         );
                       }).toList(),
                     ),
                   ),
-                const Divider(height: 1, color: AppTheme.cardHighestColor),
+                Divider(height: 1, color: AppTheme.cardHighestColor),
 
                 // Messages
                 Expanded(
                   child: _messages.isEmpty
-                      ? const Center(
+                      ? Center(
                           child: Text('No messages yet. Say hello!',
                               style: TextStyle(color: AppTheme.textVariant)),
                         )
@@ -341,7 +341,7 @@ class _SquadChatScreenState extends State<SquadChatScreen> {
                 // Input
                 Container(
                   padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: AppTheme.cardColor,
                     border: Border(top: BorderSide(color: AppTheme.cardHighestColor)),
                   ),
@@ -350,10 +350,10 @@ class _SquadChatScreenState extends State<SquadChatScreen> {
                       Expanded(
                         child: TextField(
                           controller: _msgCtrl,
-                          style: const TextStyle(color: AppTheme.textMain),
+                          style: TextStyle(color: AppTheme.textMain),
                           decoration: InputDecoration(
                             hintText: 'Type a message...',
-                            hintStyle: const TextStyle(color: AppTheme.textVariant),
+                            hintStyle: TextStyle(color: AppTheme.textVariant),
                             filled: true,
                             fillColor: AppTheme.cardHighColor,
                             border: OutlineInputBorder(
@@ -393,7 +393,7 @@ class _MessageBubble extends StatelessWidget {
   final String? mediaType;
   final String? mediaName;
 
-  const _MessageBubble({
+  _MessageBubble({
     required this.message,
     required this.senderName,
     required this.senderAvatar,
@@ -424,7 +424,7 @@ class _MessageBubble extends StatelessWidget {
                 if (icon != null) Icon(icon, color: AppTheme.textVariant, size: 14),
                 if (icon != null) const SizedBox(width: 6),
                 Text(message,
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: AppTheme.textVariant, fontSize: 12)),
               ],
             ),
@@ -450,7 +450,7 @@ class _MessageBubble extends StatelessWidget {
                     : null,
                 child: (senderAvatar == null || senderAvatar!.isEmpty)
                     ? Text(senderName[0].toUpperCase(),
-                        style: const TextStyle(color: AppTheme.primaryColor, fontSize: 11))
+                        style: TextStyle(color: AppTheme.primaryColor, fontSize: 11))
                     : null,
               ),
             ),
@@ -478,12 +478,12 @@ class _MessageBubble extends StatelessWidget {
                         AnimatedBadge(level: senderLevel, size: 16),
                         const SizedBox(width: 4),
                         Text(senderName,
-                            style: const TextStyle(
+                            style: TextStyle(
                                 color: AppTheme.primaryColor, fontSize: 11, fontWeight: FontWeight.bold)),
                       ],
                     ),
                   if (!isMe) const SizedBox(height: 4),
-                  Text(message, style: const TextStyle(color: AppTheme.textMain, fontSize: 14)),
+                  Text(message, style: TextStyle(color: AppTheme.textMain, fontSize: 14)),
                 ],
               ),
             ),

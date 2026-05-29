@@ -37,7 +37,7 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
       appBar: AppBar(
         backgroundColor: AppTheme.bgColor,
         elevation: 0,
-        title: const Text('My Posts', style: TextStyle(color: AppTheme.textMain)),
+        title: Text('My Posts', style: TextStyle(color: AppTheme.textMain)),
       ),
       body: BlocProvider<PostsCubit>.value(
         value: _cubit,
@@ -54,9 +54,9 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
                   children: [
                     Icon(Icons.photo_library_outlined, size: 64, color: AppTheme.textVariant.withValues(alpha: 0.3)),
                     const SizedBox(height: 16),
-                    const Text('No posts yet', style: TextStyle(color: AppTheme.textVariant)),
+                    Text('No posts yet', style: TextStyle(color: AppTheme.textVariant)),
                     const SizedBox(height: 8),
-                    const Text('Create your first post!', style: TextStyle(color: AppTheme.textVariant, fontSize: 12)),
+                    Text('Create your first post!', style: TextStyle(color: AppTheme.textVariant, fontSize: 12)),
                   ],
                 ),
               );
@@ -89,19 +89,19 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.cardColor,
-        title: const Text('Delete post?', style: TextStyle(color: AppTheme.textMain)),
-        content: const Text('This action cannot be undone.', style: TextStyle(color: AppTheme.textVariant)),
+        title: Text('Delete post?', style: TextStyle(color: AppTheme.textMain)),
+        content: Text('This action cannot be undone.', style: TextStyle(color: AppTheme.textVariant)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: AppTheme.textVariant)),
+            child: Text('Cancel', style: TextStyle(color: AppTheme.textVariant)),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
               context.read<PostsCubit>().deletePost(postId);
             },
-            child: const Text('Delete', style: TextStyle(color: AppTheme.errorColor)),
+            child: Text('Delete', style: TextStyle(color: AppTheme.errorColor)),
           ),
         ],
       ),

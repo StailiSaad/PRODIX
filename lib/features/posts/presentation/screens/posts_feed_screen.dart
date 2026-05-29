@@ -44,7 +44,7 @@ class _PostsFeedScreenState extends State<PostsFeedScreen> {
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(32),
-                  child: Text('Error: ${state.error}', style: const TextStyle(color: AppTheme.errorColor)),
+                  child: Text('Error: ${state.error}', style: TextStyle(color: AppTheme.errorColor)),
                 ),
               );
             }
@@ -60,14 +60,14 @@ class _PostsFeedScreenState extends State<PostsFeedScreen> {
                       state.feedMode == FeedMode.fyp
                           ? 'No posts yet'
                           : 'No posts from friends',
-                      style: const TextStyle(color: AppTheme.textVariant),
+                      style: TextStyle(color: AppTheme.textVariant),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       state.feedMode == FeedMode.fyp
                           ? 'Be the first to share something!'
                           : 'Add friends to see their posts here',
-                      style: const TextStyle(color: AppTheme.textVariant, fontSize: 12),
+                      style: TextStyle(color: AppTheme.textVariant, fontSize: 12),
                     ),
                   ],
                 ),
@@ -106,7 +106,7 @@ class _PostsFeedScreenState extends State<PostsFeedScreen> {
                       ),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppTheme.primaryColor,
-                        side: const BorderSide(color: AppTheme.primaryColor),
+                        side: BorderSide(color: AppTheme.primaryColor),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
@@ -219,19 +219,19 @@ class _PostsFeedScreenState extends State<PostsFeedScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.cardColor,
-        title: const Text('Delete post?', style: TextStyle(color: AppTheme.textMain)),
-        content: const Text('This action cannot be undone.', style: TextStyle(color: AppTheme.textVariant)),
+        title: Text('Delete post?', style: TextStyle(color: AppTheme.textMain)),
+        content: Text('This action cannot be undone.', style: TextStyle(color: AppTheme.textVariant)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: AppTheme.textVariant)),
+            child: Text('Cancel', style: TextStyle(color: AppTheme.textVariant)),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
               context.read<PostsCubit>().deletePost(postId);
             },
-            child: const Text('Delete', style: TextStyle(color: AppTheme.errorColor)),
+            child: Text('Delete', style: TextStyle(color: AppTheme.errorColor)),
           ),
         ],
       ),
@@ -334,7 +334,7 @@ class _AllPostsScreenState extends State<_AllPostsScreen> {
             return Center(
               child: Text(
                 state.feedMode == FeedMode.fyp ? 'No posts yet' : 'No posts from friends',
-                style: const TextStyle(color: AppTheme.textVariant),
+                style: TextStyle(color: AppTheme.textVariant),
               ),
             );
           }
@@ -369,19 +369,19 @@ class _AllPostsScreenState extends State<_AllPostsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.cardColor,
-        title: const Text('Delete post?', style: TextStyle(color: AppTheme.textMain)),
-        content: const Text('This action cannot be undone.', style: TextStyle(color: AppTheme.textVariant)),
+        title: Text('Delete post?', style: TextStyle(color: AppTheme.textMain)),
+        content: Text('This action cannot be undone.', style: TextStyle(color: AppTheme.textVariant)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: AppTheme.textVariant)),
+            child: Text('Cancel', style: TextStyle(color: AppTheme.textVariant)),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
               context.read<PostsCubit>().deletePost(postId);
             },
-            child: const Text('Delete', style: TextStyle(color: AppTheme.errorColor)),
+            child: Text('Delete', style: TextStyle(color: AppTheme.errorColor)),
           ),
         ],
       ),

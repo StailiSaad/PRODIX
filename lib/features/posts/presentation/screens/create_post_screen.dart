@@ -99,7 +99,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       appBar: AppBar(
         backgroundColor: AppTheme.bgColor,
         elevation: 0,
-        title: const Text('New Post', style: TextStyle(color: AppTheme.textMain)),
+        title: Text('New Post', style: TextStyle(color: AppTheme.textMain)),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12),
@@ -173,7 +173,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   label: const Text('Photos'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.primaryColor,
-                    side: const BorderSide(color: AppTheme.primaryColor),
+                    side: BorderSide(color: AppTheme.primaryColor),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -183,7 +183,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   label: const Text('Video'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.primaryColor,
-                    side: const BorderSide(color: AppTheme.primaryColor),
+                    side: BorderSide(color: AppTheme.primaryColor),
                   ),
                 ),
               ],
@@ -195,8 +195,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             TextField(
               controller: _captionCtrl,
               maxLines: 5,
-              style: const TextStyle(color: AppTheme.textMain),
-              decoration: const InputDecoration(
+              style: TextStyle(color: AppTheme.textMain),
+              decoration: InputDecoration(
                 hintText: 'Write a caption...',
                 hintStyle: TextStyle(color: AppTheme.textVariant),
                 border: OutlineInputBorder(
@@ -307,7 +307,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                       _visibility == 'public'
                           ? 'Your post will be visible to everyone on the FYP feed.'
                           : 'Your post will only be visible to your friends.',
-                      style: const TextStyle(color: AppTheme.textVariant, fontSize: 12),
+                      style: TextStyle(color: AppTheme.textVariant, fontSize: 12),
                     ),
                   ),
                 ],

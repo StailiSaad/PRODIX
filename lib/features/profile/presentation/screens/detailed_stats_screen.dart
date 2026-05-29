@@ -8,9 +8,11 @@ import 'package:flutter/services.dart' show rootBundle;
 import '../../profile_cubit.dart';
 import '../../../auth/auth_cubit.dart';
 import '../../../gamification/gamification_cubit.dart';
+import '../../../theme/theme_cubit.dart';
 import '../../../../data/services/games_service.dart';
 import '../../../../core/config/profile_defaults.dart';
 import '../../../../shared/widgets/animated_badge.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../posts/presentation/screens/user_posts_screen.dart';
 
 
@@ -316,6 +318,12 @@ class _DetailedStatsScreenState extends State<DetailedStatsScreen> {
             },
           ),
           IconButton(
+            icon: const Icon(Icons.settings),
+            color: theme.colorScheme.primary,
+            tooltip: 'Theme',
+            onPressed: () => _showThemePicker(context),
+          ),
+          IconButton(
             icon: const Icon(Icons.logout),
             color: theme.colorScheme.error,
             tooltip: 'Sign Out',
@@ -610,7 +618,7 @@ class _DetailedStatsScreenState extends State<DetailedStatsScreen> {
             ),
             const SizedBox(width: 8),
             Text(state.pseudo.isEmpty ? 'Player' : state.pseudo,
-              style: theme.textTheme.headlineSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
+              style: theme.textTheme.headlineSmall?.copyWith(color: AppTheme.textWhite, fontWeight: FontWeight.bold)),
           ],
         ),
         const SizedBox(height: 4),
@@ -619,21 +627,21 @@ class _DetailedStatsScreenState extends State<DetailedStatsScreen> {
           children: [
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(12)),
-              child: Text(state.role.toUpperCase(), style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12)),
+              decoration: BoxDecoration(color: AppTheme.cardHighColor, borderRadius: BorderRadius.circular(12)),
+              child: Text(state.role.toUpperCase(), style: TextStyle(color: AppTheme.textVariant, fontSize: 12)),
             ),
             const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(12)),
-              child: Text(state.region, style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12)),
+              decoration: BoxDecoration(color: AppTheme.cardHighColor, borderRadius: BorderRadius.circular(12)),
+              child: Text(state.region, style: TextStyle(color: AppTheme.textVariant, fontSize: 12)),
             ),
             if (state.country.isNotEmpty) ...[
               const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(12)),
-                child: Text(state.country, style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12)),
+                decoration: BoxDecoration(color: AppTheme.cardHighColor, borderRadius: BorderRadius.circular(12)),
+                child: Text(state.country, style: TextStyle(color: AppTheme.textVariant, fontSize: 12)),
               ),
             ],
           ],
@@ -676,7 +684,7 @@ class _DetailedStatsScreenState extends State<DetailedStatsScreen> {
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
                       value: ratio,
-                      backgroundColor: Colors.white.withValues(alpha: 0.1),
+                      backgroundColor: AppTheme.cardHighColor,
                       valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF7C3AED)),
                       minHeight: 6,
                     ),
@@ -684,7 +692,7 @@ class _DetailedStatsScreenState extends State<DetailedStatsScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text('$currentXp / $xpForLevel XP',
-                    style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 10)),
+                    style: TextStyle(color: AppTheme.textVariant, fontSize: 10)),
               ],
             );
           },
@@ -716,7 +724,7 @@ class _DetailedStatsScreenState extends State<DetailedStatsScreen> {
           children: [
             Text(value, style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 2),
-            Text(label, style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 9, fontWeight: FontWeight.w600)),
+            Text(label, style: TextStyle(color: AppTheme.textVariant, fontSize: 9, fontWeight: FontWeight.w600)),
           ],
         ),
       ),
@@ -737,11 +745,11 @@ class _DetailedStatsScreenState extends State<DetailedStatsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label, style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 11)),
+                  Text(label, style: TextStyle(color: AppTheme.textVariant, fontSize: 11)),
                   const SizedBox(height: 2),
                   Text(isEmpty ? 'Non renseigné' : value,
                       style: TextStyle(
-                        color: isEmpty ? Colors.white38 : const Color(0xFF7C3AED),
+                        color: isEmpty ? AppTheme.textGrey : AppTheme.primaryInverse,
                         fontSize: 14,
                         decoration: isEmpty ? null : TextDecoration.underline,
                       )),
@@ -762,23 +770,23 @@ class _DetailedStatsScreenState extends State<DetailedStatsScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
-          color: _isEditing ? const Color(0xFF1A2340) : Colors.white.withValues(alpha: 0.03),
+          color: _isEditing ? AppTheme.cardHighColor : AppTheme.cardHighColor,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          border: Border.all(color: AppTheme.outlineColor.withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
-            const Icon(Icons.public, color: Color(0xFF958DA1), size: 20),
+            Icon(Icons.public, color: AppTheme.textGrey, size: 20),
             const SizedBox(width: 12),
             Expanded(
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   value: _countries.contains(_country) ? _country : null,
                   hint: Text('Select your country',
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 13)),
+                      style: TextStyle(color: AppTheme.textGrey, fontSize: 13)),
                   isExpanded: true,
-                  dropdownColor: const Color(0xFF1A2340),
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  dropdownColor: AppTheme.cardColor,
+                  style: TextStyle(color: AppTheme.textWhite, fontSize: 13),
                   items: _countries.isEmpty
                       ? [const DropdownMenuItem(value: '', child: Text('Loading...'))]
                       : _countries
@@ -803,9 +811,9 @@ class _DetailedStatsScreenState extends State<DetailedStatsScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F1729).withValues(alpha: 0.8),
+        color: AppTheme.cardHighColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+        border: Border.all(color: AppTheme.outlineColor.withValues(alpha: 0.2)),
       ),
       child: child,
     );
@@ -814,9 +822,9 @@ class _DetailedStatsScreenState extends State<DetailedStatsScreen> {
   Widget _sectionTitle(ThemeData theme, IconData icon, String text) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: const Color(0xFF7C3AED)),
+        Icon(icon, size: 18, color: AppTheme.primaryColor),
         const SizedBox(width: 8),
-        Text(text, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+        Text(text, style: TextStyle(color: AppTheme.textWhite, fontSize: 16, fontWeight: FontWeight.bold)),
       ],
     );
   }
@@ -827,15 +835,15 @@ class _DetailedStatsScreenState extends State<DetailedStatsScreen> {
       enabled: _isEditing,
       maxLines: maxLines,
       keyboardType: keyboard,
-      style: const TextStyle(color: Colors.white),
+      style: TextStyle(color: AppTheme.textWhite),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.4)),
+        labelStyle: TextStyle(color: AppTheme.textGrey),
         filled: true,
-        fillColor: _isEditing ? const Color(0xFF1A2340) : Colors.white.withValues(alpha: 0.03),
+        fillColor: _isEditing ? AppTheme.cardHighColor : AppTheme.cardHighColor,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF7C3AED))),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppTheme.outlineColor.withValues(alpha: 0.3))),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppTheme.primaryColor)),
         disabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
       ),
     );
@@ -846,18 +854,60 @@ class _DetailedStatsScreenState extends State<DetailedStatsScreen> {
       ignoring: !_isEditing,
       child: DropdownButtonFormField<String>(
         initialValue: options.contains(value) ? value : options.first,
-        items: options.map((o) => DropdownMenuItem(value: o, child: Text(o.toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 13)))).toList(),
+        items: options.map((o) => DropdownMenuItem(value: o, child: Text(o.toUpperCase(), style: TextStyle(color: AppTheme.textWhite, fontSize: 13)))).toList(),
         onChanged: onChanged,
-        dropdownColor: const Color(0xFF1A2340),
+        dropdownColor: AppTheme.cardColor,
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 12),
+          labelStyle: TextStyle(color: AppTheme.textGrey, fontSize: 12),
           filled: true,
-          fillColor: _isEditing ? const Color(0xFF1A2340) : Colors.white.withValues(alpha: 0.03),
+          fillColor: _isEditing ? AppTheme.cardHighColor : AppTheme.cardHighColor,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         ),
       ),
+    );
+  }
+
+  void _showThemePicker(BuildContext context) {
+    final themeCubit = context.read<ThemeCubit>();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+            const SizedBox(height: 16),
+            Text('Display Mode', style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: Theme.of(context).colorScheme.primary)),
+            const SizedBox(height: 24),
+            _themeOption(ctx, themeCubit, AppThemeMode.dark, Icons.dark_mode, 'Sombre', 'Mode sombre'),
+            const SizedBox(height: 12),
+            _themeOption(ctx, themeCubit, AppThemeMode.light, Icons.light_mode, 'Clair', 'Mode clair'),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _themeOption(BuildContext sheetCtx, ThemeCubit themeCubit, AppThemeMode mode, IconData icon, String label, String subtitle) {
+    final current = themeCubit.state;
+    final selected = current == mode;
+    return ListTile(
+      leading: Icon(icon, color: selected ? const Color(0xFFD4AF37) : Theme.of(sheetCtx).colorScheme.primary, size: 28),
+      title: Text(label, style: TextStyle(color: Theme.of(sheetCtx).colorScheme.onSurface, fontWeight: FontWeight.w600)),
+      subtitle: Text(subtitle, style: TextStyle(color: Theme.of(sheetCtx).colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 12)),
+      trailing: selected ? const Icon(Icons.check_circle, color: Color(0xFFD4AF37)) : null,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      tileColor: selected ? Theme.of(sheetCtx).colorScheme.primary.withValues(alpha: 0.1) : null,
+      onTap: () {
+        themeCubit.setTheme(mode);
+        Navigator.pop(sheetCtx);
+      },
     );
   }
 }

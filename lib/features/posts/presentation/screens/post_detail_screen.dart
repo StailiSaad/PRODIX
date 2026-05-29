@@ -67,12 +67,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       appBar: AppBar(
         backgroundColor: AppTheme.bgColor,
         elevation: 0,
-        title: const Text('Post', style: TextStyle(color: AppTheme.textMain)),
+        title: Text('Post', style: TextStyle(color: AppTheme.textMain)),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _post == null
-              ? const Center(child: Text('Post not found', style: TextStyle(color: AppTheme.textVariant)))
+              ? Center(child: Text('Post not found', style: TextStyle(color: AppTheme.textVariant)))
               : BlocProvider<PostsCubit>.value(
                   value: _cubit,
                   child: _buildContent(context),
@@ -107,11 +107,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                             : null,
                         child: (avatarUrl == null || avatarUrl.isEmpty)
                             ? Text(pseudo[0].toUpperCase(),
-                                style: const TextStyle(color: AppTheme.primaryColor, fontSize: 16))
+                                style: TextStyle(color: AppTheme.primaryColor, fontSize: 16))
                             : null,
                       ),
                       const SizedBox(width: 12),
-                      Text(pseudo, style: const TextStyle(color: AppTheme.textMain, fontWeight: FontWeight.bold, fontSize: 16)),
+                      Text(pseudo, style: TextStyle(color: AppTheme.textMain, fontWeight: FontWeight.bold, fontSize: 16)),
                     ],
                   ),
                 ),
@@ -129,7 +129,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 errorBuilder: (_, __, ___) => Container(
                                   height: 300,
                                   color: AppTheme.cardHighColor,
-                                  child: const Center(child: Icon(Icons.broken_image, color: AppTheme.textVariant, size: 48)),
+                                  child: Center(child: Icon(Icons.broken_image, color: AppTheme.textVariant, size: 48)),
                                 ),
                               )
                             : SizedBox(
@@ -142,7 +142,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                     fit: BoxFit.contain,
                                     errorBuilder: (_, __, ___) => Container(
                                       color: AppTheme.cardHighColor,
-                                      child: const Center(child: Icon(Icons.broken_image, color: AppTheme.textVariant, size: 48)),
+                                      child: Center(child: Icon(Icons.broken_image, color: AppTheme.textVariant, size: 48)),
                                     ),
                                   ),
                                 ),
@@ -171,19 +171,19 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 onPressed: () => _cubit.toggleLike(widget.postId),
                               ),
                               if (lCount > 0)
-                                Text('$lCount', style: const TextStyle(color: AppTheme.textMain, fontSize: 13)),
+                                Text('$lCount', style: TextStyle(color: AppTheme.textMain, fontSize: 13)),
                             ],
                           );
                         },
                       ),
                       const SizedBox(width: 8),
                       IconButton(
-                        icon: const Icon(Icons.chat_bubble_outline, color: AppTheme.textVariant, size: 26),
+                        icon: Icon(Icons.chat_bubble_outline, color: AppTheme.textVariant, size: 26),
                         onPressed: () => _showComments(context),
                       ),
                       const SizedBox(width: 8),
                       IconButton(
-                        icon: const Icon(Icons.share_outlined, color: AppTheme.textVariant, size: 26),
+                        icon: Icon(Icons.share_outlined, color: AppTheme.textVariant, size: 26),
                         onPressed: () {
                           final postId = _post!['id'] as String? ?? '';
                           Share.share('Check out $pseudo\'s post on TeamUp: https://teamup.app/post/$postId\n\n$caption');
@@ -198,7 +198,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
                     child: RichText(
                       text: TextSpan(
-                        style: const TextStyle(color: AppTheme.textMain, fontSize: 14),
+                        style: TextStyle(color: AppTheme.textMain, fontSize: 14),
                         children: [
                           TextSpan(text: '$pseudo  ', style: const TextStyle(fontWeight: FontWeight.bold)),
                           TextSpan(text: caption),
@@ -211,12 +211,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
                     createdAt,
-                    style: const TextStyle(color: AppTheme.textVariant, fontSize: 11),
+                    style: TextStyle(color: AppTheme.textVariant, fontSize: 11),
                   ),
                 ),
 
                 const SizedBox(height: 8),
-                const Divider(color: AppTheme.cardHighestColor),
+                Divider(color: AppTheme.cardHighestColor),
 
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
@@ -238,7 +238,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     if (comments.isEmpty) {
                       return GestureDetector(
                         onTap: () => _showComments(context),
-                        child: const Padding(
+                        child: Padding(
                           padding: EdgeInsets.all(24),
                           child: Center(
                             child: Text('No comments yet. Tap to add one.',
@@ -275,7 +275,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 },
                               ),
                               buildCommentTree(c['id'] as String?, depth + 1),
-                              const Divider(color: AppTheme.cardHighestColor, height: 1),
+                              Divider(color: AppTheme.cardHighestColor, height: 1),
                             ],
                           ),
                         )).toList(),
@@ -304,18 +304,18 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             color: AppTheme.primaryColor.withValues(alpha: 0.1),
             child: Row(
               children: [
-                const Icon(Icons.reply, size: 16, color: AppTheme.primaryColor),
+                Icon(Icons.reply, size: 16, color: AppTheme.primaryColor),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     'Replying to $_replyingToName',
-                    style: const TextStyle(color: AppTheme.primaryColor, fontSize: 12),
+                    style: TextStyle(color: AppTheme.primaryColor, fontSize: 12),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 GestureDetector(
                   onTap: () => setState(() { _replyingTo = null; _replyingToName = null; }),
-                  child: const Icon(Icons.close, size: 16, color: AppTheme.textVariant),
+                  child: Icon(Icons.close, size: 16, color: AppTheme.textVariant),
                 ),
               ],
             ),
@@ -332,10 +332,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               Expanded(
                 child: TextField(
                   controller: _commentCtrl,
-                  style: const TextStyle(color: AppTheme.textMain, fontSize: 14),
+                  style: TextStyle(color: AppTheme.textMain, fontSize: 14),
                   decoration: InputDecoration(
                     hintText: _replyingTo != null ? 'Write a reply...' : 'Add a comment...',
-                    hintStyle: const TextStyle(color: AppTheme.textVariant),
+                    hintStyle: TextStyle(color: AppTheme.textVariant),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(24),
                       borderSide: BorderSide.none,
@@ -350,7 +350,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               ),
               const SizedBox(width: 8),
               IconButton(
-                icon: const Icon(Icons.send, color: AppTheme.primaryColor, size: 22),
+                icon: Icon(Icons.send, color: AppTheme.primaryColor, size: 22),
                 onPressed: _sendComment,
               ),
             ],
@@ -378,7 +378,7 @@ class _CommentTile extends StatelessWidget {
   final bool isReply;
   final void Function(String id, String name) onReply;
 
-  const _CommentTile({
+  _CommentTile({
     required this.comment,
     this.isReply = false,
     required this.onReply,
@@ -407,7 +407,7 @@ class _CommentTile extends StatelessWidget {
                 : null,
             child: (avatarUrl == null || avatarUrl.isEmpty)
                 ? Text(name[0].toUpperCase(),
-                    style: const TextStyle(color: AppTheme.primaryColor, fontSize: 10))
+                    style: TextStyle(color: AppTheme.primaryColor, fontSize: 10))
                 : null,
           ),
           const SizedBox(width: 8),
@@ -417,7 +417,7 @@ class _CommentTile extends StatelessWidget {
               children: [
                 RichText(
                   text: TextSpan(
-                    style: const TextStyle(color: AppTheme.textMain, fontSize: 13),
+                    style: TextStyle(color: AppTheme.textMain, fontSize: 13),
                     children: [
                       TextSpan(text: name, style: const TextStyle(fontWeight: FontWeight.bold)),
                       const TextSpan(text: '  '),
@@ -430,7 +430,7 @@ class _CommentTile extends StatelessWidget {
                   children: [
                     GestureDetector(
                       onTap: () => onReply(comment['id'] as String, name),
-                      child: const Text('Reply', style: TextStyle(color: AppTheme.textVariant, fontSize: 11, fontWeight: FontWeight.bold)),
+                      child: Text('Reply', style: TextStyle(color: AppTheme.textVariant, fontSize: 11, fontWeight: FontWeight.bold)),
                     ),
                     const SizedBox(width: 12),
                     GestureDetector(

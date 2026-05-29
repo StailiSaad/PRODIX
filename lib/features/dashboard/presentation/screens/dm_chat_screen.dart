@@ -361,14 +361,14 @@ class _DmChatScreenState extends State<DmChatScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.cardColor,
-        title: const Text('Supprimer le message',
+        title: Text('Supprimer le message',
             style: TextStyle(color: AppTheme.textMain)),
-        content: const Text('Cette action est irréversible.',
+        content: Text('Cette action est irréversible.',
             style: TextStyle(color: AppTheme.textVariant)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Annuler',
+            child: Text('Annuler',
                 style: TextStyle(color: AppTheme.textVariant)),
           ),
           TextButton(
@@ -450,13 +450,13 @@ class _DmChatScreenState extends State<DmChatScreen> {
                             : null,
                     child: (widget.peerAvatar == null || widget.peerAvatar!.isEmpty)
                         ? Text(widget.peerName[0].toUpperCase(),
-                            style: const TextStyle(
+                            style: TextStyle(
                                 color: AppTheme.primaryColor, fontSize: 14))
                         : null,
                   ),
                   const SizedBox(width: 12),
                   Text(widget.peerName,
-                      style: const TextStyle(
+                      style: TextStyle(
                           color: AppTheme.textMain,
                           fontSize: 18,
                           fontWeight: FontWeight.bold)),
@@ -464,11 +464,11 @@ class _DmChatScreenState extends State<DmChatScreen> {
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library, color: AppTheme.primaryColor),
-              title: const Text('Médias partagés',
+              leading: Icon(Icons.photo_library, color: AppTheme.primaryColor),
+              title: Text('Médias partagés',
                   style: TextStyle(color: AppTheme.textMain)),
               trailing: Text('${mediaMessages.length}',
-                  style: const TextStyle(color: AppTheme.textVariant)),
+                  style: TextStyle(color: AppTheme.textVariant)),
               onTap: () {
                 Navigator.pop(ctx);
                 Navigator.of(context).push(
@@ -479,8 +479,8 @@ class _DmChatScreenState extends State<DmChatScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.person, color: AppTheme.primaryColor),
-              title: const Text('Voir le profil',
+              leading: Icon(Icons.person, color: AppTheme.primaryColor),
+              title: Text('Voir le profil',
                   style: TextStyle(color: AppTheme.textMain)),
               onTap: () {
                 Navigator.pop(ctx);
@@ -525,7 +525,7 @@ class _DmChatScreenState extends State<DmChatScreen> {
                         : null,
                 child: (widget.peerAvatar == null || widget.peerAvatar!.isEmpty)
                     ? Text(widget.peerName[0].toUpperCase(),
-                        style: const TextStyle(
+                        style: TextStyle(
                             color: AppTheme.primaryColor, fontSize: 12))
                     : null,
               ),
@@ -533,17 +533,17 @@ class _DmChatScreenState extends State<DmChatScreen> {
               AnimatedBadge(level: _peerLevel, size: 20),
               const SizedBox(width: 4),
               Text(widget.peerName,
-                  style: const TextStyle(color: AppTheme.textMain, fontSize: 16)),
+                  style: TextStyle(color: AppTheme.textMain, fontSize: 16)),
             ],
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.phone, color: AppTheme.tertiaryColor),
+            icon: Icon(Icons.phone, color: AppTheme.tertiaryColor),
             onPressed: () => _startCall('audio'),
           ),
           IconButton(
-            icon: const Icon(Icons.videocam, color: AppTheme.tertiaryColor),
+            icon: Icon(Icons.videocam, color: AppTheme.tertiaryColor),
             onPressed: () => _startCall('video'),
           ),
         ],
@@ -604,7 +604,7 @@ class _DmChatScreenState extends State<DmChatScreen> {
     if (_isRecording) {
       return Container(
         padding: const EdgeInsets.fromLTRB(8, 8, 12, 16),
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: AppTheme.cardColor,
           border: Border(top: BorderSide(color: AppTheme.cardHighestColor)),
         ),
@@ -624,20 +624,20 @@ class _DmChatScreenState extends State<DmChatScreen> {
             const SizedBox(width: 8),
             Text(
               '${_recordElapsed ~/ 60}:${(_recordElapsed % 60).toString().padLeft(2, '0')}',
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppTheme.textMain,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
             ),
             const Spacer(),
-            const Text('0:00',
+            Text('0:00',
                 style: TextStyle(color: AppTheme.textVariant, fontSize: 13)),
             const SizedBox(width: 8),
             CircleAvatar(
               backgroundColor: AppTheme.primaryColor,
               child: IconButton(
-                icon: const Icon(Icons.stop, color: Color(0xFF3F008E), size: 20),
+                icon: Icon(Icons.stop, color: AppTheme.primaryInverse, size: 20),
                 onPressed: () => _stopRecording(),
               ),
             ),
@@ -649,7 +649,7 @@ class _DmChatScreenState extends State<DmChatScreen> {
     // ── Normal mode ──
     return Container(
       padding: const EdgeInsets.fromLTRB(8, 8, 12, 16),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppTheme.cardColor,
         border: Border(top: BorderSide(color: AppTheme.cardHighestColor)),
       ),
@@ -694,7 +694,7 @@ class _DmChatScreenState extends State<DmChatScreen> {
                               dur != null
                                   ? '${dur ~/ 60}:${(dur % 60).toString().padLeft(2, '0')}'
                                   : 'Voice',
-                              style: const TextStyle(
+                              style: TextStyle(
                                   color: AppTheme.textMain, fontSize: 12),
                             ),
                             const SizedBox(width: 4),
@@ -756,7 +756,7 @@ class _DmChatScreenState extends State<DmChatScreen> {
           Row(
             children: [
               PopupMenuButton<String>(
-                icon: const Icon(Icons.add_circle_outline,
+                icon: Icon(Icons.add_circle_outline,
                     color: AppTheme.primaryColor, size: 24),
                 color: AppTheme.cardHighColor,
                 onSelected: (v) {
@@ -770,13 +770,13 @@ class _DmChatScreenState extends State<DmChatScreen> {
                   }
                 },
                 itemBuilder: (_) => [
-                  const PopupMenuItem(
+                  PopupMenuItem(
                       value: 'image',
                       child: ListTile(
                           leading: Icon(Icons.image, color: AppTheme.primaryColor),
                           title: Text('Image', style: TextStyle(color: AppTheme.textMain)),
                           dense: true)),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                       value: 'file',
                       child: ListTile(
                           leading: Icon(Icons.attach_file, color: AppTheme.primaryColor),
@@ -786,17 +786,17 @@ class _DmChatScreenState extends State<DmChatScreen> {
               ),
               const SizedBox(width: 4),
               IconButton(
-                icon: const Icon(Icons.mic, color: AppTheme.primaryColor, size: 24),
+                icon: Icon(Icons.mic, color: AppTheme.primaryColor, size: 24),
                 onPressed: _startRecording,
               ),
               const SizedBox(width: 4),
               Expanded(
                 child: TextField(
                   controller: _msgCtrl,
-                  style: const TextStyle(color: AppTheme.textMain),
+                  style: TextStyle(color: AppTheme.textMain),
                   decoration: InputDecoration(
                     hintText: 'Message ${widget.peerName}...',
-                    hintStyle: const TextStyle(color: AppTheme.textVariant),
+                    hintStyle: TextStyle(color: AppTheme.textVariant),
                     filled: true,
                     fillColor: AppTheme.cardHighColor,
                     border: OutlineInputBorder(
@@ -814,7 +814,7 @@ class _DmChatScreenState extends State<DmChatScreen> {
               CircleAvatar(
                 backgroundColor: AppTheme.primaryColor,
                 child: IconButton(
-                  icon: const Icon(Icons.send, color: Color(0xFF3F008E), size: 18),
+                  icon: Icon(Icons.send, color: AppTheme.primaryInverse, size: 18),
                   onPressed: _send,
                 ),
               ),
@@ -916,7 +916,7 @@ class _DmBubbleState extends State<_DmBubble> {
                             ? const EdgeInsets.only(top: 8)
                             : EdgeInsets.zero,
                         child: Text(widget.message,
-                            style: const TextStyle(
+                            style: TextStyle(
                                 color: AppTheme.textMain, fontSize: 14)),
                       ),
                     if (widget.isMe && widget.status != null)
@@ -926,7 +926,7 @@ class _DmBubbleState extends State<_DmBubble> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(widget.time,
-                                style: const TextStyle(
+                                style: TextStyle(
                                     color: AppTheme.textVariant, fontSize: 10)),
                             const SizedBox(width: 4),
                             Icon(_statusIcon(),
@@ -958,7 +958,7 @@ class _DmBubbleState extends State<_DmBubble> {
                 width: 200,
                 height: 200,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Icon(Icons.broken_image,
+                errorBuilder: (_, __, ___) => Icon(Icons.broken_image,
                     color: AppTheme.textVariant)),
           ),
         );
@@ -971,7 +971,7 @@ class _DmBubbleState extends State<_DmBubble> {
         );
       case 'video':
         return IconButton(
-          icon: const Icon(Icons.play_circle_fill,
+          icon: Icon(Icons.play_circle_fill,
               color: AppTheme.primaryColor, size: 48),
           onPressed: () => launchUrl(Uri.parse(widget.mediaUrl!)),
         );
@@ -985,7 +985,7 @@ class _DmBubbleState extends State<_DmBubble> {
               const SizedBox(width: 8),
               Flexible(
                 child: Text(widget.mediaName ?? 'Fichier',
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontSize: 13,
                         decoration: TextDecoration.underline)),
@@ -1023,11 +1023,11 @@ class _MediaGalleryScreen extends StatelessWidget {
       backgroundColor: AppTheme.bgColor,
       appBar: AppBar(
         backgroundColor: AppTheme.bgColor,
-        title: const Text('Médias partagés',
+        title: Text('Médias partagés',
             style: TextStyle(color: AppTheme.textMain)),
       ),
       body: messages.isEmpty
-          ? const Center(
+          ? Center(
               child: Text('Aucun média partagé',
                   style: TextStyle(color: AppTheme.textVariant)))
           : ListView.builder(
@@ -1050,8 +1050,8 @@ class _MediaGalleryScreen extends StatelessWidget {
                       color: AppTheme.primaryColor,
                     ),
                     title: Text(name,
-                        style: const TextStyle(color: AppTheme.textMain)),
-                    trailing: const Icon(Icons.open_in_new,
+                        style: TextStyle(color: AppTheme.textMain)),
+                    trailing: Icon(Icons.open_in_new,
                         color: AppTheme.primaryColor),
                     onTap: () => launchUrl(Uri.parse(url)),
                   ),
@@ -1131,12 +1131,12 @@ class _OtherProfileScreenState extends State<_OtherProfileScreen> {
       appBar: AppBar(
         backgroundColor: AppTheme.bgColor,
         title: Text(widget.peerName,
-            style: const TextStyle(color: AppTheme.textMain)),
+            style: TextStyle(color: AppTheme.textMain)),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _profile == null
-              ? const Center(
+              ? Center(
                   child: Text('Profil introuvable',
                       style: TextStyle(color: AppTheme.textVariant)))
               : ListView(
@@ -1153,7 +1153,7 @@ class _OtherProfileScreenState extends State<_OtherProfileScreen> {
                         child: (widget.peerAvatar == null ||
                                 widget.peerAvatar!.isEmpty)
                             ? Text(widget.peerName[0].toUpperCase(),
-                                style: const TextStyle(
+                                style: TextStyle(
                                     color: AppTheme.primaryColor, fontSize: 32))
                             : null,
                       ),
@@ -1163,7 +1163,7 @@ class _OtherProfileScreenState extends State<_OtherProfileScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(widget.peerName,
-                            style: const TextStyle(
+                            style: TextStyle(
                                 color: AppTheme.textMain,
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold)),
@@ -1202,10 +1202,10 @@ class _OtherProfileScreenState extends State<_OtherProfileScreen> {
                         children: _favGames
                             .map((g) => Chip(
                                   label: Text(g,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                           color: AppTheme.textWhite, fontSize: 12)),
                                   backgroundColor: AppTheme.cardColor,
-                                  side: const BorderSide(
+                                  side: BorderSide(
                                       color: AppTheme.primaryColor),
                                 ))
                             .toList(),
@@ -1219,7 +1219,7 @@ class _OtherProfileScreenState extends State<_OtherProfileScreen> {
 
   Widget _section(String title) {
     return Text(title,
-        style: const TextStyle(
+        style: TextStyle(
           color: AppTheme.textGrey,
           fontSize: 11,
           fontWeight: FontWeight.bold,
@@ -1245,9 +1245,9 @@ class _OtherProfileScreenState extends State<_OtherProfileScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label,
-              style: const TextStyle(color: AppTheme.textGrey, fontSize: 13)),
+              style: TextStyle(color: AppTheme.textGrey, fontSize: 13)),
           Text(value,
-              style: const TextStyle(
+              style: TextStyle(
                   color: AppTheme.textWhite,
                   fontSize: 13,
                   fontWeight: FontWeight.bold)),
@@ -1270,10 +1270,10 @@ class _OtherProfileScreenState extends State<_OtherProfileScreen> {
         children: [
           _socialLink(Icons.camera_alt, 'Instagram', insta, 'https://instagram.com/'),
           if (insta.isNotEmpty && fb.isNotEmpty)
-            const Divider(color: AppTheme.cardHighestColor),
+            Divider(color: AppTheme.cardHighestColor),
           _socialLink(Icons.facebook, 'Facebook', fb, 'https://facebook.com/'),
           if (fb.isNotEmpty && gh.isNotEmpty)
-            const Divider(color: AppTheme.cardHighestColor),
+            Divider(color: AppTheme.cardHighestColor),
           _socialLink(Icons.code, 'GitHub', gh, 'https://github.com/'),
         ],
       ),
@@ -1304,7 +1304,7 @@ class _OtherProfileScreenState extends State<_OtherProfileScreen> {
                   )),
             ),
             if (!isEmpty)
-              const Icon(Icons.open_in_new, color: AppTheme.primaryColor, size: 16),
+              Icon(Icons.open_in_new, color: AppTheme.primaryColor, size: 16),
           ],
         ),
       ),

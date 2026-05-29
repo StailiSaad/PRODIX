@@ -52,7 +52,7 @@ class _CommentSheetState extends State<CommentSheet> {
       maxChildSize: 0.9,
       expand: false,
       builder: (context, scrollCtrl) => Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: AppTheme.cardColor,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
@@ -64,7 +64,7 @@ class _CommentSheetState extends State<CommentSheet> {
               padding: const EdgeInsets.all(16),
               child: Text('Comments', style: theme.textTheme.headlineMedium?.copyWith(color: theme.colorScheme.primary)),
             ),
-            const Divider(color: AppTheme.cardHighestColor, height: 1),
+            Divider(color: AppTheme.cardHighestColor, height: 1),
             Expanded(
               child: BlocBuilder<PostsCubit, PostsState>(
                 builder: (context, state) {
@@ -82,7 +82,7 @@ class _CommentSheetState extends State<CommentSheet> {
                         children: [
                           Icon(Icons.chat_bubble_outline, size: 48, color: AppTheme.textVariant.withValues(alpha: 0.3)),
                           const SizedBox(height: 12),
-                          const Text('No comments yet', style: TextStyle(color: AppTheme.textVariant)),
+                          Text('No comments yet', style: TextStyle(color: AppTheme.textVariant)),
                         ],
                       ),
                     );
@@ -115,7 +115,7 @@ class _CommentSheetState extends State<CommentSheet> {
                               },
                             ),
                             buildCommentTree(c['id'] as String?, depth + 1),
-                            const Divider(color: AppTheme.cardHighestColor, height: 1),
+                            Divider(color: AppTheme.cardHighestColor, height: 1),
                           ],
                         ),
                       )).toList(),
@@ -138,18 +138,18 @@ class _CommentSheetState extends State<CommentSheet> {
                 color: AppTheme.primaryColor.withValues(alpha: 0.1),
                 child: Row(
                   children: [
-                    const Icon(Icons.reply, size: 16, color: AppTheme.primaryColor),
+                    Icon(Icons.reply, size: 16, color: AppTheme.primaryColor),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
                         'Replying to $_replyingToName',
-                        style: const TextStyle(color: AppTheme.primaryColor, fontSize: 12),
+                        style: TextStyle(color: AppTheme.primaryColor, fontSize: 12),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     GestureDetector(
                       onTap: () => setState(() { _replyingTo = null; _replyingToName = null; }),
-                      child: const Icon(Icons.close, size: 16, color: AppTheme.textVariant),
+                      child: Icon(Icons.close, size: 16, color: AppTheme.textVariant),
                     ),
                   ],
                 ),
@@ -165,10 +165,10 @@ class _CommentSheetState extends State<CommentSheet> {
                   Expanded(
                     child: TextField(
                       controller: _commentCtrl,
-                      style: const TextStyle(color: AppTheme.textMain, fontSize: 14),
+                      style: TextStyle(color: AppTheme.textMain, fontSize: 14),
                       decoration: InputDecoration(
                         hintText: _replyingTo != null ? 'Write a reply...' : 'Add a comment...',
-                        hintStyle: const TextStyle(color: AppTheme.textVariant),
+                        hintStyle: TextStyle(color: AppTheme.textVariant),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(24),
                           borderSide: BorderSide.none,
@@ -183,7 +183,7 @@ class _CommentSheetState extends State<CommentSheet> {
                   ),
                   const SizedBox(width: 8),
                   IconButton(
-                    icon: const Icon(Icons.send, color: AppTheme.primaryColor, size: 22),
+                    icon: Icon(Icons.send, color: AppTheme.primaryColor, size: 22),
                     onPressed: _sendComment,
                   ),
                 ],
@@ -201,7 +201,7 @@ class _CommentTile extends StatelessWidget {
   final bool isReply;
   final void Function(String id, String name) onReply;
 
-  const _CommentTile({
+  _CommentTile({
     required this.comment,
     this.isReply = false,
     required this.onReply,
@@ -230,7 +230,7 @@ class _CommentTile extends StatelessWidget {
                 : null,
             child: (avatarUrl == null || avatarUrl.isEmpty)
                 ? Text(name[0].toUpperCase(),
-                    style: const TextStyle(color: AppTheme.primaryColor, fontSize: 10))
+                    style: TextStyle(color: AppTheme.primaryColor, fontSize: 10))
                 : null,
           ),
           const SizedBox(width: 8),
@@ -240,7 +240,7 @@ class _CommentTile extends StatelessWidget {
               children: [
                 RichText(
                   text: TextSpan(
-                    style: const TextStyle(color: AppTheme.textMain, fontSize: 13),
+                    style: TextStyle(color: AppTheme.textMain, fontSize: 13),
                     children: [
                       TextSpan(text: name, style: const TextStyle(fontWeight: FontWeight.bold)),
                       const TextSpan(text: '  '),
@@ -253,7 +253,7 @@ class _CommentTile extends StatelessWidget {
                   children: [
                     GestureDetector(
                       onTap: () => onReply(comment['id'] as String, name),
-                      child: const Text('Reply', style: TextStyle(color: AppTheme.textVariant, fontSize: 11, fontWeight: FontWeight.bold)),
+                      child: Text('Reply', style: TextStyle(color: AppTheme.textVariant, fontSize: 11, fontWeight: FontWeight.bold)),
                     ),
                     const SizedBox(width: 12),
                     GestureDetector(

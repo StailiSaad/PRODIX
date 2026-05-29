@@ -568,7 +568,7 @@ class _CallScreenState extends State<CallScreen> {
                         backgroundColor: AppTheme.cardHighColor,
                         child: Text(
                           widget.peerName[0].toUpperCase(),
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppTheme.primaryColor,
                             fontSize: 48,
                             fontWeight: FontWeight.bold,

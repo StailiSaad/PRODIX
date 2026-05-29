@@ -14,7 +14,7 @@ class TeamDetailScreen extends StatefulWidget {
   final String teamName;
   final bool isOwner;
 
-  const TeamDetailScreen({
+  TeamDetailScreen({
     super.key,
     required this.teamId,
     required this.teamName,
@@ -86,14 +86,14 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.cardColor,
-        title: const Text('Quitter l\'équipe',
+        title: Text('Quitter l\'équipe',
             style: TextStyle(color: AppTheme.textMain)),
-        content: const Text('Êtes-vous sûr de vouloir quitter cette équipe ?',
+        content: Text('Êtes-vous sûr de vouloir quitter cette équipe ?',
             style: TextStyle(color: AppTheme.textVariant)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Annuler',
+            child: Text('Annuler',
                 style: TextStyle(color: AppTheme.textVariant)),
           ),
           TextButton(
@@ -122,14 +122,14 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.cardColor,
-        title: const Text('Exclure le membre',
+        title: Text('Exclure le membre',
             style: TextStyle(color: AppTheme.textMain)),
         content: Text('Exclure $targetName de l\'équipe ?',
-            style: const TextStyle(color: AppTheme.textVariant)),
+            style: TextStyle(color: AppTheme.textVariant)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Annuler',
+            child: Text('Annuler',
                 style: TextStyle(color: AppTheme.textVariant)),
           ),
           TextButton(
@@ -163,7 +163,7 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppTheme.cardColor,
-      shape: const RoundedRectangleBorder(
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => SafeArea(
@@ -181,13 +181,13 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
             Padding(
               padding: const EdgeInsets.all(16),
               child: Text('Ajouter des amis',
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: AppTheme.textMain,
                       fontSize: 18,
                       fontWeight: FontWeight.bold)),
             ),
             if (friends.isEmpty)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.all(32),
                 child: Text('Tous vos amis sont déjà dans l\'équipe',
                     style: TextStyle(color: AppTheme.textVariant)),
@@ -205,11 +205,11 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
                         : null,
                     child: (avatar == null || avatar.isEmpty)
                         ? Text(name[0].toUpperCase(),
-                            style: const TextStyle(color: AppTheme.primaryColor))
+                            style: TextStyle(color: AppTheme.primaryColor))
                         : null,
                   ),
                   title: Text(name,
-                      style: const TextStyle(color: AppTheme.textMain)),
+                      style: TextStyle(color: AppTheme.textMain)),
                   trailing: TextButton.icon(
                     icon: const Icon(Icons.person_add, size: 18),
                     label: const Text('Inviter'),
@@ -316,17 +316,17 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
         backgroundColor: theme.colorScheme.surface,
         elevation: 0,
         title: Text(widget.teamName,
-            style: const TextStyle(color: AppTheme.textMain, fontSize: 18)),
+            style: TextStyle(color: AppTheme.textMain, fontSize: 18)),
         actions: [
           if (_channelId != null)
             IconButton(
-              icon: const Icon(Icons.chat, color: AppTheme.primaryColor),
+              icon: Icon(Icons.chat, color: AppTheme.primaryColor),
               tooltip: 'Chat d\'équipe',
               onPressed: _openTeamChat,
             ),
           if (widget.isOwner)
             IconButton(
-              icon: const Icon(Icons.person_add, color: AppTheme.primaryColor),
+              icon: Icon(Icons.person_add, color: AppTheme.primaryColor),
               tooltip: 'Ajouter des amis',
               onPressed: _showAddFriendsSheet,
             ),
@@ -354,16 +354,16 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
                         ),
                         child: Column(
                           children: [
-                            const Icon(Icons.info_outline,
+                            Icon(Icons.info_outline,
                                 color: AppTheme.primaryColor, size: 28),
                             const SizedBox(height: 8),
-                            const Text(
+                            Text(
                               'Vous avez été invité à rejoindre cette équipe.',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                   color: AppTheme.textMain, fontSize: 14)),
                             const SizedBox(height: 4),
-                            const Text(
+                            Text(
                               'Acceptez-vous de rester dans l\'équipe ?',
                               textAlign: TextAlign.center,
                               style: TextStyle(
@@ -425,7 +425,7 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
                                   child: _teamAvatar == null
                                       ? Text(
                                           widget.teamName[0].toUpperCase(),
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                               color: AppTheme.primaryColor,
                                               fontSize: 28),
                                         )
@@ -454,14 +454,14 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(widget.teamName,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                         color: AppTheme.textMain,
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold)),
                                 const SizedBox(height: 4),
                                 Text(
                                     '${_members.length} membre${_members.length > 1 ? 's' : ''}',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                         color: AppTheme.textVariant,
                                         fontSize: 14)),
                               ],
@@ -481,7 +481,7 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
                     // Members list
                     Expanded(
                       child: _members.isEmpty
-                          ? const Center(
+                          ? Center(
                               child: Text('Aucun membre',
                                   style: TextStyle(color: AppTheme.textVariant)))
                           : RefreshIndicator(
@@ -531,7 +531,7 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
                                           child: (avatarUrl == null ||
                                                   avatarUrl.isEmpty)
                                               ? Text(pseudo[0].toUpperCase(),
-                                                  style: const TextStyle(
+                                                  style: TextStyle(
                                                       color:
                                                           AppTheme.primaryColor))
                                               : null,
@@ -545,7 +545,7 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
                                               Row(
                                                 children: [
                                                   Text(pseudo,
-                                                       style: const TextStyle(
+                                                       style: TextStyle(
                                                            color:
                                                                AppTheme.textMain,
                                                            fontWeight:
@@ -569,7 +569,7 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
                                                             BorderRadius
                                                                 .circular(6),
                                                       ),
-                                                      child: const Text(
+                                                      child: Text(
                                                           'Leader',
                                                           style: TextStyle(
                                                               color: AppTheme
@@ -597,7 +597,7 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
                                                             BorderRadius
                                                                 .circular(6),
                                                       ),
-                                                      child: const Text('Vous',
+                                                      child: Text('Vous',
                                                           style: TextStyle(
                                                               color: AppTheme
                                                                   .primaryColor,
@@ -613,14 +613,14 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
                                         ),
                                         if (!isMe) ...[
                                           IconButton(
-                                            icon: const Icon(Icons.message,
+                                            icon: Icon(Icons.message,
                                                 color: AppTheme.primaryColor,
                                                 size: 20),
                                             tooltip: 'Message',
                                             onPressed: () => _openDm(m),
                                           ),
                                           IconButton(
-                                            icon: const Icon(Icons.phone,
+                                            icon: Icon(Icons.phone,
                                                 color: AppTheme.tertiaryColor,
                                                 size: 20),
                                             tooltip: 'Appel audio',
@@ -628,7 +628,7 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
                                                 _callMember(m, 'audio'),
                                           ),
                                           IconButton(
-                                            icon: const Icon(Icons.videocam,
+                                            icon: Icon(Icons.videocam,
                                                 color: AppTheme.tertiaryColor,
                                                 size: 20),
                                             tooltip: 'Appel vidéo',

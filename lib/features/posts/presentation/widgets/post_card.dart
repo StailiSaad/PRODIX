@@ -68,17 +68,17 @@ class PostCard extends StatelessWidget {
                 : null,
             child: (avatarUrl == null || avatarUrl.isEmpty)
                 ? Text(pseudo[0].toUpperCase(),
-                    style: const TextStyle(color: AppTheme.primaryColor, fontSize: 14))
+                    style: TextStyle(color: AppTheme.primaryColor, fontSize: 14))
                 : null,
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(pseudo,
-                style: const TextStyle(color: AppTheme.textMain, fontWeight: FontWeight.bold, fontSize: 14)),
+                style: TextStyle(color: AppTheme.textMain, fontWeight: FontWeight.bold, fontSize: 14)),
           ),
           if (showDelete && onDelete != null)
             IconButton(
-              icon: const Icon(Icons.delete_outline, color: AppTheme.errorColor, size: 20),
+              icon: Icon(Icons.delete_outline, color: AppTheme.errorColor, size: 20),
               onPressed: onDelete,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
@@ -104,7 +104,7 @@ class PostCard extends StatelessWidget {
               errorBuilder: (_, __, ___) => Container(
                 height: 300,
                 color: AppTheme.cardHighColor,
-                child: const Center(child: Icon(Icons.broken_image, color: AppTheme.textVariant, size: 48)),
+                child: Center(child: Icon(Icons.broken_image, color: AppTheme.textVariant, size: 48)),
               ),
               loadingBuilder: (_, child, progress) {
                 if (progress == null) return child;
@@ -128,7 +128,7 @@ class PostCard extends StatelessWidget {
               fit: BoxFit.contain,
               errorBuilder: (_, __, ___) => Container(
                 color: AppTheme.cardHighColor,
-                child: const Center(child: Icon(Icons.broken_image, color: AppTheme.textVariant, size: 48)),
+                child: Center(child: Icon(Icons.broken_image, color: AppTheme.textVariant, size: 48)),
               ),
             ),
           ),
@@ -160,14 +160,14 @@ class PostCard extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           IconButton(
-            icon: const Icon(Icons.chat_bubble_outline, color: AppTheme.textVariant, size: 22),
+            icon: Icon(Icons.chat_bubble_outline, color: AppTheme.textVariant, size: 22),
             onPressed: () => _openDetail(context, postId),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
           const SizedBox(width: 8),
           IconButton(
-            icon: const Icon(Icons.share_outlined, color: AppTheme.textVariant, size: 22),
+            icon: Icon(Icons.share_outlined, color: AppTheme.textVariant, size: 22),
             onPressed: () => _sharePost(context),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
@@ -175,7 +175,7 @@ class PostCard extends StatelessWidget {
           const Spacer(),
           if (showDelete && onDelete != null)
             IconButton(
-              icon: const Icon(Icons.more_horiz, color: AppTheme.textVariant, size: 22),
+              icon: Icon(Icons.more_horiz, color: AppTheme.textVariant, size: 22),
               onPressed: () => _showOptions(context),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
@@ -191,7 +191,7 @@ class PostCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Text(
         '$count likes',
-        style: const TextStyle(color: AppTheme.textMain, fontWeight: FontWeight.bold, fontSize: 13),
+        style: TextStyle(color: AppTheme.textMain, fontWeight: FontWeight.bold, fontSize: 13),
       ),
     );
   }
@@ -201,7 +201,7 @@ class PostCard extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(12, 4, 12, 2),
       child: RichText(
         text: TextSpan(
-          style: const TextStyle(color: AppTheme.textMain, fontSize: 13),
+          style: TextStyle(color: AppTheme.textMain, fontSize: 13),
           children: [
             TextSpan(
               text: '$pseudo  ',
@@ -222,7 +222,7 @@ class PostCard extends StatelessWidget {
         onTap: () => _openDetail(context, postId),
         child: Text(
           'View all $count comments',
-          style: const TextStyle(color: AppTheme.textVariant, fontSize: 13),
+          style: TextStyle(color: AppTheme.textVariant, fontSize: 13),
         ),
       ),
     );
@@ -257,10 +257,10 @@ class PostCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const SizedBox(height: 8),
-            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+            Container(width: 40, height: 4, decoration: BoxDecoration(color: AppTheme.textVariant.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(2))),
             ListTile(
-              leading: const Icon(Icons.delete, color: AppTheme.errorColor),
-              title: const Text('Delete post', style: TextStyle(color: AppTheme.errorColor)),
+              leading: Icon(Icons.delete, color: AppTheme.errorColor),
+              title: Text('Delete post', style: TextStyle(color: AppTheme.errorColor)),
               onTap: () {
                 Navigator.pop(ctx);
                 onDelete?.call();

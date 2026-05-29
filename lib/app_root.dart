@@ -18,6 +18,7 @@ import 'data/services/supabase_backend_service.dart';
 import 'features/auth/auth_cubit.dart';
 import 'features/auth/presentation/screens/splash_screen.dart';
 import 'features/auth/presentation/screens/login_screen.dart';
+import 'features/theme/theme_cubit.dart';
 import 'features/gamification/gamification_cubit.dart';
 import 'features/profile/profile_cubit.dart';
 import 'features/profile/presentation/screens/profile_setup_screens.dart';
@@ -221,13 +222,29 @@ class ProdixApp extends StatelessWidget {
               profileCubit: context.read<ProfileCubit>(),
             )..init(),
           ),
+          BlocProvider(
+            create: (_) => ThemeCubit()..load(),
+          ),
         ],
-        child: MaterialApp(
-          navigatorKey: navigatorKey,
-          debugShowCheckedModeBanner: false,
-          title: 'Prodix - TeamUp',
-          theme: AppTheme.futuristicDark(),
-          home: const _RootView(),
+        child: Builder(
+          builder: (ctx) {
+            final themeMode = ctx.watch<ThemeCubit>().themeMode;
+            final brightness = themeMode == ThemeMode.light
+                ? Brightness.light
+                : themeMode == ThemeMode.dark
+                    ? Brightness.dark
+                    : WidgetsBinding.instance.platformDispatcher.platformBrightness;
+            AppTheme.setBrightness(brightness);
+            return MaterialApp(
+              navigatorKey: navigatorKey,
+              debugShowCheckedModeBanner: false,
+              title: 'Prodix - TeamUp',
+              theme: AppTheme.futuristicLight(),
+              darkTheme: AppTheme.futuristicDark(),
+              themeMode: themeMode,
+              home: const _RootView(),
+            );
+          },
         ),
       ),
     );

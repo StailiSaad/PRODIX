@@ -117,7 +117,7 @@ class _MatchmakingSearchScreenState extends State<MatchmakingSearchScreen> {
       context: context,
       backgroundColor: AppTheme.cardColor,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) {
@@ -175,7 +175,7 @@ class _MatchmakingSearchScreenState extends State<MatchmakingSearchScreen> {
                           : null,
                       child: (avatarUrl == null || avatarUrl.isEmpty)
                           ? Text(pseudo.isNotEmpty ? pseudo[0].toUpperCase() : '?',
-                              style: const TextStyle(
+                              style: TextStyle(
                                   color: AppTheme.primaryColor, fontSize: 36))
                           : null,
                     ),
@@ -186,7 +186,7 @@ class _MatchmakingSearchScreenState extends State<MatchmakingSearchScreen> {
                         AnimatedBadge(level: level, size: 28),
                         const SizedBox(width: 8),
                         Text(pseudo,
-                            style: const TextStyle(
+                            style: TextStyle(
                                 color: AppTheme.textMain,
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold)),
@@ -209,14 +209,14 @@ class _MatchmakingSearchScreenState extends State<MatchmakingSearchScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Bio',
+                            Text('Bio',
                                 style: TextStyle(
                                     color: AppTheme.textGrey,
                                     fontSize: 11,
                                     fontWeight: FontWeight.bold)),
                             const SizedBox(height: 6),
                             Text(bio,
-                                style: const TextStyle(
+                                style: TextStyle(
                                     color: AppTheme.textMain, fontSize: 13)),
                           ],
                         ),
@@ -234,7 +234,7 @@ class _MatchmakingSearchScreenState extends State<MatchmakingSearchScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('JEUX FAVORIS',
+                            Text('JEUX FAVORIS',
                                 style: TextStyle(
                                     color: AppTheme.textGrey,
                                     fontSize: 11,
@@ -250,7 +250,7 @@ class _MatchmakingSearchScreenState extends State<MatchmakingSearchScreen> {
                                   border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.3)),
                                 ),
                                 child: Text(g,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                         color: AppTheme.primaryColor,
                                         fontSize: 11,
                                         fontWeight: FontWeight.w500)),
@@ -476,7 +476,7 @@ class _MatchmakingSearchScreenState extends State<MatchmakingSearchScreen> {
       context: context,
       backgroundColor: AppTheme.cardColor,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) {
@@ -495,7 +495,7 @@ class _MatchmakingSearchScreenState extends State<MatchmakingSearchScreen> {
                   children: [
                     Row(
                       children: [
-                        const Text('FILTRES',
+                        Text('FILTRES',
                             style: TextStyle(
                                 color: AppTheme.textWhite,
                                 fontSize: 20,
@@ -513,7 +513,7 @@ class _MatchmakingSearchScreenState extends State<MatchmakingSearchScreen> {
                               localGames = [];
                             });
                           },
-                          child: const Text('Tout effacer',
+                          child: Text('Tout effacer',
                               style: TextStyle(color: AppTheme.primaryColor)),
                         ),
                       ],
@@ -597,7 +597,7 @@ class _MatchmakingSearchScreenState extends State<MatchmakingSearchScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label,
-            style: const TextStyle(color: AppTheme.textGrey, fontSize: 12, fontWeight: FontWeight.bold)),
+            style: TextStyle(color: AppTheme.textGrey, fontSize: 12, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -618,8 +618,8 @@ class _MatchmakingSearchScreenState extends State<MatchmakingSearchScreen> {
                       color: AppTheme.textGrey.withValues(alpha: 0.6), fontSize: 14)),
               isExpanded: true,
               dropdownColor: AppTheme.cardHighColor,
-              style: const TextStyle(color: AppTheme.textWhite, fontSize: 14),
-              icon: const Icon(Icons.expand_more, color: AppTheme.textGrey),
+              style: TextStyle(color: AppTheme.textWhite, fontSize: 14),
+              icon: Icon(Icons.expand_more, color: AppTheme.textGrey),
               items: [
                 DropdownMenuItem(
                   value: null,
@@ -766,7 +766,7 @@ class _MatchmakingSearchScreenState extends State<MatchmakingSearchScreen> {
                           color: AppTheme.errorColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.close,
+                        child: Icon(Icons.close,
                             color: AppTheme.errorColor, size: 18),
                       ),
                     ),
@@ -898,7 +898,7 @@ class _MatchmakingSearchScreenState extends State<MatchmakingSearchScreen> {
                                 children: [
                                   Icon(Icons.people_outline,
                                       size: 64,
-                                      color: Colors.white.withValues(alpha: 0.1)),
+                                      color: AppTheme.textVariant.withValues(alpha: 0.2)),
                                   const SizedBox(height: 16),
                                   Text('Aucun joueur trouvé.',
                                       style: TextStyle(
@@ -974,7 +974,7 @@ class _FilterChip extends StatelessWidget {
   final String? value;
   final VoidCallback onTap;
 
-  const _FilterChip({
+  _FilterChip({
     required this.label,
     required this.active,
     this.value,
@@ -1025,7 +1025,7 @@ class _PlayerCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onInvite;
 
-  const _PlayerCard({
+  _PlayerCard({
     required this.pseudo,
     required this.level,
     required this.role,
@@ -1054,9 +1054,9 @@ class _PlayerCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF171F33),
+          color: AppTheme.cardColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+          border: Border.all(color: AppTheme.outlineColor.withValues(alpha: 0.2)),
         ),
         child: Row(
           children: [
@@ -1066,7 +1066,7 @@ class _PlayerCard extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 28,
-                  backgroundColor: const Color(0xFF2D3449),
+                  backgroundColor: AppTheme.cardHighestColor,
                   backgroundImage: (avatarUrl != null && avatarUrl!.isNotEmpty)
                       ? NetworkImage(avatarUrl!)
                       : null,
@@ -1172,9 +1172,9 @@ class _ProfileInfoRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label,
-              style: const TextStyle(color: AppTheme.textGrey, fontSize: 13)),
+              style: TextStyle(color: AppTheme.textGrey, fontSize: 13)),
           Text(value,
-              style: const TextStyle(
+              style: TextStyle(
                   color: AppTheme.textWhite,
                   fontSize: 13,
                   fontWeight: FontWeight.bold)),
@@ -1209,7 +1209,7 @@ class _GameFilterWidget extends StatefulWidget {
   final List<String> selectedGames;
   final ValueChanged<List<String>> onSelectionChanged;
 
-  const _GameFilterWidget({
+  _GameFilterWidget({
     required this.selectedGames,
     required this.onSelectionChanged,
   });
@@ -1256,10 +1256,10 @@ class _GameFilterWidgetState extends State<_GameFilterWidget> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('JEU',
+          Text('JEU',
               style: TextStyle(color: AppTheme.textGrey, fontSize: 12, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
-          const Center(child: SizedBox(
+          Center(child: SizedBox(
             width: 20, height: 20,
             child: CircularProgressIndicator(strokeWidth: 2),
           )),
@@ -1277,7 +1277,7 @@ class _GameFilterWidgetState extends State<_GameFilterWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('JEU',
+        Text('JEU',
             style: TextStyle(color: AppTheme.textGrey, fontSize: 12, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         Container(
@@ -1293,13 +1293,13 @@ class _GameFilterWidgetState extends State<_GameFilterWidget> {
           ),
           child: Row(
             children: [
-              const Icon(Icons.search, color: AppTheme.textGrey, size: 20),
+              Icon(Icons.search, color: AppTheme.textGrey, size: 20),
               const SizedBox(width: 8),
               Expanded(
                 child: TextField(
                   controller: _searchCtrl,
-                  style: const TextStyle(color: AppTheme.textWhite, fontSize: 14),
-                  decoration: const InputDecoration(
+                  style: TextStyle(color: AppTheme.textWhite, fontSize: 14),
+                  decoration: InputDecoration(
                     hintText: 'Rechercher un jeu...',
                     hintStyle: TextStyle(color: AppTheme.textGrey),
                     border: InputBorder.none,
@@ -1309,7 +1309,7 @@ class _GameFilterWidgetState extends State<_GameFilterWidget> {
               ),
               if (selected.isNotEmpty)
                 IconButton(
-                  icon: const Icon(Icons.close, color: AppTheme.textGrey, size: 18),
+                  icon: Icon(Icons.close, color: AppTheme.textGrey, size: 18),
                   onPressed: () {
                     _searchCtrl.clear();
                     widget.onSelectionChanged([]);
@@ -1331,9 +1331,9 @@ class _GameFilterWidgetState extends State<_GameFilterWidget> {
             child: Wrap(
               spacing: 6, runSpacing: 6,
               children: selected.map((g) => Chip(
-                label: Text(g, style: const TextStyle(color: Colors.white, fontSize: 11)),
+                label: Text(g, style: TextStyle(color: AppTheme.textWhite, fontSize: 11)),
                 backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.3),
-                deleteIcon: const Icon(Icons.close, size: 14, color: Colors.white70),
+                deleteIcon: Icon(Icons.close, size: 14, color: AppTheme.textVariant),
                 onDeleted: () {
                   final updated = List<String>.from(selected)..remove(g);
                   widget.onSelectionChanged(updated);

@@ -23,7 +23,7 @@ class TeamChatScreen extends StatefulWidget {
   final String channelId;
   final String? teamAvatar;
 
-  const TeamChatScreen({
+  TeamChatScreen({
     super.key,
     required this.teamId,
     required this.teamName,
@@ -296,14 +296,14 @@ class _TeamChatScreenState extends State<TeamChatScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.cardColor,
-        title: const Text('Supprimer le message',
+        title: Text('Supprimer le message',
             style: TextStyle(color: AppTheme.textMain)),
-        content: const Text('Cette action est irréversible.',
+        content: Text('Cette action est irréversible.',
             style: TextStyle(color: AppTheme.textVariant)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Annuler',
+            child: Text('Annuler',
                 style: TextStyle(color: AppTheme.textVariant)),
           ),
           TextButton(
@@ -374,14 +374,14 @@ class _TeamChatScreenState extends State<TeamChatScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.cardColor,
-        title: const Text('Quitter l\'équipe',
+        title: Text('Quitter l\'équipe',
             style: TextStyle(color: AppTheme.textMain)),
-        content: const Text('Êtes-vous sûr de vouloir quitter cette équipe ?',
+        content: Text('Êtes-vous sûr de vouloir quitter cette équipe ?',
             style: TextStyle(color: AppTheme.textVariant)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Annuler',
+            child: Text('Annuler',
                 style: TextStyle(color: AppTheme.textVariant)),
           ),
           TextButton(
@@ -426,7 +426,7 @@ class _TeamChatScreenState extends State<TeamChatScreen> {
                     : null,
                 child: _teamAvatar == null
                     ? Text(widget.teamName[0].toUpperCase(),
-                        style: const TextStyle(
+                        style: TextStyle(
                             color: AppTheme.primaryColor, fontSize: 14))
                     : null,
               ),
@@ -434,7 +434,7 @@ class _TeamChatScreenState extends State<TeamChatScreen> {
               Flexible(
                 child: Text(widget.teamName,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: AppTheme.textMain, fontSize: 16)),
               ),
             ],
@@ -443,16 +443,16 @@ class _TeamChatScreenState extends State<TeamChatScreen> {
         actions: [
           if (_members.any((m) => m['user_id'] != _currentUserId)) ...[
             IconButton(
-              icon: const Icon(Icons.phone, color: AppTheme.tertiaryColor),
+              icon: Icon(Icons.phone, color: AppTheme.tertiaryColor),
               onPressed: () => _startTeamCall('audio'),
             ),
             IconButton(
-              icon: const Icon(Icons.videocam, color: AppTheme.tertiaryColor),
+              icon: Icon(Icons.videocam, color: AppTheme.tertiaryColor),
               onPressed: () => _startTeamCall('video'),
             ),
           ],
           IconButton(
-            icon: const Icon(Icons.info_outline, color: AppTheme.textVariant),
+            icon: Icon(Icons.info_outline, color: AppTheme.textVariant),
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -477,7 +477,7 @@ class _TeamChatScreenState extends State<TeamChatScreen> {
                       _buildPendingMediaBar(),
                     Expanded(
                       child: _messages.isEmpty
-                          ? const Center(
+                          ? Center(
                               child: Text('Aucun message',
                                   style:
                                       TextStyle(color: AppTheme.textVariant)))
@@ -549,13 +549,13 @@ class _TeamChatScreenState extends State<TeamChatScreen> {
             Icon(Icons.lock_outline,
                 size: 64, color: AppTheme.textVariant.withValues(alpha: 0.5)),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Adhésion en attente d\'approbation',
               textAlign: TextAlign.center,
               style: TextStyle(color: AppTheme.textMain, fontSize: 16),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Veuillez approuver votre adhésion dans les paramètres de l\'équipe.',
               textAlign: TextAlign.center,
               style: TextStyle(color: AppTheme.textVariant, fontSize: 13),
@@ -630,7 +630,7 @@ class _TeamChatScreenState extends State<TeamChatScreen> {
                                   if (dur != null)
                                     Text(
                                       '${dur ~/ 60}:${(dur % 60).toString().padLeft(2, '0')}',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                           color: AppTheme.textVariant,
                                           fontSize: 10),
                                     ),
@@ -695,14 +695,14 @@ class _TeamChatScreenState extends State<TeamChatScreen> {
             const SizedBox(width: 8),
             Text(
               '${_recordElapsed ~/ 60}:${(_recordElapsed % 60).toString().padLeft(2, '0')}',
-              style: const TextStyle(
+              style: TextStyle(
                   color: AppTheme.textMain,
                   fontSize: 16,
                   fontWeight: FontWeight.w500),
             ),
             const Spacer(),
             Text('0:30',
-                style: const TextStyle(
+                style: TextStyle(
                     color: AppTheme.textVariant, fontSize: 13)),
             const SizedBox(width: 8),
             GestureDetector(
@@ -713,7 +713,7 @@ class _TeamChatScreenState extends State<TeamChatScreen> {
                   color: AppTheme.primaryColor.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.stop, color: AppTheme.primaryColor, size: 20),
+                child: Icon(Icons.stop, color: AppTheme.primaryColor, size: 20),
               ),
             ),
           ],
@@ -734,7 +734,7 @@ class _TeamChatScreenState extends State<TeamChatScreen> {
                 color: AppTheme.cardHighColor,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.photo, color: AppTheme.textVariant, size: 20),
+              child: Icon(Icons.photo, color: AppTheme.textVariant, size: 20),
             ),
           ),
           const SizedBox(width: 4),
@@ -746,7 +746,7 @@ class _TeamChatScreenState extends State<TeamChatScreen> {
                 color: AppTheme.cardHighColor,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.attach_file, color: AppTheme.textVariant, size: 20),
+              child: Icon(Icons.attach_file, color: AppTheme.textVariant, size: 20),
             ),
           ),
           const SizedBox(width: 4),
@@ -758,17 +758,17 @@ class _TeamChatScreenState extends State<TeamChatScreen> {
                 color: AppTheme.cardHighColor,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.mic, color: AppTheme.primaryColor, size: 20),
+              child: Icon(Icons.mic, color: AppTheme.primaryColor, size: 20),
             ),
           ),
           const SizedBox(width: 8),
           Expanded(
             child: TextField(
               controller: _msgCtrl,
-              style: const TextStyle(color: AppTheme.textMain),
+              style: TextStyle(color: AppTheme.textMain),
               decoration: InputDecoration(
                 hintText: 'Message',
-                hintStyle: const TextStyle(color: AppTheme.textVariant),
+                hintStyle: TextStyle(color: AppTheme.textVariant),
                 filled: true,
                 fillColor: AppTheme.cardHighColor,
                 border: OutlineInputBorder(
@@ -816,7 +816,7 @@ class _MessageBubble extends StatefulWidget {
   final String? status;
   final VoidCallback? onDelete;
 
-  const _MessageBubble({
+  _MessageBubble({
     required this.message,
     required this.senderName,
     required this.senderAvatar,
@@ -873,7 +873,7 @@ class _MessageBubbleState extends State<_MessageBubble> {
                 if (icon != null) Icon(icon, color: AppTheme.textVariant, size: 14),
                 if (icon != null) const SizedBox(width: 6),
                 Text(widget.message,
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: AppTheme.textVariant, fontSize: 12)),
               ],
             ),
@@ -899,7 +899,7 @@ class _MessageBubbleState extends State<_MessageBubble> {
                     : null,
                 child: (widget.senderAvatar == null || widget.senderAvatar!.isEmpty)
                     ? Text(widget.senderName[0].toUpperCase(),
-                        style: const TextStyle(color: AppTheme.primaryColor, fontSize: 11))
+                        style: TextStyle(color: AppTheme.primaryColor, fontSize: 11))
                     : null,
               ),
             ),
@@ -931,7 +931,7 @@ class _MessageBubbleState extends State<_MessageBubble> {
                           AnimatedBadge(level: widget.senderLevel, size: 16),
                           const SizedBox(width: 4),
                           Text(widget.senderName,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   color: AppTheme.primaryColor,
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold)),
@@ -945,14 +945,14 @@ class _MessageBubbleState extends State<_MessageBubble> {
                             ? const EdgeInsets.only(top: 8)
                             : EdgeInsets.zero,
                         child: Text(widget.message,
-                            style: const TextStyle(
+                            style: TextStyle(
                                 color: AppTheme.textMain, fontSize: 14)),
                       ),
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(widget.time,
-                            style: const TextStyle(
+                            style: TextStyle(
                                 color: AppTheme.textVariant, fontSize: 10)),
                         if (widget.isMe) ...[
                           const SizedBox(width: 4),
@@ -996,7 +996,7 @@ class _MessageBubbleState extends State<_MessageBubble> {
                 width: 200,
                 height: 200,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Icon(Icons.broken_image,
+                errorBuilder: (_, __, ___) => Icon(Icons.broken_image,
                     color: AppTheme.textVariant)),
           ),
         );
@@ -1017,7 +1017,7 @@ class _MessageBubbleState extends State<_MessageBubble> {
               const SizedBox(width: 8),
               Flexible(
                 child: Text(widget.mediaName ?? 'Fichier',
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontSize: 13,
                         decoration: TextDecoration.underline)),
@@ -1038,7 +1038,7 @@ class _TeamInfoScreen extends StatelessWidget {
   final bool isOwner;
   final VoidCallback onLeave;
 
-  const _TeamInfoScreen({
+  _TeamInfoScreen({
     required this.teamId,
     required this.teamName,
     this.teamAvatar,
@@ -1062,14 +1062,14 @@ class _TeamInfoScreen extends StatelessWidget {
                   teamAvatar != null ? NetworkImage(teamAvatar!) : null,
               child: teamAvatar == null
                   ? Text(teamName[0].toUpperCase(),
-                      style: const TextStyle(
+                      style: TextStyle(
                           color: AppTheme.primaryColor, fontSize: 14))
                   : null,
             ),
             const SizedBox(width: 8),
             Text(teamName,
                 style:
-                    const TextStyle(color: AppTheme.textMain, fontSize: 16)),
+                    TextStyle(color: AppTheme.textMain, fontSize: 16)),
           ],
         ),
       ),
@@ -1079,7 +1079,7 @@ class _TeamInfoScreen extends StatelessWidget {
             Expanded(
               child: GridView.builder(
                 padding: const EdgeInsets.all(12),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
                   crossAxisSpacing: 8,
                   mainAxisSpacing: 8,
@@ -1107,13 +1107,13 @@ class _TeamInfoScreen extends StatelessWidget {
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      const Icon(Icons.mic,
+                                      Icon(Icons.mic,
                                           color: AppTheme.primaryColor,
                                           size: 28),
                                       if (dur != null)
                                         Text(
                                           '${dur ~/ 60}:${(dur % 60).toString().padLeft(2, '0')}',
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                               color: AppTheme.textVariant,
                                               fontSize: 10),
                                         ),
@@ -1130,7 +1130,7 @@ class _TeamInfoScreen extends StatelessWidget {
               ),
             )
           else
-            const Expanded(
+            Expanded(
               child: Center(
                 child: Text('Aucun média partagé',
                     style: TextStyle(color: AppTheme.textVariant)),
@@ -1155,7 +1155,7 @@ class _TeamInfoScreen extends StatelessWidget {
                         label: const Text('Gérer les membres'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppTheme.primaryColor,
-                          side: const BorderSide(color: AppTheme.primaryColor),
+                          side: BorderSide(color: AppTheme.primaryColor),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
                         onPressed: () {
@@ -1209,11 +1209,11 @@ class _TeamMediaGalleryScreen extends StatelessWidget {
       backgroundColor: AppTheme.bgColor,
       appBar: AppBar(
         backgroundColor: AppTheme.bgColor,
-        title: const Text('Médias partagés',
+        title: Text('Médias partagés',
             style: TextStyle(color: AppTheme.textMain)),
       ),
       body: messages.isEmpty
-          ? const Center(
+          ? Center(
               child: Text('Aucun média partagé',
                   style: TextStyle(color: AppTheme.textVariant)))
           : ListView.builder(
@@ -1236,8 +1236,8 @@ class _TeamMediaGalleryScreen extends StatelessWidget {
                       color: AppTheme.primaryColor,
                     ),
                     title: Text(name,
-                        style: const TextStyle(color: AppTheme.textMain)),
-                    trailing: const Icon(Icons.open_in_new,
+                        style: TextStyle(color: AppTheme.textMain)),
+                    trailing: Icon(Icons.open_in_new,
                         color: AppTheme.primaryColor),
                     onTap: () => launchUrl(Uri.parse(url)),
                   ),

@@ -55,17 +55,17 @@ class _TeamListScreenState extends State<TeamListScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.cardColor,
-        title: const Text('Create Team', style: TextStyle(color: AppTheme.textMain)),
+        title: Text('Create Team', style: TextStyle(color: AppTheme.textMain)),
         content: TextField(
           controller: nameCtrl,
-          style: const TextStyle(color: AppTheme.textMain),
+          style: TextStyle(color: AppTheme.textMain),
           decoration: const InputDecoration(hintText: 'Team name...'),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(ctx, nameCtrl.text.trim()),
-            child: const Text('Create', style: TextStyle(color: AppTheme.primaryColor)),
+            child: Text('Create', style: TextStyle(color: AppTheme.primaryColor)),
           ),
         ],
       ),
@@ -97,7 +97,7 @@ class _TeamListScreenState extends State<TeamListScreen> {
         title: Text('TEAMS', style: theme.textTheme.headlineMedium?.copyWith(color: theme.colorScheme.primary, letterSpacing: -1)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add, color: AppTheme.primaryColor),
+            icon: Icon(Icons.add, color: AppTheme.primaryColor),
             onPressed: _createTeam,
           ),
         ],
@@ -180,7 +180,7 @@ class _TeamListScreenState extends State<TeamListScreen> {
                                       : null,
                                   child: teamAvatar == null
                                       ? Text(name[0].toUpperCase(),
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                               color: AppTheme.primaryColor,
                                               fontSize: 16))
                                       : null,
@@ -205,9 +205,9 @@ class _TeamListScreenState extends State<TeamListScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(name, style: const TextStyle(color: AppTheme.textMain, fontWeight: FontWeight.bold, fontSize: 16)),
+                                  Text(name, style: TextStyle(color: AppTheme.textMain, fontWeight: FontWeight.bold, fontSize: 16)),
                                   const SizedBox(height: 4),
-                                  Text('${members.length} member${members.length == 1 ? '' : 's'}', style: const TextStyle(color: AppTheme.textVariant, fontSize: 13)),
+                                  Text('${members.length} member${members.length == 1 ? '' : 's'}', style: TextStyle(color: AppTheme.textVariant, fontSize: 13)),
                                 ],
                               ),
                             ),
@@ -218,10 +218,10 @@ class _TeamListScreenState extends State<TeamListScreen> {
                                   color: AppTheme.tertiaryColor.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const Text('Owner', style: TextStyle(color: AppTheme.tertiaryColor, fontSize: 11, fontWeight: FontWeight.bold)),
+                                child: Text('Owner', style: TextStyle(color: AppTheme.tertiaryColor, fontSize: 11, fontWeight: FontWeight.bold)),
                               ),
                             const SizedBox(width: 8),
-                            const Icon(Icons.chevron_right, color: AppTheme.textVariant),
+                            Icon(Icons.chevron_right, color: AppTheme.textVariant),
                           ],
                         ),
                       ),

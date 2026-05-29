@@ -359,7 +359,7 @@ class MainScreenState extends State<MainScreen> {
             decoration: BoxDecoration(
               color: theme.colorScheme.surface.withValues(alpha: 0.9),
               border: Border(
-                top: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                top: BorderSide(color: AppTheme.outlineColor.withValues(alpha: 0.2)),
               ),
               boxShadow: [
                 BoxShadow(
@@ -444,7 +444,7 @@ class _IncomingCallDialog extends StatefulWidget {
   final VoidCallback onAccept;
   final VoidCallback onDecline;
 
-  const _IncomingCallDialog({
+  _IncomingCallDialog({
     required this.callerId,
     required this.callType,
     required this.callId,
@@ -486,11 +486,11 @@ class _IncomingCallDialogState extends State<_IncomingCallDialog> {
           ),
           const SizedBox(width: 8),
           Text('Appel de $_callerName',
-              style: const TextStyle(color: AppTheme.textMain)),
+              style: TextStyle(color: AppTheme.textMain)),
         ],
       ),
       content: Text('Appel ${widget.callType == 'video' ? 'vidéo' : 'audio'} entrant...',
-          style: const TextStyle(color: AppTheme.textVariant)),
+          style: TextStyle(color: AppTheme.textVariant)),
       actions: [
         TextButton(
           onPressed: widget.onDecline,
@@ -498,7 +498,7 @@ class _IncomingCallDialogState extends State<_IncomingCallDialog> {
         ),
         TextButton(
           onPressed: widget.onAccept,
-          child: const Text('Accepter',
+          child: Text('Accepter',
               style: TextStyle(color: AppTheme.primaryColor)),
         ),
       ],
@@ -514,7 +514,7 @@ class _IncomingTeamCallDialog extends StatelessWidget {
   final VoidCallback onAccept;
   final VoidCallback onDecline;
 
-  const _IncomingTeamCallDialog({
+  _IncomingTeamCallDialog({
     required this.teamName,
     required this.callerName,
     required this.callType,
@@ -528,11 +528,11 @@ class _IncomingTeamCallDialog extends StatelessWidget {
       backgroundColor: AppTheme.cardColor,
       title: Row(
         children: [
-          const Icon(Icons.groups, color: AppTheme.primaryColor),
+          Icon(Icons.groups, color: AppTheme.primaryColor),
           const SizedBox(width: 8),
           Flexible(
             child: Text('Appel d\'équipe',
-                style: const TextStyle(color: AppTheme.textMain)),
+                style: TextStyle(color: AppTheme.textMain)),
           ),
         ],
       ),
@@ -541,16 +541,16 @@ class _IncomingTeamCallDialog extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('$teamName',
-              style: const TextStyle(
+              style: TextStyle(
                   color: AppTheme.primaryColor,
                   fontSize: 16,
                   fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
           Text('Par $callerName',
-              style: const TextStyle(color: AppTheme.textVariant, fontSize: 13)),
+              style: TextStyle(color: AppTheme.textVariant, fontSize: 13)),
           const SizedBox(height: 8),
           Text('Appel ${callType == 'video' ? 'vidéo' : 'audio'} de groupe',
-              style: const TextStyle(color: AppTheme.textVariant)),
+              style: TextStyle(color: AppTheme.textVariant)),
         ],
       ),
       actions: [
@@ -560,7 +560,7 @@ class _IncomingTeamCallDialog extends StatelessWidget {
         ),
         TextButton(
           onPressed: onAccept,
-          child: const Text('Rejoindre',
+          child: Text('Rejoindre',
               style: TextStyle(color: AppTheme.primaryColor)),
         ),
       ],
@@ -691,7 +691,7 @@ class _TeammatesTabState extends State<_TeammatesTab> {
                                     : null,
                                 child: (avatar == null || avatar.isEmpty)
                                     ? Text(name[0].toUpperCase(),
-                                        style: const TextStyle(color: AppTheme.primaryColor, fontSize: 18))
+                                        style: TextStyle(color: AppTheme.primaryColor, fontSize: 18))
                                     : null,
                               ),
                               if (unread > 0)
@@ -715,20 +715,20 @@ class _TeammatesTabState extends State<_TeammatesTab> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(name,
-                                    style: const TextStyle(color: AppTheme.textMain, fontWeight: FontWeight.bold, fontSize: 16)),
+                                    style: TextStyle(color: AppTheme.textMain, fontWeight: FontWeight.bold, fontSize: 16)),
                                 if (gameType.isNotEmpty || region.isNotEmpty)
                                   Text('$gameType • $region',
-                                      style: const TextStyle(color: AppTheme.textVariant, fontSize: 12)),
+                                      style: TextStyle(color: AppTheme.textVariant, fontSize: 12)),
                               ],
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.message, color: AppTheme.primaryColor, size: 20),
+                            icon: Icon(Icons.message, color: AppTheme.primaryColor, size: 20),
                             onPressed: () => _openDm(t),
                             tooltip: 'Message',
                           ),
                           IconButton(
-                            icon: const Icon(Icons.phone, color: AppTheme.tertiaryColor, size: 20),
+                            icon: Icon(Icons.phone, color: AppTheme.tertiaryColor, size: 20),
                             onPressed: () => _callTeammate(t),
                             tooltip: 'Call',
                           ),

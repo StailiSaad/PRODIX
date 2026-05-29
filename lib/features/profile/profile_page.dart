@@ -293,7 +293,7 @@ class _ProfilePageState extends State<ProfilePage>
                       child: (_localImagePath == null &&
                               (state.avatarUrl == null ||
                                   state.avatarUrl!.isEmpty))
-                          ? const Icon(Icons.person,
+                          ? Icon(Icons.person,
                               size: 44, color: AppTheme.textGrey)
                           : null,
                     ),
@@ -334,7 +334,7 @@ class _ProfilePageState extends State<ProfilePage>
                             state.pseudo.isNotEmpty
                                 ? state.pseudo.toUpperCase()
                                 : 'JOUEUR',
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppTheme.textWhite,
                               fontSize: 22,
                               fontWeight: FontWeight.w900,
@@ -347,7 +347,7 @@ class _ProfilePageState extends State<ProfilePage>
                     const SizedBox(height: 4),
                     Text(
                       '${state.gameType} • ${state.role} • ${state.country.isNotEmpty ? state.country : state.region}',
-                      style: const TextStyle(
+                      style: TextStyle(
                           color: AppTheme.primaryColor, fontSize: 13),
                     ),
                     const SizedBox(height: 6),
@@ -417,12 +417,12 @@ class _ProfilePageState extends State<ProfilePage>
               // Name always shown
               _infoRow(Icons.person, 'Pseudo', state.pseudo,
                   alwaysVisible: true),
-              const Divider(color: AppTheme.cardHighestColor),
+              Divider(color: AppTheme.cardHighestColor),
               // Email — shown only if user opted in
               _infoRow(Icons.email, 'Email',
                   state.showEmail ? state.email : '••••••••',
                   locked: !state.showEmail),
-              const Divider(color: AppTheme.cardHighestColor),
+              Divider(color: AppTheme.cardHighestColor),
               // Phone
               _infoRow(
                   Icons.phone,
@@ -433,7 +433,7 @@ class _ProfilePageState extends State<ProfilePage>
                           : 'Non renseigné')
                       : '••••••••',
                   locked: !state.showPhone),
-              const Divider(color: AppTheme.cardHighestColor),
+              Divider(color: AppTheme.cardHighestColor),
               // Location
               _infoRow(
                   Icons.location_on,
@@ -461,9 +461,9 @@ class _ProfilePageState extends State<ProfilePage>
           child: Column(
             children: [
               _socialRow(Icons.camera_alt, 'Instagram', state.socialInstagram, 'https://instagram.com/'),
-              const Divider(color: AppTheme.cardHighestColor),
+              Divider(color: AppTheme.cardHighestColor),
               _socialRow(Icons.facebook, 'Facebook', state.socialFacebook, 'https://facebook.com/'),
-              const Divider(color: AppTheme.cardHighestColor),
+              Divider(color: AppTheme.cardHighestColor),
               _socialRow(Icons.code, 'GitHub', state.socialGithub, 'https://github.com/'),
             ],
           ),
@@ -482,7 +482,7 @@ class _ProfilePageState extends State<ProfilePage>
               borderRadius: BorderRadius.circular(16),
             ),
             child: Text(state.bio,
-                style: const TextStyle(
+                style: TextStyle(
                     color: AppTheme.textWhite, fontSize: 14, height: 1.5)),
           ),
           const SizedBox(height: 24),
@@ -498,10 +498,10 @@ class _ProfilePageState extends State<ProfilePage>
             children: state.favoriteGames
                 .map((g) => Chip(
                       label: Text(g,
-                          style: const TextStyle(
+                          style: TextStyle(
                               color: AppTheme.textWhite, fontSize: 12)),
                       backgroundColor: AppTheme.cardColor,
-                      side: const BorderSide(color: AppTheme.primaryColor),
+                      side: BorderSide(color: AppTheme.primaryColor),
                     ))
                 .toList(),
           ),
@@ -548,7 +548,7 @@ class _ProfilePageState extends State<ProfilePage>
               style: TextStyle(
                   color: color, fontSize: 16, fontWeight: FontWeight.w900)),
           Text(label,
-              style: const TextStyle(
+              style: TextStyle(
                   color: AppTheme.textGrey,
                   fontSize: 10,
                   fontWeight: FontWeight.bold)),
@@ -570,7 +570,7 @@ class _ProfilePageState extends State<ProfilePage>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label,
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: AppTheme.textGrey, fontSize: 11)),
                 const SizedBox(height: 2),
                 Text(value,
@@ -583,9 +583,9 @@ class _ProfilePageState extends State<ProfilePage>
             ),
           ),
           if (locked && !alwaysVisible)
-            const Icon(Icons.lock_outline, color: AppTheme.textGrey, size: 16),
+            Icon(Icons.lock_outline, color: AppTheme.textGrey, size: 16),
           if (alwaysVisible)
-            const Icon(Icons.public, color: AppTheme.tertiaryColor, size: 16),
+            Icon(Icons.public, color: AppTheme.tertiaryColor, size: 16),
         ],
       ),
     );
@@ -598,9 +598,9 @@ class _ProfilePageState extends State<ProfilePage>
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label,
-              style: const TextStyle(color: AppTheme.textGrey, fontSize: 13)),
+              style: TextStyle(color: AppTheme.textGrey, fontSize: 13)),
           Text(value,
-              style: const TextStyle(
+              style: TextStyle(
                   color: AppTheme.textWhite,
                   fontSize: 13,
                   fontWeight: FontWeight.bold)),
@@ -611,7 +611,7 @@ class _ProfilePageState extends State<ProfilePage>
 
   Widget _sectionTitle(String title) {
     return Text(title,
-        style: const TextStyle(
+        style: TextStyle(
           color: AppTheme.textGrey,
           fontSize: 11,
           fontWeight: FontWeight.bold,
@@ -640,7 +640,7 @@ class _ProfilePageState extends State<ProfilePage>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(label,
-                      style: const TextStyle(
+                      style: TextStyle(
                           color: AppTheme.textGrey, fontSize: 11)),
                   const SizedBox(height: 2),
                   Text(display,
@@ -654,7 +654,7 @@ class _ProfilePageState extends State<ProfilePage>
               ),
             ),
             if (!isEmpty)
-              const Icon(Icons.open_in_new, color: AppTheme.primaryColor, size: 16),
+              Icon(Icons.open_in_new, color: AppTheme.primaryColor, size: 16),
           ],
         ),
       ),
@@ -693,22 +693,22 @@ class _ProfilePageState extends State<ProfilePage>
           ),
           child: Row(
             children: [
-              const Icon(Icons.email, color: AppTheme.textGrey, size: 20),
+              Icon(Icons.email, color: AppTheme.textGrey, size: 20),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Email (compte)',
+                    Text('Email (compte)',
                         style:
                             TextStyle(color: AppTheme.textGrey, fontSize: 11)),
                     Text(state.email,
-                        style: const TextStyle(
+                        style: TextStyle(
                             color: AppTheme.textWhite, fontSize: 14)),
                   ],
                 ),
               ),
-              const Icon(Icons.lock, color: AppTheme.textGrey, size: 16),
+              Icon(Icons.lock, color: AppTheme.textGrey, size: 16),
             ],
           ),
         ),
@@ -746,11 +746,11 @@ class _ProfilePageState extends State<ProfilePage>
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: _countries.contains(_country) ? _country : null,
-              hint: const Text('Sélectionnez votre pays',
+              hint: Text('Sélectionnez votre pays',
                   style: TextStyle(color: AppTheme.textGrey, fontSize: 14)),
               isExpanded: true,
               dropdownColor: AppTheme.cardColor,
-              style: const TextStyle(color: AppTheme.textWhite, fontSize: 14),
+              style: TextStyle(color: AppTheme.textWhite, fontSize: 14),
               items: _countries.isEmpty
                   ? [const DropdownMenuItem(value: '', child: Text('Chargement...'))]
                   : _countries
@@ -830,7 +830,7 @@ class _ProfilePageState extends State<ProfilePage>
             return FilterChip(
               label: Text(g,
                   style: TextStyle(
-                      color: sel ? const Color(0xFF3F008E) : AppTheme.textWhite,
+                      color: sel ? Color(0xFF3F008E) : AppTheme.textWhite,
                       fontSize: 12)),
               selected: sel,
               onSelected: (_) => setState(() {
@@ -915,7 +915,7 @@ class _ProfilePageState extends State<ProfilePage>
       controller: ctrl,
       maxLines: maxLines,
       keyboardType: keyboardType,
-      style: const TextStyle(color: AppTheme.textWhite),
+      style: TextStyle(color: AppTheme.textWhite),
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: icon != null
@@ -932,7 +932,7 @@ class _ProfilePageState extends State<ProfilePage>
       initialValue: safeValue,
       decoration: InputDecoration(labelText: label),
       dropdownColor: AppTheme.cardColor,
-      style: const TextStyle(color: AppTheme.textWhite, fontSize: 14),
+      style: TextStyle(color: AppTheme.textWhite, fontSize: 14),
       items:
           items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
       onChanged: onChanged,
