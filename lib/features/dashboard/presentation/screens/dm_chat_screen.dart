@@ -50,7 +50,7 @@ class _DmChatScreenState extends State<DmChatScreen> {
   int _peerLevel = 1;
   final AudioPlayer _previewPlayer = AudioPlayer();
   int _previewPlayingIndex = -1;
-  String? _debugInfo;
+
 
   @override
   void initState() {
@@ -62,7 +62,6 @@ class _DmChatScreenState extends State<DmChatScreen> {
     setState(() {
       _loading = true;
       _messages = [];
-      _debugInfo = null;
     });
     _load();
   }
@@ -90,7 +89,6 @@ class _DmChatScreenState extends State<DmChatScreen> {
       setState(() {
         _messages = msgs;
         _loading = false;
-        _debugInfo = 'userId=$_currentUserId peer=${widget.peerId} msgs=${msgs.length}';
       });
       await svc.markMessagesAsSeen(widget.peerId);
       _scrollDown();
@@ -98,7 +96,6 @@ class _DmChatScreenState extends State<DmChatScreen> {
       developer.log('DmChatScreen._load error: $e');
       if (mounted) setState(() {
         _loading = false;
-        _debugInfo = 'ERR: $e\nuserId=$_currentUserId peer=${widget.peerId}';
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -555,24 +552,6 @@ class _DmChatScreenState extends State<DmChatScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                if (_debugInfo != null)
-                  GestureDetector(
-                    onTap: _retry,
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                      color: _debugInfo!.startsWith('ERR:')
-                          ? Colors.red.shade900
-                          : AppTheme.cardHighColor,
-                      child: Text(_debugInfo!,
-                          style: TextStyle(
-                              color: _debugInfo!.startsWith('ERR:')
-                                  ? Colors.red.shade200
-                                  : AppTheme.textVariant,
-                              fontSize: 9,
-                              fontFamily: 'monospace')),
-                    ),
-                  ),
                 Expanded(
                   child: _messages.isEmpty
                       ? Center(
