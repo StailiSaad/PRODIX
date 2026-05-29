@@ -2,16 +2,19 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:ui';
 import '../../../profile/profile_cubit.dart';
 import '../../../../data/services/supabase_backend_service.dart';
+import '../../../../app_root.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/animated_badge.dart';
 import '../../../gamification/gamification_cubit.dart';
 import '../../../posts/posts_cubit.dart';
 import '../../../posts/presentation/screens/posts_feed_screen.dart';
 import '../../../posts/presentation/screens/create_post_screen.dart';
+import '../../../posts/presentation/screens/post_detail_screen.dart';
+import 'dm_chat_screen.dart';
 import 'main_screen.dart';
-import 'dart:ui';
 
 class HomeDashboardScreen extends StatefulWidget {
   const HomeDashboardScreen({super.key});
@@ -31,7 +34,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     _postsCubit = PostsCubit(context.read<SupabaseBackendService>());
     _awardDailyLogin();
     _refreshUnreadCount();
-    _notifTimer = Timer.periodic(const Duration(seconds: 2), (_) => _refreshUnreadCount());
+    // TODO: Replace polling with Realtime subscription to notifications table
+    _notifTimer = Timer.periodic(const Duration(seconds: 30), (_) => _refreshUnreadCount());
   }
 
   @override
@@ -74,37 +78,152 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
       showModalBottomSheet(
         context: context,
         backgroundColor: AppTheme.cardColor,
+        isScrollControlled: true,
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-        builder: (ctx) => Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 12),
-            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text('Notifications', style: theme.textTheme.headlineMedium?.copyWith(color: theme.colorScheme.primary)),
-            ),
-            if (notifs.isEmpty)
-              const Padding(
-                padding: EdgeInsets.all(32),
-                child: Text('No notifications yet', style: TextStyle(color: AppTheme.textVariant)),
-              )
-            else
-              ...notifs.take(10).map((n) {
-                final payload = n['payload'] as Map<String, dynamic>?;
-                final title = payload?['title'] as String? ?? n['type'] as String? ?? 'Notification';
-                final body = payload?['body'] as String? ?? '';
-                return ListTile(
-                  leading: Icon(Icons.notifications, color: theme.colorScheme.primary),
-                  title: Text(title, style: const TextStyle(color: AppTheme.textMain)),
-                  subtitle: body.isNotEmpty ? Text(body, style: const TextStyle(color: AppTheme.textVariant)) : null,
-                );
-              }),
-            const SizedBox(height: 16),
-          ],
+        builder: (ctx) => DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          minChildSize: 0.3,
+          maxChildSize: 0.85,
+          expand: false,
+          builder: (_, scrollController) => Column(
+            children: [
+              const SizedBox(height: 12),
+              Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text('Notifications', style: theme.textTheme.headlineMedium?.copyWith(color: theme.colorScheme.primary)),
+              ),
+              if (notifs.isEmpty)
+                const Expanded(
+                  child: Center(child: Text('No notifications yet', style: TextStyle(color: AppTheme.textVariant))),
+                )
+              else
+                Expanded(
+                  child: ListView(
+                    controller: scrollController,
+                    padding: EdgeInsets.zero,
+                    children: notifs.take(20).map((n) {
+                      final payload = n['payload'] as Map<String, dynamic>? ?? {};
+                      final type = n['type'] as String? ?? '';
+                      final actorPseudo = payload['actor_pseudo'] as String? ?? '';
+                      final actorAvatarUrl = payload['actor_avatar_url'] as String?;
+                      final title = _notificationTitle(type, actorPseudo);
+                      final body = payload['body'] as String? ?? '';
+                      final time = _formatTime(n['created_at'] as String?);
+
+                      return ListTile(
+                        leading: CircleAvatar(
+                          radius: 20,
+                          backgroundImage: actorAvatarUrl != null && actorAvatarUrl.isNotEmpty
+                              ? NetworkImage(actorAvatarUrl)
+                              : null,
+                          backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
+                          child: actorAvatarUrl == null || actorAvatarUrl.isEmpty
+                              ? Icon(Icons.person, color: theme.colorScheme.primary, size: 20)
+                              : null,
+                        ),
+                        title: Text(
+                          title,
+                          style: const TextStyle(color: AppTheme.textMain, fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: Text(
+                          body.isNotEmpty ? '$body • $time' : time,
+                          style: const TextStyle(color: AppTheme.textVariant, fontSize: 12),
+                        ),
+                        onTap: () {
+                          Navigator.of(ctx).pop();
+                          _handleNotifTap(type, payload);
+                        },
+                      );
+                    }).toList(),
+                  ),
+                ),
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       );
     } catch (_) {}
+  }
+
+  String _notificationTitle(String type, String actorPseudo) {
+    if (actorPseudo.isNotEmpty) {
+      switch (type) {
+        case 'post_like':
+          return '$actorPseudo liked your post';
+        case 'post_comment':
+          return '$actorPseudo commented on your post';
+        case 'comment_reply':
+          return '$actorPseudo replied to your comment';
+        case 'comment_like':
+          return '$actorPseudo liked your comment';
+        case 'message':
+          return '$actorPseudo sent you a message';
+        case 'call':
+        case 'missed_call':
+          return '$actorPseudo called you';
+        case 'invitation':
+          return '$actorPseudo invited you';
+        case 'team_call_invite':
+          return '$actorPseudo invited you to a team call';
+        case 'squad_call_invite':
+          return '$actorPseudo invited you to a squad call';
+        default:
+          return actorPseudo;
+      }
+    }
+    return type;
+  }
+
+  String _formatTime(String? iso) {
+    if (iso == null) return '';
+    try {
+      final dt = DateTime.parse(iso);
+      final now = DateTime.now();
+      final diff = now.difference(dt);
+      if (diff.inMinutes < 1) return 'now';
+      if (diff.inMinutes < 60) return '${diff.inMinutes}m';
+      if (diff.inHours < 24) return '${diff.inHours}h';
+      return '${diff.inDays}d';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  void _handleNotifTap(String type, Map<String, dynamic> payload) {
+    final navKey = ProdixApp.navigatorKey;
+    final context = navKey.currentContext;
+    if (context == null) return;
+
+    final postId = payload['post_id'] as String?;
+    final actorId = payload['actor_id'] as String?;
+    final actorPseudo = payload['actor_pseudo'] as String? ?? '';
+
+    switch (type) {
+      case 'post_like':
+      case 'post_comment':
+      case 'comment_like':
+      case 'comment_reply':
+        if (postId != null && postId.isNotEmpty) {
+          navKey.currentState?.push(
+            MaterialPageRoute(builder: (_) => PostDetailScreen(postId: postId)),
+          );
+        }
+        break;
+      case 'message':
+      case 'missed_call':
+        if (actorId != null && actorId.isNotEmpty) {
+          navKey.currentState?.push(
+            MaterialPageRoute(
+              builder: (_) => DmChatScreen(peerId: actorId, peerName: actorPseudo),
+            ),
+          );
+        }
+        break;
+      case 'invitation':
+        context.findAncestorStateOfType<MainScreenState>()?.switchToTab(3);
+        break;
+    }
   }
 
   @override

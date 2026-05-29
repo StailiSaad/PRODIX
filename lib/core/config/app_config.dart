@@ -18,11 +18,11 @@ class AppConfig {
         ),
         backendApiUrl = const String.fromEnvironment(
           'BACKEND_API_URL',
-          defaultValue: 'https://sdawgxxx-prodix.hf.space',
+          defaultValue: '',
         ),
         aiGatewayUrl = const String.fromEnvironment(
           'AI_GATEWAY_URL',
-          defaultValue: 'https://sdawgxxx-prodix.hf.space',
+          defaultValue: '',
         ),
         huggingFaceToken = const String.fromEnvironment(
           'HUGGING_FACE_TOKEN',
@@ -38,4 +38,11 @@ class AppConfig {
   bool get hasSupabase => supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
   bool get hasBackendApi => backendApiUrl.isNotEmpty;
   bool get hasAiGateway => aiGatewayUrl.isNotEmpty && huggingFaceToken.isNotEmpty;
+
+  /// Warns in debug mode if any config is missing.
+  void debugCheck() {
+    assert(supabaseUrl.isNotEmpty, 'SUPABASE_URL not set — pass via --dart-define');
+    assert(supabaseAnonKey.isNotEmpty,
+        'SUPABASE_ANON_KEY not set — pass via --dart-define');
+  }
 }

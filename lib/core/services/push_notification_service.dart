@@ -10,8 +10,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../app_root.dart';
 import '../../data/services/supabase_backend_service.dart';
-import '../../features/call/presentation/screens/call_screen.dart';
 import '../../features/dashboard/presentation/screens/dm_chat_screen.dart';
+import '../../features/posts/presentation/screens/post_detail_screen.dart';
 import '../../firebase_options.dart';
 import 'notification_service.dart';
 
@@ -52,7 +52,7 @@ Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
       });
 
       final androidDetails = AndroidNotificationDetails(
-        'incoming_calls_channel',
+        NotificationService.incomingCallChannel,
         'Appels entrants',
         channelDescription: "Notifications d'appels entrants avec actions",
         importance: Importance.max,
@@ -78,7 +78,7 @@ Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
       final callerName = data['caller_name'] ?? 'Someone';
       await _bgPlugin.cancel(1001);
       final androidDetails = AndroidNotificationDetails(
-        'messages_channel',
+        NotificationService.messagesChannel,
         'Messages',
         channelDescription: 'Notifications de messages',
         importance: Importance.defaultImportance,
@@ -95,7 +95,7 @@ Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
       final content = data['content'] ?? '';
 
       final androidDetails = AndroidNotificationDetails(
-        'messages_channel',
+        NotificationService.messagesChannel,
         'Messages',
         channelDescription: 'Notifications de messages',
         importance: Importance.defaultImportance,
@@ -111,7 +111,7 @@ Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
       final senderName = data['sender_name'] ?? 'Someone';
       final content = data['content'] ?? '';
       final androidDetails = AndroidNotificationDetails(
-        'messages_channel',
+        NotificationService.messagesChannel,
         'Messages',
         channelDescription: 'Notifications de messages',
         importance: Importance.defaultImportance,
@@ -312,8 +312,38 @@ class PushNotificationService {
           );
         });
       }
+    } else if (type == 'post_like' || type == 'post_comment' || type == 'comment_reply' || type == 'comment_like') {
+      final postId = data['post_id'] as String?;
+      if (postId != null && postId.isNotEmpty) {
+        _navigateToPostDetail(navKey, postId);
+      }
+    } else if (type == 'missed_call') {
+      final callerId = data['caller_id'] as String? ?? '';
+      if (callerId.isNotEmpty) {
+        context.read<SupabaseBackendService>().getOtherProfile(callerId).then((profile) {
+          final name = profile?['pseudo'] as String? ?? 'Inconnu';
+          final avatar = profile?['avatar_url'] as String?;
+          navKey.currentState?.push(
+            MaterialPageRoute(
+              builder: (_) => DmChatScreen(
+                peerId: callerId,
+                peerName: name,
+                peerAvatar: avatar,
+              ),
+            ),
+          );
+        });
+      }
     } else if (type == 'invitation') {
       PushNavigationBus.add(data);
     }
+  }
+
+  void _navigateToPostDetail(GlobalKey<NavigatorState> navKey, String postId) {
+    navKey.currentState?.push(
+      MaterialPageRoute(
+        builder: (_) => PostDetailScreen(postId: postId),
+      ),
+    );
   }
 }

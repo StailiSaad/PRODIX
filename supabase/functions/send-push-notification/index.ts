@@ -16,7 +16,10 @@ interface PushPayload {
   call_id?: string;
   invitation_id?: string;
   message_id?: string;
+  post_id?: string;
+  comment_id?: string;
   devices: Device[];
+  caller_id?: string;
   caller_name?: string;
   group_name?: string;
   channel_id?: string;
@@ -162,6 +165,8 @@ function buildNotification(payload: PushPayload): { title: string; body: string;
       data["sender_id"] = payload.sender_id ?? "";
       data["sender_name"] = payload.sender_name ?? "";
       data["content"] = payload.content ?? "";
+      data["post_id"] = payload.post_id ?? "";
+      data["comment_id"] = payload.comment_id ?? "";
       const actor = payload.sender_name ?? "Someone";
       return { title: actor, body: payload.content ?? "", data };
   }

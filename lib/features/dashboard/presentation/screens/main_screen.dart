@@ -12,7 +12,9 @@ import '../../../profile/presentation/screens/detailed_stats_screen.dart';
 import '../../../../data/services/supabase_backend_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/foreground_call_service.dart';
+import 'dart:async';
 import 'dart:ui';
+import '../../../../core/services/push_notification_service.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -30,6 +32,7 @@ class MainScreenState extends State<MainScreen> {
   RealtimeChannel? _teamCallChannel;
   RealtimeChannel? _squadCallChannel;
   RealtimeChannel? _invitationChannel;
+  StreamSubscription<Map<String, dynamic>>? _pushNavSub;
 
   void switchToTab(int index) {
     if (index >= 0 && index < _pages.length) {
@@ -56,6 +59,12 @@ class MainScreenState extends State<MainScreen> {
     _cleanStaleCalls();
     _subscribeToTeamCalls();
     _subscribeToSquadCalls();
+    _pushNavSub = PushNavigationBus.stream.listen((data) {
+      final type = data['type'] as String?;
+      if (type == 'invitation' && mounted) {
+        switchToTab(3);
+      }
+    });
   }
 
 
@@ -65,6 +74,7 @@ class MainScreenState extends State<MainScreen> {
     _teamCallChannel?.unsubscribe();
     _squadCallChannel?.unsubscribe();
     _invitationChannel?.unsubscribe();
+    _pushNavSub?.cancel();
     super.dispose();
   }
 
@@ -307,6 +317,7 @@ class MainScreenState extends State<MainScreen> {
     } catch (_) {}
   }
 
+  // TODO: Replace polling with Realtime subscription to messages table
   void _pollUnread() {
     Future.microtask(() async {
       while (mounted) {
@@ -315,11 +326,12 @@ class MainScreenState extends State<MainScreen> {
           final total = counts.values.fold<int>(0, (sum, v) => sum + v);
           if (mounted) setState(() => _totalUnread = total);
         } catch (_) {}
-        await Future.delayed(const Duration(seconds: 10));
+        await Future.delayed(const Duration(seconds: 60));
       }
     });
   }
 
+  // TODO: Replace polling with Realtime subscription to messages table
   void _pollTeamUnread() {
     Future.microtask(() async {
       while (mounted) {
@@ -328,7 +340,7 @@ class MainScreenState extends State<MainScreen> {
           final total = counts.values.fold<int>(0, (sum, v) => sum + v);
           if (mounted) setState(() => _teamUnreadCount = total);
         } catch (_) {}
-        await Future.delayed(const Duration(seconds: 10));
+        await Future.delayed(const Duration(seconds: 60));
       }
     });
   }

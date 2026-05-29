@@ -98,8 +98,8 @@ class _DetailedStatsScreenState extends State<DetailedStatsScreen> {
     super.dispose();
   }
 
-  void _saveProfile() {
-    context.read<ProfileCubit>().saveProfile(
+  Future<void> _saveProfile() async {
+    await context.read<ProfileCubit>().saveProfile(
       pseudo: _pseudoCtrl.text,
       language: _language,
       availability: _availability,
@@ -116,7 +116,7 @@ class _DetailedStatsScreenState extends State<DetailedStatsScreen> {
       socialGithub: _githubCtrl.text,
     );
     context.read<GamificationCubit>().recordEvent('profile_updated');
-    setState(() => _isEditing = false);
+    if (mounted) setState(() => _isEditing = false);
   }
 
   Future<void> _openGamesPicker() async {

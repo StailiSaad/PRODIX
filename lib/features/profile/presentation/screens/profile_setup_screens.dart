@@ -68,7 +68,7 @@ class _ProfileSetupScreensState extends State<ProfileSetupScreens> {
     super.dispose();
   }
 
-  void _finishSetup() {
+  Future<void> _finishSetup() async {
     // Derive availability from day/times selections
     if (_timeRanges['Morning'] == true) {
       _availability = 'morning';
@@ -80,7 +80,7 @@ class _ProfileSetupScreensState extends State<ProfileSetupScreens> {
       _availability = 'night';
     }
 
-    context.read<ProfileCubit>().saveProfile(
+    await context.read<ProfileCubit>().saveProfile(
       pseudo: _gamertagCtrl.text,
 
       language: _language,

@@ -32,7 +32,7 @@ String _supabaseAnonKey = '';
 
 Future<void> bootstrapProdix(AppConfig config) async {
   final backenService = SupabaseBackendService(
-    isEnabled: config.hasBackendApi,
+    isEnabled: config.hasSupabase,
     baseUrl: config.backendApiUrl,
     supabaseUrl: config.supabaseUrl,
   );
@@ -191,7 +191,7 @@ class ProdixApp extends StatelessWidget {
       providers: [
         RepositoryProvider(
           create: (_) => SupabaseBackendService(
-            isEnabled: config.hasBackendApi,
+            isEnabled: config.hasSupabase,
             baseUrl: config.backendApiUrl,
             supabaseUrl: config.supabaseUrl,
           ),
