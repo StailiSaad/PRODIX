@@ -25,7 +25,7 @@ class AboutViewModel @Inject constructor() : ViewModel() {
                     AboutAction(
                         titleRes = R.string.prodix_name,
                         subtitleRes = R.string.prodix_desc,
-                        uri = "https://github.com/anomalyco",
+                        uri = "https://github.com/StailiSaad",
                         type = AboutActionType.DEVELOPER
                     ),
                     AboutAction(

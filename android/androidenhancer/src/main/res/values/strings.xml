@@ -14,9 +14,9 @@
 
     <!-- Prodix About -->
     <string name="prodix_name">PRODIX</string>
-    <string name="prodix_desc">Application de performance Android par PRODIX</string>
+    <string name="prodix_desc">Application de performance Android par StailiSaad</string>
     <string name="prodix_channel">Communauté PRODIX</string>
-    <string name="prodix_channel_desc">Contactez-nous sur GitHub</string>
+    <string name="prodix_channel_desc">Suivez-moi sur GitHub</string>
     <string name="prodix_thanks_looper">Remerciements à Looper</string>
     <string name="prodix_thanks_looper_desc">Merci à Looper pour son aide sur le développement de ce projet</string>
     <string name="log">Log</string>
