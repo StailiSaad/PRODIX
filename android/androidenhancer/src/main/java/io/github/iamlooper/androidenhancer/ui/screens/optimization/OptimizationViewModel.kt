@@ -33,13 +33,6 @@ class OptimizationViewModel @Inject constructor(
     private val _liveLog = MutableStateFlow<List<String>>(emptyList())
     private val _showAdbGrantDialog = MutableStateFlow(false)
     private var adbDialogDismissed = false
-    private var adbGrantActive = false
-
-    init {
-        viewModelScope.launch(Dispatchers.IO) {
-            adbGrantActive = testAdbGrant()
-        }
-    }
 
     val state: StateFlow<OptimizationState> = combine(
         dataStore.snapshotFlow(),
@@ -75,7 +68,6 @@ class OptimizationViewModel @Inject constructor(
 
     fun confirmAdbGrantApplied() {
         adbDialogDismissed = true
-        adbGrantActive = true
         _showAdbGrantDialog.value = false
     }
 
@@ -121,8 +113,10 @@ class OptimizationViewModel @Inject constructor(
             _lastResult.value = "${module.name}: $successCount/$totalCount commandes OK"
             _isApplying.value = null
 
-            if (!execResult.success && !adbGrantActive && !adbDialogDismissed) {
-                _showAdbGrantDialog.value = true
+            if (!execResult.success && !adbDialogDismissed) {
+                if (!testAdbGrant()) {
+                    _showAdbGrantDialog.value = true
+                }
             }
 
             // Always save the toggle state (user intent).
