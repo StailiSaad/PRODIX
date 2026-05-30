@@ -98,4 +98,9 @@
     <string name="notification_channel_boot_service_description">Android Enhancer boot initialization</string>
     <string name="notification_title_boot">Android Enhancer</string>
     <string name="notification_text_boot_init">Initializing on boot...</string>
+
+    <!-- Optimization Modules -->
+    <string name="optimization_title">Optimizations</string>
+    <string name="optimization_section_title">Performance Modules</string>
+    <string name="optimization_home_hint">Apply tweaks for frame pacing, network, GPU, and more</string>
 </resources>

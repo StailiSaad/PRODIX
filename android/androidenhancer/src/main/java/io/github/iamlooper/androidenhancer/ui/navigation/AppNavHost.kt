@@ -43,6 +43,8 @@ import io.github.iamlooper.androidenhancer.ui.screens.log.LogScreen
 import io.github.iamlooper.androidenhancer.ui.screens.log.LogViewModel
 import io.github.iamlooper.androidenhancer.ui.screens.per_app_mode.PerAppModeScreen
 import io.github.iamlooper.androidenhancer.ui.screens.per_app_mode.PerAppModeViewModel
+import io.github.iamlooper.androidenhancer.ui.screens.optimization.OptimizationScreen
+import io.github.iamlooper.androidenhancer.ui.screens.optimization.OptimizationViewModel
 import io.github.iamlooper.androidenhancer.ui.screens.settings.SettingsScreen
 import io.github.iamlooper.androidenhancer.ui.screens.settings.SettingsViewModel
 import kotlinx.coroutines.launch
@@ -60,11 +62,13 @@ fun AppNavHost(
     val aboutViewModel: AboutViewModel = viewModel()
     val modeChangeViewModel: PerAppModeViewModel = viewModel()
     val settingsViewModel: SettingsViewModel = viewModel()
+    val optimizationViewModel: OptimizationViewModel = viewModel()
 
     val aboutState by aboutViewModel.state.collectAsStateWithLifecycle()
     val logState by logViewModel.state.collectAsStateWithLifecycle()
     val modeChangeState by modeChangeViewModel.state.collectAsStateWithLifecycle()
     val settingsState by settingsViewModel.state.collectAsStateWithLifecycle()
+    val optimizationState by optimizationViewModel.state.collectAsStateWithLifecycle()
     val homeState by homeViewModel.uiState.collectAsStateWithLifecycle()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     
@@ -93,6 +97,7 @@ fun AppNavHost(
                             AppDestination.About.route -> stringResource(R.string.about)
                             AppDestination.PerAppMode.route -> stringResource(R.string.per_app_mode)
                             AppDestination.Settings.route -> stringResource(R.string.settings)
+                            AppDestination.Optimization.route -> stringResource(R.string.optimization_title)
                             else -> stringResource(R.string.app_name)
                         },
                         style = MaterialTheme.typography.titleLarge,
@@ -145,7 +150,8 @@ fun AppNavHost(
                     state = homeState,
                     onModeSelected = homeViewModel::setMode,
                     onOpenLog = { navController.navigate(AppDestination.Log.route) },
-                    onOpenPerAppMode = { navController.navigate(AppDestination.PerAppMode.route) }
+                    onOpenPerAppMode = { navController.navigate(AppDestination.PerAppMode.route) },
+                    onOpenOptimization = { navController.navigate(AppDestination.Optimization.route) }
                 )
             }
             composable(AppDestination.Log.route) {
@@ -182,6 +188,12 @@ fun AppNavHost(
                     state = modeChangeState,
                     onSetModeOverride = modeChangeViewModel::setModeOverride,
                     onRemoveModeOverride = modeChangeViewModel::removeModeOverride,
+                )
+            }
+            composable(AppDestination.Optimization.route) {
+                OptimizationScreen(
+                    state = optimizationState,
+                    onToggleModule = optimizationViewModel::toggleModule
                 )
             }
         }

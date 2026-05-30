@@ -30,6 +30,14 @@ object PreferenceKeys {
     val USE_DYNAMIC_THEME = booleanPreferencesKey("use_dynamic_theme")
     val SERVICE_ENABLED = booleanPreferencesKey("service_enabled")
     val TOUCH_BOOST_ENABLED = booleanPreferencesKey("touch_boost_enabled")
+    val OPTIM_FRAME_PACING = booleanPreferencesKey("optim_frame_pacing")
+    val OPTIM_GOOD_PING = booleanPreferencesKey("optim_good_ping")
+    val OPTIM_PERF_EXT = booleanPreferencesKey("optim_perf_ext")
+    val OPTIM_RUNTIME_CONTROL = booleanPreferencesKey("optim_runtime_control")
+    val OPTIM_GAME_PULSE = booleanPreferencesKey("optim_game_pulse")
+    val OPTIM_GPU_BOOST = booleanPreferencesKey("optim_gpu_boost")
+    val OPTIM_AUDIO_TUNING = booleanPreferencesKey("optim_audio_tuning")
+    val OPTIM_HYPER_PERF = booleanPreferencesKey("optim_hyper_perf")
 }
 
 @Serializable
@@ -44,7 +52,15 @@ data class PreferencesSnapshot(
     val pureBlackTheme: Boolean = false,
     val useDynamicTheme: Boolean = true,
     val serviceEnabled: Boolean = false,
-    val touchBoostEnabled: Boolean = true
+    val touchBoostEnabled: Boolean = true,
+    val optimFramePacing: Boolean = false,
+    val optimGoodPing: Boolean = false,
+    val optimPerfExt: Boolean = false,
+    val optimRuntimeControl: Boolean = false,
+    val optimGamePulse: Boolean = false,
+    val optimGpuBoost: Boolean = false,
+    val optimAudioTuning: Boolean = false,
+    val optimHyperPerf: Boolean = false
 ) {
 
     companion object {
@@ -63,7 +79,15 @@ data class PreferencesSnapshot(
                 pureBlackTheme = preferences[PreferenceKeys.PURE_BLACK_THEME] ?: false,
                 useDynamicTheme = preferences[PreferenceKeys.USE_DYNAMIC_THEME] ?: true,
                 serviceEnabled = preferences[PreferenceKeys.SERVICE_ENABLED] ?: false,
-                touchBoostEnabled = preferences[PreferenceKeys.TOUCH_BOOST_ENABLED] ?: true
+                touchBoostEnabled = preferences[PreferenceKeys.TOUCH_BOOST_ENABLED] ?: true,
+                optimFramePacing = preferences[PreferenceKeys.OPTIM_FRAME_PACING] ?: false,
+                optimGoodPing = preferences[PreferenceKeys.OPTIM_GOOD_PING] ?: false,
+                optimPerfExt = preferences[PreferenceKeys.OPTIM_PERF_EXT] ?: false,
+                optimRuntimeControl = preferences[PreferenceKeys.OPTIM_RUNTIME_CONTROL] ?: false,
+                optimGamePulse = preferences[PreferenceKeys.OPTIM_GAME_PULSE] ?: false,
+                optimGpuBoost = preferences[PreferenceKeys.OPTIM_GPU_BOOST] ?: false,
+                optimAudioTuning = preferences[PreferenceKeys.OPTIM_AUDIO_TUNING] ?: false,
+                optimHyperPerf = preferences[PreferenceKeys.OPTIM_HYPER_PERF] ?: false
             )
         }
 
@@ -100,6 +124,14 @@ suspend fun DataStore<Preferences>.updateSnapshot(transform: (PreferencesSnapsho
         prefs[PreferenceKeys.USE_DYNAMIC_THEME] = updated.useDynamicTheme
         prefs[PreferenceKeys.SERVICE_ENABLED] = updated.serviceEnabled
         prefs[PreferenceKeys.TOUCH_BOOST_ENABLED] = updated.touchBoostEnabled
+        prefs[PreferenceKeys.OPTIM_FRAME_PACING] = updated.optimFramePacing
+        prefs[PreferenceKeys.OPTIM_GOOD_PING] = updated.optimGoodPing
+        prefs[PreferenceKeys.OPTIM_PERF_EXT] = updated.optimPerfExt
+        prefs[PreferenceKeys.OPTIM_RUNTIME_CONTROL] = updated.optimRuntimeControl
+        prefs[PreferenceKeys.OPTIM_GAME_PULSE] = updated.optimGamePulse
+        prefs[PreferenceKeys.OPTIM_GPU_BOOST] = updated.optimGpuBoost
+        prefs[PreferenceKeys.OPTIM_AUDIO_TUNING] = updated.optimAudioTuning
+        prefs[PreferenceKeys.OPTIM_HYPER_PERF] = updated.optimHyperPerf
     }
 }
 

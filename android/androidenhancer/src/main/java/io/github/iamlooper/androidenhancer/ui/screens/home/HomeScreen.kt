@@ -53,7 +53,8 @@ fun HomeScreen(
     state: HomeState,
     onModeSelected: (AndroidEnhancerMode) -> Unit,
     onOpenLog: () -> Unit,
-    onOpenPerAppMode: () -> Unit
+    onOpenPerAppMode: () -> Unit,
+    onOpenOptimization: () -> Unit
 ) {
     val perAppModeEnabled = state.mode == AndroidEnhancerMode.AUTO && state.serviceEnabled
 
@@ -80,6 +81,10 @@ fun HomeScreen(
                 serviceEnabled = state.serviceEnabled,
                 onViewProfileOverrides = onOpenPerAppMode
             )
+        }
+
+        item {
+            OptimizationCard(onOpen = onOpenOptimization)
         }
 
         item {
@@ -434,6 +439,69 @@ private fun PerAppModeCard(
                     )
                     Text(
                         text = subtitle,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                Icon(
+                    painter = painterResource(R.drawable.ic_chevron_right),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun OptimizationCard(
+    onOpen: () -> Unit
+) {
+    ElevatedCard(
+        onClick = onOpen,
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.extraLarge,
+        elevation = CardDefaults.elevatedCardElevation(
+            defaultElevation = 3.dp,
+            pressedElevation = 6.dp
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(MaterialTheme.shapes.large)
+                        .background(MaterialTheme.colorScheme.tertiaryContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_bolt),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = stringResource(R.string.optimization_title),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = stringResource(R.string.optimization_home_hint),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
