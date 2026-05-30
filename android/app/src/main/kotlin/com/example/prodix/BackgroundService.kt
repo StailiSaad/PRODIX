@@ -94,18 +94,28 @@ class BackgroundService : Service() {
             return START_NOT_STICKY
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            startForeground(NOTIFICATION_ID, buildPersistentNotification(),
-                android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
-        } else {
-            startForeground(NOTIFICATION_ID, buildPersistentNotification())
-        }
+        // Run startForeground on a background thread to avoid blocking the main thread.
+        // This prevents ANRs if the NotificationManager IPC is slow or the device is busy.
+        Thread {
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                    startForeground(NOTIFICATION_ID, buildPersistentNotification(),
+                        android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+                } else {
+                    startForeground(NOTIFICATION_ID, buildPersistentNotification())
+                }
+                handler.post {
+                    polling = true
+                    handler.removeCallbacks(pollRunnable)
+                    handler.post(pollRunnable)
+                    scheduleWatchdog()
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("BackgroundService", "startForeground failed", e)
+                stopSelf()
+            }
+        }.apply { name = "bg-service-init" }.start()
 
-        polling = true
-        handler.removeCallbacks(pollRunnable)
-        handler.post(pollRunnable)
-
-        scheduleWatchdog()
         return START_STICKY
     }
 
