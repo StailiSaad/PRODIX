@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
@@ -31,7 +32,14 @@ class OptimizationViewModel @Inject constructor(
     private val _lastResult = MutableStateFlow<String?>(null)
     private val _liveLog = MutableStateFlow<List<String>>(emptyList())
     private val _showAdbGrantDialog = MutableStateFlow(false)
-    private var adbCmdEverSucceeded = false
+    private var adbDialogDismissed = false
+    private var adbGrantActive = false
+
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            adbGrantActive = testAdbGrant()
+        }
+    }
 
     val state: StateFlow<OptimizationState> = combine(
         dataStore.snapshotFlow(),
@@ -61,12 +69,30 @@ class OptimizationViewModel @Inject constructor(
     )
 
     fun dismissAdbGrantDialog() {
+        adbDialogDismissed = true
         _showAdbGrantDialog.value = false
     }
 
     fun confirmAdbGrantApplied() {
-        adbCmdEverSucceeded = true
+        adbDialogDismissed = true
+        adbGrantActive = true
         _showAdbGrantDialog.value = false
+    }
+
+    private fun testAdbGrant(): Boolean {
+        return try {
+            val script = File(context.cacheDir, "adb_test_${System.nanoTime()}.sh")
+            script.writeText("#!/system/bin/sh\nsettings put global test_adb_perm 1 2>/dev/null; echo EXIT:\$?\nsettings delete global test_adb_perm 2>/dev/null")
+            script.setExecutable(true)
+            val proc = ProcessBuilder("sh", script.absolutePath)
+                .redirectErrorStream(true)
+                .start()
+            val output = proc.inputStream.bufferedReader().readText()
+            script.delete()
+            output.contains("EXIT:0")
+        } catch (_: Exception) {
+            false
+        }
     }
 
     fun toggleModule(moduleId: String, enable: Boolean) {
@@ -90,10 +116,6 @@ class OptimizationViewModel @Inject constructor(
                 }
             }
 
-            val hasSettingsGlobalFailure = execResult.results.any {
-                !it.success && it.summary.contains("global", ignoreCase = true)
-            }
-
             _lastResult.value = if (execResult.success) {
                 "${module.name}: ${if (enable) "enabled" else "disabled"}"
             } else {
@@ -101,9 +123,7 @@ class OptimizationViewModel @Inject constructor(
             }
             _isApplying.value = null
 
-            if (execResult.success) {
-                adbCmdEverSucceeded = true
-            } else if (hasSettingsGlobalFailure && !adbCmdEverSucceeded) {
+            if (!execResult.success && !adbGrantActive && !adbDialogDismissed) {
                 _showAdbGrantDialog.value = true
             }
 
