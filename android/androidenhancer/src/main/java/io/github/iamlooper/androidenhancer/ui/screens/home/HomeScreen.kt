@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.ui.res.painterResource
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -52,7 +51,6 @@ import kotlinx.coroutines.delay
 fun HomeScreen(
     state: HomeState,
     onModeSelected: (AndroidEnhancerMode) -> Unit,
-    onOpenLog: () -> Unit,
     onOpenPerAppMode: () -> Unit,
     onOpenOptimization: () -> Unit
 ) {
@@ -64,8 +62,6 @@ fun HomeScreen(
             .padding(horizontal = 16.dp, vertical = 20.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-
-
         item {
             GlobalModeCard(
                 currentMode = state.mode,
@@ -85,13 +81,6 @@ fun HomeScreen(
 
         item {
             OptimizationCard(onOpen = onOpenOptimization)
-        }
-
-        item {
-            LogPreviewCard(
-                lines = state.logPreview,
-                onOpenLog = onOpenLog
-            )
         }
     }
 }
@@ -271,114 +260,6 @@ private fun AndroidEnhancerMode.description(): String =
         AndroidEnhancerMode.PERFORMANCE -> stringResource(R.string.mode_selector_description_performance)
         AndroidEnhancerMode.GAMING -> stringResource(R.string.mode_selector_description_gaming)
     }
-
-@Composable
-private fun LogPreviewCard(
-    lines: List<String>,
-    onOpenLog: () -> Unit
-) {
-    ElevatedCard(
-        onClick = onOpenLog,
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.extraLarge,
-        elevation = CardDefaults.elevatedCardElevation(
-            defaultElevation = 3.dp,
-            pressedElevation = 6.dp
-        )
-    ) {
-        Column(
-            modifier = Modifier.padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(56.dp)
-                        .clip(MaterialTheme.shapes.large)
-                        .background(MaterialTheme.colorScheme.secondaryContainer),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_description),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                        modifier = Modifier.size(28.dp)
-                    )
-                }
-
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = stringResource(R.string.log_preview_title),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = stringResource(R.string.log_preview_hint),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Icon(
-                    painter = painterResource(R.drawable.ic_chevron_right),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-
-            if (lines.isEmpty()) {
-                Text(
-                    text = stringResource(R.string.log_empty_title),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                )
-            } else {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    lines.takeLast(3).forEachIndexed { index, line ->
-                        // Spring scale animation for visual feedback
-                        val scale by animateFloatAsState(
-                            targetValue = 1f,
-                            animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioMediumBouncy,
-                                stiffness = Spring.StiffnessLow
-                            ),
-                            label = "log_line_scale_$index"
-                        )
-                        
-                        Card(
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-                            ),
-                            shape = MaterialTheme.shapes.medium,
-                            elevation = CardDefaults.cardElevation(
-                                defaultElevation = 1.dp
-                            ),
-                            modifier = Modifier
-                                .scale(scale)
-                                .fillMaxWidth()
-                        ) {
-                            Text(
-                                text = line,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 
 @Composable
 private fun PerAppModeCard(

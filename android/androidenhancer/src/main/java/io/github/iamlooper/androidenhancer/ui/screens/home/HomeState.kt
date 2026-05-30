@@ -11,7 +11,6 @@ data class HomeState(
     val currentApp: String = "",
     val accessibilityEnabled: Boolean = false,
     val androidEnhancerRunning: Boolean = false,
-    val logPreview: List<String> = emptyList(),
     val installedApps: List<InstalledApp> = emptyList(),
     val isModeUpdating: Boolean = false,
     val serviceEnabled: Boolean = true

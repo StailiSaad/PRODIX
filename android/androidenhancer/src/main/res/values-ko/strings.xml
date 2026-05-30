@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="app_name">Android Enhancer</string>
+    <string name="app_name">Android Tweaker</string>
     <string name="app_description">안드로이드 튜닝의 재해석</string>
     <string name="dismiss">닫기</string>
     <string name="developer">개발자</string>

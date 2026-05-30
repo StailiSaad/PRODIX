@@ -39,8 +39,6 @@ import io.github.iamlooper.androidenhancer.ui.screens.about.AboutScreen
 import io.github.iamlooper.androidenhancer.ui.screens.about.AboutViewModel
 import io.github.iamlooper.androidenhancer.ui.screens.home.HomeScreen
 import io.github.iamlooper.androidenhancer.ui.screens.home.HomeViewModel
-import io.github.iamlooper.androidenhancer.ui.screens.log.LogScreen
-import io.github.iamlooper.androidenhancer.ui.screens.log.LogViewModel
 import io.github.iamlooper.androidenhancer.ui.screens.per_app_mode.PerAppModeScreen
 import io.github.iamlooper.androidenhancer.ui.screens.per_app_mode.PerAppModeViewModel
 import io.github.iamlooper.androidenhancer.ui.screens.optimization.OptimizationScreen
@@ -58,14 +56,12 @@ fun AppNavHost(
     val scope = rememberCoroutineScope()
     
     val homeViewModel: HomeViewModel = viewModel()
-    val logViewModel: LogViewModel = viewModel()
     val aboutViewModel: AboutViewModel = viewModel()
     val modeChangeViewModel: PerAppModeViewModel = viewModel()
     val settingsViewModel: SettingsViewModel = viewModel()
     val optimizationViewModel: OptimizationViewModel = viewModel()
 
     val aboutState by aboutViewModel.state.collectAsStateWithLifecycle()
-    val logState by logViewModel.state.collectAsStateWithLifecycle()
     val modeChangeState by modeChangeViewModel.state.collectAsStateWithLifecycle()
     val settingsState by settingsViewModel.state.collectAsStateWithLifecycle()
     val optimizationState by optimizationViewModel.state.collectAsStateWithLifecycle()
@@ -93,7 +89,6 @@ fun AppNavHost(
                     Text(
                         text = when (currentRoute) {
                             AppDestination.Home.route -> stringResource(R.string.app_name)
-                            AppDestination.Log.route -> stringResource(R.string.log)
                             AppDestination.About.route -> stringResource(R.string.about)
                             AppDestination.PerAppMode.route -> stringResource(R.string.per_app_mode)
                             AppDestination.Settings.route -> stringResource(R.string.settings)
@@ -149,24 +144,8 @@ fun AppNavHost(
                 HomeScreen(
                     state = homeState,
                     onModeSelected = homeViewModel::setMode,
-                    onOpenLog = { navController.navigate(AppDestination.Log.route) },
                     onOpenPerAppMode = { navController.navigate(AppDestination.PerAppMode.route) },
                     onOpenOptimization = { navController.navigate(AppDestination.Optimization.route) }
-                )
-            }
-            composable(AppDestination.Log.route) {
-                LogScreen(
-                    state = logState,
-                    onShare = { context ->
-                        logViewModel.shareLog(context) { message ->
-                            scope.launch { snackbarHostState.showSnackbar(message) }
-                        }
-                    },
-                    onClear = {
-                        logViewModel.clearLog { message ->
-                            scope.launch { snackbarHostState.showSnackbar(message) }
-                        }
-                    }
                 )
             }
             composable(AppDestination.About.route) {

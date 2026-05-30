@@ -18,27 +18,20 @@ class HomeViewModel @Inject constructor(
     private val repository: AppRepository
 ) : ViewModel() {
 
-    private val logPreviewFlow = repository.logPreview.stateIn(
-        viewModelScope,
-        SharingStarted.Eagerly,
-        emptyList()
-    )
     private val modeUpdating = MutableStateFlow(false)
 
     val uiState: StateFlow<HomeState> = combine(
         repository.snapshot,
         repository.isRunning,
-        logPreviewFlow,
         repository.installedApps,
         modeUpdating
-    ) { snapshot, running, logs, apps, isUpdating ->
+    ) { snapshot, running, apps, isUpdating ->
         HomeState(
             mode = snapshot.mode,
             apps = snapshot.apps,
             currentApp = snapshot.currentApp,
             accessibilityEnabled = snapshot.accessibilityEnabled,
             androidEnhancerRunning = running,
-            logPreview = logs,
             installedApps = apps,
             isModeUpdating = isUpdating,
             serviceEnabled = snapshot.serviceEnabled

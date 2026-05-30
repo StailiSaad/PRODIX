@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="app_name">Android Enhancer</string>
+    <string name="app_name">Android Tweaker</string>
     <string name="app_description">Le réglage Android réinventé</string>
     <string name="dismiss">Ignorer</string>
     <string name="developer">Développeur</string>
@@ -29,13 +29,13 @@
     <string name="per_app_modes_hint">Appuyez pour régler les modes par application</string>
     <string name="per_app_modes_disabled">Appuyez pour régler les modes par application (nécessite le mode Auto)</string>
     <string name="per_app_mode_dialog_title">Sélectionner le mode pour %1$s</string>
-    <string name="per_app_mode_dialog_body">Choisissez comment Android Enhancer doit se comporter chaque fois que %1$s est au premier plan.</string>
+    <string name="per_app_mode_dialog_body">Choisissez comment Android Tweaker doit se comporter chaque fois que %1$s est au premier plan.</string>
     <string name="per_app_mode_dialog_remove">Supprimer la substitution</string>
     <string name="per_app_mode_dialog_secondary">Les substitutions spécifiques à l\'application gardent Auto prévisible.</string>
     <string name="per_app_mode_remove_content_desc">Supprimer la substitution de mode</string>
     <string name="scroll_to_bottom">Faire défiler vers le bas</string>
     <string name="scroll_to_top">Faire défiler vers le haut</string>
-    <string name="accessibility_service_description">Fournit un aperçu des applications au premier plan pour qu\'AndroidEnhancer puisse adapter les performances automatiquement.</string>
+    <string name="accessibility_service_description">Fournit un aperçu des applications au premier plan pour qu\'Android Tweaker puisse adapter les performances automatiquement.</string>
     <string name="navigate_back">Naviguer en arrière</string>
     <string name="global_mode_title">Mode global</string>
     <string name="mode_auto_label">Auto</string>
@@ -43,7 +43,7 @@
     <string name="mode_balanced_label">Équilibré</string>
     <string name="mode_performance_label">Performance</string>
     <string name="mode_gaming_label">Gaming</string>
-    <string name="mode_selector_description_auto">Laissez Android Enhancer réagir au contexte en temps réel, équilibrant automatiquement puissance et performance.</string>
+    <string name="mode_selector_description_auto">Laissez Android Tweaker réagir au contexte en temps réel, équilibrant automatiquement puissance et performance.</string>
     <string name="mode_selector_description_powersaver">Réduisez les boosts CPU, GPU et réseau pour étirer la durée de vie de la batterie sur le long terme.</string>
     <string name="mode_selector_description_balanced">Gardez tout fluide avec des performances réactives qui respectent toujours la durée de vie de la batterie.</string>
     <string name="mode_selector_description_performance">Débloquez des boosts agressifs pour les jeux et les applications créatives qui exigent chaque once de vitesse.</string>
@@ -57,7 +57,7 @@
     <!-- Settings -->
     <string name="settings">Paramètres</string>
     <string name="settings_start_on_boot_title">Démarrer au démarrage</string>
-    <string name="settings_start_on_boot_subtitle">Démarrer la logique d\'Android Enhancer au démarrage de l\'appareil</string>
+    <string name="settings_start_on_boot_subtitle">Démarrer la logique d\'Android Tweaker au démarrage de l\'appareil</string>
     <string name="settings_touch_boost_title">Boost tactile</string>
     <string name="settings_touch_boost_subtitle">Booster CPU/GPU au toucher pour une interaction réactive</string>
     <string name="settings_language_title">Langue</string>
@@ -78,8 +78,8 @@
     <string name="root_access_not_found">Accès Root introuvable</string>
     <string name="root_access_not_found_message">L\'appareil ne dispose pas d\'un accès root.</string>
     <string name="notification_channel_boot_service_name">Service de démarrage</string>
-    <string name="notification_channel_boot_service_description">Initialisation du démarrage d\'Android Enhancer</string>
-    <string name="notification_title_boot">Android Enhancer</string>
+    <string name="notification_channel_boot_service_description">Initialisation du démarrage d\'Android Tweaker</string>
+    <string name="notification_title_boot">Android Tweaker</string>
     <string name="notification_text_boot_init">Initialisation au démarrage...</string>
 
     <!-- Prodix About -->

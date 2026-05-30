@@ -36,6 +36,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.github.iamlooper.androidenhancer.R
 import io.github.iamlooper.androidenhancer.system.optimization.OptimizationModule
 import io.github.iamlooper.androidenhancer.system.optimization.OptimizationModule.Companion.ALL
@@ -70,6 +71,8 @@ fun OptimizationScreen(
                 onToggle = { enable -> onToggleModule(module.id, enable) }
             )
         }
+
+        UpcomingBanner()
 
         state.lastResult?.let { result ->
             Spacer(modifier = Modifier.height(8.dp))
@@ -274,6 +277,58 @@ private fun ModuleToggleCard(
                 Switch(
                     checked = enabled,
                     onCheckedChange = onToggle
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun UpcomingBanner() {
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer
+        ),
+        elevation = CardDefaults.elevatedCardElevation(
+            defaultElevation = 2.dp
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "🎮",
+                    style = MaterialTheme.typography.titleLarge
+                )
+            }
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = "Prochainement",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                )
+                Text(
+                    text = "Des modules spécifiques pour PUBG Mobile, Free Fire, Call of Duty Mobile et bien d'autres arrivent dans la prochaine mise à jour !",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f),
+                    lineHeight = 18.sp
                 )
             }
         }
