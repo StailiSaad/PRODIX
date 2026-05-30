@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="app_name">Android Tweaker</string>
+    <string name="app_name">Android Tweaker V1</string>
     <string name="app_description">重塑 Android 调优</string>
     <string name="dismiss">忽略</string>
     <string name="developer">开发者</string>
@@ -29,7 +29,7 @@
     <string name="per_app_modes_hint">点击调整应用独立模式</string>
     <string name="per_app_modes_disabled">点击调整应用独立模式（需要自动模式）</string>
     <string name="per_app_mode_dialog_title">为 %1$s 选择模式</string>
-    <string name="per_app_mode_dialog_body">选择当 %1$s 在前台时 Android Enhancer 的行为方式。</string>
+    <string name="per_app_mode_dialog_body">选择当 %1$s 在前台时 Android Tweaker V1 的行为方式。</string>
     <string name="per_app_mode_dialog_remove">移除覆盖</string>
     <string name="per_app_mode_dialog_secondary">应用特定的覆盖保持自动模式的可预测性。</string>
     <string name="per_app_mode_remove_content_desc">移除模式覆盖</string>
@@ -43,7 +43,7 @@
     <string name="mode_balanced_label">平衡</string>
     <string name="mode_performance_label">性能</string>
     <string name="mode_gaming_label">游戏</string>
-    <string name="mode_selector_description_auto">让 Android Enhancer 对实时环境做出反应，自动平衡功耗和性能。</string>
+    <string name="mode_selector_description_auto">让 Android Tweaker V1 对实时环境做出反应，自动平衡功耗和性能。</string>
     <string name="mode_selector_description_powersaver">降低 CPU、GPU 和网络加速，以延长电池寿命。</string>
     <string name="mode_selector_description_balanced">保持一切流畅，提供响应迅速的性能，同时兼顾电池寿命。</string>
     <string name="mode_selector_description_performance">为需要极高速度的游戏和创意应用解锁激进的加速。</string>
@@ -57,7 +57,7 @@
     <!-- Settings -->
     <string name="settings">设置</string>
     <string name="settings_start_on_boot_title">开机启动</string>
-    <string name="settings_start_on_boot_subtitle">设备启动时启动 Android Enhancer 逻辑</string>
+    <string name="settings_start_on_boot_subtitle">设备启动时启动 Android Tweaker V1 逻辑</string>
     <string name="settings_touch_boost_title">触摸加速</string>
     <string name="settings_touch_boost_subtitle">触摸时加速 CPU/GPU 以获得更快响应</string>
     <string name="settings_language_title">语言</string>
@@ -78,7 +78,7 @@
     <string name="root_access_not_found">未找到Root权限</string>
     <string name="root_access_not_found_message">设备没有Root权限。</string>
     <string name="notification_channel_boot_service_name">启动服务</string>
-    <string name="notification_channel_boot_service_description">Android Enhancer 启动初始化</string>
-    <string name="notification_title_boot">Android Enhancer</string>
+    <string name="notification_channel_boot_service_description">Android Tweaker V1 启动初始化</string>
+    <string name="notification_title_boot">Android Tweaker V1</string>
     <string name="notification_text_boot_init">正在启动时初始化...</string>
 </resources>

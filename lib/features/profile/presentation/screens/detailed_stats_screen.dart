@@ -888,10 +888,10 @@ class _DetailedStatsScreenState extends State<DetailedStatsScreen> {
             const SizedBox(height: 12),
             _themeOption(ctx, themeCubit, AppThemeMode.light, Icons.light_mode, 'Clair', 'Mode clair'),
             const SizedBox(height: 20),
-            // Android Enhancer button (Android only)
+            // Android Tweaker button (Android only)
             _settingsButton(
               icon: Icons.speed,
-              label: 'Android Enhancer',
+              label: 'Android Tweaker V1',
               subtitle: 'Optimiser les performances système',
               onTap: _launchAndroidEnhancer,
             ),

@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="app_name">Android Tweaker</string>
+    <string name="app_name">Android Tweaker V1</string>
     <string name="app_description">안드로이드 튜닝의 재해석</string>
     <string name="dismiss">닫기</string>
     <string name="developer">개발자</string>
@@ -29,7 +29,7 @@
     <string name="per_app_modes_hint">탭하여 앱별 모드 조정</string>
     <string name="per_app_modes_disabled">탭하여 앱별 모드 조정 (자동 모드 필요)</string>
     <string name="per_app_mode_dialog_title">%1$s 모드 선택</string>
-    <string name="per_app_mode_dialog_body">%1$s가 전경에 있을 때 Android Enhancer가 어떻게 동작할지 선택하세요.</string>
+    <string name="per_app_mode_dialog_body">%1$s가 전경에 있을 때 Android Tweaker V1가 어떻게 동작할지 선택하세요.</string>
     <string name="per_app_mode_dialog_remove">재정의 제거</string>
     <string name="per_app_mode_dialog_secondary">앱별 재정의는 자동 모드를 예측 가능하게 유지합니다.</string>
     <string name="per_app_mode_remove_content_desc">모드 재정의 제거</string>
@@ -43,7 +43,7 @@
     <string name="mode_balanced_label">균형</string>
     <string name="mode_performance_label">성능</string>
     <string name="mode_gaming_label">게이밍</string>
-    <string name="mode_selector_description_auto">Android Enhancer가 실시간 상황에 반응하여 전력과 성능의 균형을 자동으로 맞추도록 합니다.</string>
+    <string name="mode_selector_description_auto">Android Tweaker V1가 실시간 상황에 반응하여 전력과 성능의 균형을 자동으로 맞추도록 합니다.</string>
     <string name="mode_selector_description_powersaver">CPU, GPU 및 네트워크 부스트를 줄여 배터리 수명을 길게 늘립니다.</string>
     <string name="mode_selector_description_balanced">배터리 수명을 존중하면서 반응형 성능으로 모든 것을 부드럽게 유지합니다.</string>
     <string name="mode_selector_description_performance">모든 속도를 요구하는 게임 및 창의적인 앱을 위해 공격적인 부스트를 잠금 해제합니다.</string>
@@ -57,7 +57,7 @@
     <!-- Settings -->
     <string name="settings">설정</string>
     <string name="settings_start_on_boot_title">부팅 시 시작</string>
-    <string name="settings_start_on_boot_subtitle">장치 부팅 시 Android Enhancer 로직 시작</string>
+    <string name="settings_start_on_boot_subtitle">장치 부팅 시 Android Tweaker V1 로직 시작</string>
     <string name="settings_touch_boost_title">터치 부스트</string>
     <string name="settings_touch_boost_subtitle">터치 시 CPU/GPU를 부스트하여 빠른 응답성 제공</string>
     <string name="settings_language_title">언어</string>
@@ -78,7 +78,7 @@
     <string name="root_access_not_found">루트 액세스를 찾을 수 없음</string>
     <string name="root_access_not_found_message">기기에 루트 액세스 권한이 없습니다.</string>
     <string name="notification_channel_boot_service_name">부팅 서비스</string>
-    <string name="notification_channel_boot_service_description">Android Enhancer 부팅 초기화</string>
-    <string name="notification_title_boot">Android Enhancer</string>
+    <string name="notification_channel_boot_service_description">Android Tweaker V1 부팅 초기화</string>
+    <string name="notification_title_boot">Android Tweaker V1</string>
     <string name="notification_text_boot_init">부팅 시 초기화 중...</string>
 </resources>

@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="app_name">Android Tweaker</string>
+    <string name="app_name">Android Tweaker V1</string>
     <string name="app_description">Ottimizzazione Android reinventata</string>
     <string name="dismiss">Ignora</string>
     <string name="developer">Sviluppatore</string>
@@ -29,7 +29,7 @@
     <string name="per_app_modes_hint">Tocca per ottimizzare le modalità per app</string>
     <string name="per_app_modes_disabled">Tocca per ottimizzare le modalità per app (richiede modalità Auto)</string>
     <string name="per_app_mode_dialog_title">Seleziona modalità per %1$s</string>
-    <string name="per_app_mode_dialog_body">Scegli come Android Enhancer deve comportarsi ogni volta che %1$s è in primo piano.</string>
+    <string name="per_app_mode_dialog_body">Scegli come Android Tweaker V1 deve comportarsi ogni volta che %1$s è in primo piano.</string>
     <string name="per_app_mode_dialog_remove">Rimuovi sovrascrittura</string>
     <string name="per_app_mode_dialog_secondary">Le sovrascritture specifiche per app mantengono Auto prevedibile.</string>
     <string name="per_app_mode_remove_content_desc">Rimuovi sovrascrittura modalità</string>
@@ -43,7 +43,7 @@
     <string name="mode_balanced_label">Bilanciato</string>
     <string name="mode_performance_label">Prestazioni</string>
     <string name="mode_gaming_label">Gaming</string>
-    <string name="mode_selector_description_auto">Lascia che Android Enhancer reagisca al contesto in tempo reale, bilanciando potenza e prestazioni automaticamente.</string>
+    <string name="mode_selector_description_auto">Lascia che Android Tweaker V1 reagisca al contesto in tempo reale, bilanciando potenza e prestazioni automaticamente.</string>
     <string name="mode_selector_description_powersaver">Riduci i boost di CPU, GPU e rete per estendere la durata della batteria a lungo termine.</string>
     <string name="mode_selector_description_balanced">Mantieni tutto fluido con prestazioni reattive che rispettano comunque la durata della batteria.</string>
     <string name="mode_selector_description_performance">Sblocca boost aggressivi per giochi e app creative che richiedono ogni grammo di velocità.</string>
@@ -57,7 +57,7 @@
     <!-- Settings -->
     <string name="settings">Impostazioni</string>
     <string name="settings_start_on_boot_title">Avvia all\'avvio</string>
-    <string name="settings_start_on_boot_subtitle">Avviare la logica di Android Enhancer all\'avvio del dispositivo</string>
+    <string name="settings_start_on_boot_subtitle">Avviare la logica di Android Tweaker V1 all\'avvio del dispositivo</string>
     <string name="settings_touch_boost_title">Boost tattile</string>
     <string name="settings_touch_boost_subtitle">Potenzia CPU/GPU al tocco per un\'interazione reattiva</string>
     <string name="settings_language_title">Lingua</string>
@@ -78,7 +78,7 @@
     <string name="root_access_not_found">Accesso Root non trovato</string>
     <string name="root_access_not_found_message">Il dispositivo non dispone di accesso root.</string>
     <string name="notification_channel_boot_service_name">Servizio di avvio</string>
-    <string name="notification_channel_boot_service_description">Inizializzazione avvio Android Enhancer</string>
-    <string name="notification_title_boot">Android Enhancer</string>
+    <string name="notification_channel_boot_service_description">Inizializzazione avvio Android Tweaker V1</string>
+    <string name="notification_title_boot">Android Tweaker V1</string>
     <string name="notification_text_boot_init">Inizializzazione all\'avvio...</string>
 </resources>
