@@ -5,14 +5,20 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import androidx.lifecycle.LifecycleEventObserver
 
 class MainActivity : FlutterActivity() {
     private val CALL_CHANNEL = "com.example.prodix/call_service"
     private val BG_CHANNEL = "com.example.prodix/background_service"
+    private val ENHANCER_CHANNEL = "com.example.prodix/android_enhancer"
     private var pendingIntent: Intent? = null
+    private var deferredBgIntent: Intent? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -34,8 +40,16 @@ class MainActivity : FlutterActivity() {
                             putExtra("is_muted", isMuted)
                             putExtra("is_speaker", isSpeaker)
                         }
-                        startForegroundService(intent)
-                        result.success(true)
+                        try {
+                            startForegroundService(intent)
+                            result.success(true)
+                        } catch (e: java.lang.SecurityException) {
+                            android.util.Log.e("MainActivity", "startForegroundService SecurityException (may be deferred)", e)
+                            result.success(true)
+                        } catch (e: Exception) {
+                            android.util.Log.e("MainActivity", "startForegroundService failed", e)
+                            result.error("FOREGROUND_SERVICE_ERROR", e.message, null)
+                        }
                     }
                     "stopForegroundService" -> {
                         val intent = Intent(this, CallForegroundService::class.java)
@@ -86,12 +100,41 @@ class MainActivity : FlutterActivity() {
                             putExtra("userId", userId)
                             putExtra("authToken", authToken)
                         }
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            startForegroundService(intent)
+                        if (lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED)) {
+                            try {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                    startForegroundService(intent)
+                                } else {
+                                    startService(intent)
+                                }
+                                result.success(true)
+                            } catch (e: Exception) {
+                                android.util.Log.e("MainActivity", "startBackgroundService failed", e)
+                                result.error("BACKGROUND_SERVICE_ERROR", e.message, null)
+                            }
                         } else {
-                            startService(intent)
+                            deferredBgIntent = intent
+                            lateinit var observer: LifecycleEventObserver
+                            observer = LifecycleEventObserver { source, event ->
+                                if (event == androidx.lifecycle.Lifecycle.Event.ON_START) {
+                                    deferredBgIntent?.let {
+                                        try {
+                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                                startForegroundService(it)
+                                            } else {
+                                                startService(it)
+                                            }
+                                        } catch (e: Exception) {
+                                            android.util.Log.e("MainActivity", "deferred bg start failed", e)
+                                        }
+                                    }
+                                    deferredBgIntent = null
+                                    source.lifecycle.removeObserver(observer)
+                                }
+                            }
+                            lifecycle.addObserver(observer)
+                            result.success(true)
                         }
-                        result.success(true)
                     }
                     "stopBackgroundService" -> {
                         val intent = Intent(this, BackgroundService::class.java)
@@ -109,7 +152,19 @@ class MainActivity : FlutterActivity() {
                     else -> result.notImplemented()
                 }
             }
-
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, ENHANCER_CHANNEL)
+            .setMethodCallHandler { call, _ ->
+                when (call.method) {
+                    "launchEnhancer" -> {
+                        try {
+                            val enhancerIntent = Intent(this, io.github.iamlooper.androidenhancer.MainActivity::class.java)
+                            startActivity(enhancerIntent)
+                        } catch (e: Exception) {
+                            android.util.Log.e("MainActivity", "launchEnhancer failed", e)
+                        }
+                    }
+                }
+            }
         // Defer intent handling so Flutter's MethodChannel handler is registered
         pendingIntent = intent
         Handler(Looper.getMainLooper()).postDelayed({
