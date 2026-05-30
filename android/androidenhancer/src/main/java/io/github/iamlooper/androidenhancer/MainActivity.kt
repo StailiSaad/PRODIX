@@ -188,7 +188,7 @@ private fun RootAccessErrorDialog(onDismiss: () -> Unit) {
         confirmButton = {
             TextButton(onClick = onDismiss) {
                 Text(
-                    text = stringResource(R.string.dismiss),
+                    text = stringResource(R.string.root_access_not_found_dismiss),
                     fontWeight = FontWeight.Bold
                 )
             }

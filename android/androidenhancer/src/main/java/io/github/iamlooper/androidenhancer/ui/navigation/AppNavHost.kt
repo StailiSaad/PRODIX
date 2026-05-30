@@ -193,7 +193,9 @@ fun AppNavHost(
             composable(AppDestination.Optimization.route) {
                 OptimizationScreen(
                     state = optimizationState,
-                    onToggleModule = optimizationViewModel::toggleModule
+                    onToggleModule = optimizationViewModel::toggleModule,
+                    onDismissAdbGrant = optimizationViewModel::dismissAdbGrantDialog,
+                    onConfirmAdbGrant = optimizationViewModel::confirmAdbGrantApplied
                 )
             }
         }

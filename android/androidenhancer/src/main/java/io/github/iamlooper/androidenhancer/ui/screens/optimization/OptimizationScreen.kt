@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
@@ -24,6 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -41,7 +43,9 @@ import io.github.iamlooper.androidenhancer.system.optimization.OptimizationModul
 @Composable
 fun OptimizationScreen(
     state: OptimizationState,
-    onToggleModule: (String, Boolean) -> Unit
+    onToggleModule: (String, Boolean) -> Unit,
+    onDismissAdbGrant: () -> Unit = {},
+    onConfirmAdbGrant: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -110,12 +114,14 @@ fun OptimizationScreen(
                                 text = line,
                                 style = MaterialTheme.typography.bodySmall,
                                 fontFamily = FontFamily.Monospace,
-                                color = if (line.contains("failed", ignoreCase = true) || line.contains("Error", ignoreCase = true))
-                                    MaterialTheme.colorScheme.error
-                                else if (line.startsWith("→"))
-                                    MaterialTheme.colorScheme.primary
-                                else
-                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                color = when {
+                                    line.contains("failed", ignoreCase = true) || line.contains("Error", ignoreCase = true) ->
+                                        MaterialTheme.colorScheme.error
+                                    line.startsWith("→") -> MaterialTheme.colorScheme.primary
+                                    line.startsWith("  ✓") -> MaterialTheme.colorScheme.primary
+                                    line.startsWith("  ✗") -> MaterialTheme.colorScheme.error
+                                    else -> MaterialTheme.colorScheme.onSurfaceVariant
+                                }
                             )
                         }
                     }
@@ -126,6 +132,76 @@ fun OptimizationScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
     }
+
+    if (state.showAdbGrantDialog) {
+        AdbGrantDialog(
+            onDismiss = onDismissAdbGrant,
+            onConfirm = onConfirmAdbGrant
+        )
+    }
+}
+
+@Composable
+private fun AdbGrantDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Permission ADB requise",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "Certaines commandes d'optimisation nécessitent une permission spéciale pour fonctionner sur les téléphones non rootés.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = "Pour appliquer les optimisations, exécutez cette commande ADB :",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "1. Connectez votre téléphone à un ordinateur avec le débogage USB activé",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    text = "2. Ouvrez un terminal / invite de commandes",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    text = "adb shell pm grant com.example.prodix android.permission.WRITE_SECURE_SETTINGS",
+                    style = MaterialTheme.typography.bodySmall,
+                    fontFamily = FontFamily.Monospace
+                )
+                Text(
+                    text = "3. Revenez ici et appuyez sur \"J'ai appliqué la commande\"",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(
+                    text = "J'ai appliqué la commande",
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Fermer")
+            }
+        }
+    )
 }
 
 @Composable

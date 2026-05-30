@@ -14,7 +14,8 @@ data class OptimizationState(
     val hyperPerf: Boolean = false,
     val isApplying: String? = null,
     val lastResult: String? = null,
-    val liveLog: List<String> = emptyList()
+    val liveLog: List<String> = emptyList(),
+    val showAdbGrantDialog: Boolean = false
 ) {
     fun isEnabled(moduleId: String): Boolean = when (moduleId) {
         "frame_pacing" -> framePacing

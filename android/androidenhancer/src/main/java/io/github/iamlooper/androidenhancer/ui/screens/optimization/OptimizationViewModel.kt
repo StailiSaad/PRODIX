@@ -8,6 +8,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.iamlooper.androidenhancer.data.local.appDataStore
 import io.github.iamlooper.androidenhancer.data.local.snapshotFlow
 import io.github.iamlooper.androidenhancer.data.local.updateSnapshot
+import io.github.iamlooper.androidenhancer.system.optimization.ExecuteResult
 import io.github.iamlooper.androidenhancer.system.optimization.OptimizationExecutor
 import io.github.iamlooper.androidenhancer.system.optimization.OptimizationModule
 import kotlinx.coroutines.Dispatchers
@@ -29,13 +30,16 @@ class OptimizationViewModel @Inject constructor(
     private val _isApplying = MutableStateFlow<String?>(null)
     private val _lastResult = MutableStateFlow<String?>(null)
     private val _liveLog = MutableStateFlow<List<String>>(emptyList())
+    private val _showAdbGrantDialog = MutableStateFlow(false)
+    private var adbCmdEverSucceeded = false
 
     val state: StateFlow<OptimizationState> = combine(
         dataStore.snapshotFlow(),
         _isApplying,
         _lastResult,
-        _liveLog
-    ) { snapshot, applying, result, log ->
+        _liveLog,
+        _showAdbGrantDialog
+    ) { snapshot, applying, result, log, showAdb ->
         OptimizationState(
             framePacing = snapshot.optimFramePacing,
             goodPing = snapshot.optimGoodPing,
@@ -47,7 +51,8 @@ class OptimizationViewModel @Inject constructor(
             hyperPerf = snapshot.optimHyperPerf,
             isApplying = applying,
             lastResult = result,
-            liveLog = log
+            liveLog = log,
+            showAdbGrantDialog = showAdb
         )
     }.stateIn(
         viewModelScope,
@@ -55,15 +60,25 @@ class OptimizationViewModel @Inject constructor(
         OptimizationState()
     )
 
+    fun dismissAdbGrantDialog() {
+        _showAdbGrantDialog.value = false
+    }
+
+    fun confirmAdbGrantApplied() {
+        adbCmdEverSucceeded = true
+        _showAdbGrantDialog.value = false
+    }
+
     fun toggleModule(moduleId: String, enable: Boolean) {
         val module = OptimizationModule.fromId(moduleId) ?: return
         viewModelScope.launch {
             _isApplying.value = moduleId
             _liveLog.value = emptyList()
             _lastResult.value = null
+            _showAdbGrantDialog.value = false
 
             val outputLines = mutableListOf<String>()
-            val success = withContext(Dispatchers.IO) {
+            val execResult: ExecuteResult = withContext(Dispatchers.IO) {
                 val onOutput: (String) -> Unit = { line ->
                     outputLines.add(line)
                     _liveLog.value = outputLines.toList()
@@ -74,13 +89,25 @@ class OptimizationViewModel @Inject constructor(
                     OptimizationExecutor.disableModule(context, module, onOutput)
                 }
             }
-            _lastResult.value = if (success) {
+
+            val hasSettingsGlobalFailure = execResult.results.any {
+                !it.success && it.summary.contains("global", ignoreCase = true)
+            }
+
+            _lastResult.value = if (execResult.success) {
                 "${module.name}: ${if (enable) "enabled" else "disabled"}"
             } else {
                 "${module.name}: failed"
             }
             _isApplying.value = null
-            if (success) {
+
+            if (execResult.success) {
+                adbCmdEverSucceeded = true
+            } else if (hasSettingsGlobalFailure && !adbCmdEverSucceeded) {
+                _showAdbGrantDialog.value = true
+            }
+
+            if (execResult.success) {
                 dataStore.updateSnapshot { snapshot ->
                     when (moduleId) {
                         "frame_pacing" -> snapshot.copy(optimFramePacing = enable)

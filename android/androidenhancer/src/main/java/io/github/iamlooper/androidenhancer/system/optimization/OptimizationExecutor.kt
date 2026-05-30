@@ -5,28 +5,37 @@ import java.io.File
 
 object OptimizationExecutor {
 
-    fun applyModule(context: Context, module: OptimizationModule, onOutput: ((String) -> Unit)? = null): Boolean {
+    fun applyModule(context: Context, module: OptimizationModule, onOutput: ((String) -> Unit)? = null): ExecuteResult {
         return executeScript(context, module.activeScript, onOutput)
     }
 
-    fun disableModule(context: Context, module: OptimizationModule, onOutput: ((String) -> Unit)? = null): Boolean {
+    fun disableModule(context: Context, module: OptimizationModule, onOutput: ((String) -> Unit)? = null): ExecuteResult {
         return executeScript(context, module.disableScript, onOutput)
     }
 
-    private fun executeScript(context: Context, script: String, onOutput: ((String) -> Unit)? = null): Boolean {
+    private val CMD_PREFIXES = listOf("setprop ", "settings ", "device_config ", "cmd ")
+
+    private fun executeScript(context: Context, script: String, onOutput: ((String) -> Unit)? = null): ExecuteResult {
         return try {
             val tempScript = File(context.cacheDir, "optim_script_${System.nanoTime()}.sh")
 
-            // Inject echo before each command so the user sees live progress
+            // Build enhanced script:
+            // - For real modification commands → capture exit code per command
+            // - For everything else (echo, assignments, control flow) → pass through
             val enhancedScript = buildString {
                 appendLine("#!/system/bin/sh")
                 script.lines().forEach { line ->
                     val trimmed = line.trim()
-                    if (trimmed.isNotEmpty() && !trimmed.startsWith("#") && !trimmed.startsWith("echo ")) {
-                        val summary = summarize(trimmed)
-                        appendLine("echo \"→ $summary\"")
+                    when {
+                        trimmed.isEmpty() || trimmed.startsWith("#") -> appendLine(trimmed)
+                        trimmed.startsWith("echo ") -> appendLine(trimmed)
+                        isModificationCommand(trimmed) -> {
+                            val summary = summarize(trimmed)
+                            appendLine("echo \"→ $summary\"")
+                            appendLine("${trimmed.replace(" 2>/dev/null", " 2>&1")}; echo \"⟐EXIT:\$?\"")
+                        }
+                        else -> appendLine(trimmed)
                     }
-                    appendLine(line)
                 }
             }
 
@@ -36,58 +45,83 @@ object OptimizationExecutor {
                 .redirectErrorStream(true)
                 .start()
 
+            val results = mutableListOf<CommandResult>()
+            var currentSummary: String? = null
+            var anyFailed = false
+
             process.inputStream.bufferedReader().use { reader ->
                 reader.lineSequence().forEach { line ->
-                    onOutput?.invoke(line)
+                    when {
+                        line.startsWith("→ ") -> {
+                            currentSummary = line.removePrefix("→ ")
+                            onOutput?.invoke(line)
+                        }
+                        line.startsWith("⟐EXIT:") -> {
+                            val code = line.removePrefix("⟐EXIT:").toIntOrNull() ?: 1
+                            val ok = code == 0
+                            val summary = currentSummary ?: "unknown"
+                            results.add(CommandResult(summary, ok, code))
+                            currentSummary = null
+                            if (!ok) anyFailed = true
+                            val status = if (ok) "✓" else "✗"
+                            onOutput?.invoke("  $status $summary")
+                        }
+                        else -> onOutput?.invoke(line)
+                    }
                 }
             }
 
-            val exitCode = process.waitFor()
+            process.waitFor()
             tempScript.delete()
-            exitCode == 0
+            ExecuteResult(success = !anyFailed, results = results)
         } catch (e: Exception) {
             onOutput?.invoke("Error: ${e.message}")
-            false
+            ExecuteResult(success = false, results = listOf(CommandResult("Script execution", false, -1)))
         }
     }
 
+    private fun isModificationCommand(cmd: String): Boolean =
+        cmd.endsWith(" 2>/dev/null") && CMD_PREFIXES.any { cmd.startsWith(it) }
+
     private fun summarize(cmd: String): String {
+        val clean = cmd.removeSuffix(" 2>/dev/null").trimEnd()
         return when {
             cmd.startsWith("setprop ") -> {
-                val prop = cmd.removePrefix("setprop ").substringBefore(" ")
+                val prop = clean.removePrefix("setprop ").substringBefore(" ")
                 "Setting $prop …"
             }
             cmd.startsWith("settings put global ") -> {
-                val key = cmd.removePrefix("settings put global ").substringBefore(" ")
+                val key = clean.removePrefix("settings put global ").substringBefore(" ")
                 "Setting global $key …"
             }
             cmd.startsWith("settings put system ") -> {
-                val key = cmd.removePrefix("settings put system ").substringBefore(" ")
+                val key = clean.removePrefix("settings put system ").substringBefore(" ")
                 "Setting system $key …"
             }
             cmd.startsWith("settings put secure ") -> {
-                val key = cmd.removePrefix("settings put secure ").substringBefore(" ")
+                val key = clean.removePrefix("settings put secure ").substringBefore(" ")
                 "Setting secure $key …"
             }
             cmd.startsWith("settings delete ") -> {
-                val key = cmd.removePrefix("settings delete ")
-                    .substringBefore(" 2>/dev/null")
-                    .trimEnd()
+                val key = clean.removePrefix("settings delete ").trimEnd()
                 "Resetting $key …"
             }
             cmd.startsWith("device_config put ") -> {
-                val key = cmd.removePrefix("device_config put ").substringBefore(" ")
+                val key = clean.removePrefix("device_config put ").substringBefore(" ")
                 "Configuring $key …"
             }
             cmd.startsWith("device_config delete ") -> {
-                val key = cmd.removePrefix("device_config delete ").substringBefore(" ")
+                val key = clean.removePrefix("device_config delete ").substringBefore(" ")
                 "Resetting device_config $key …"
             }
             cmd.startsWith("cmd ") -> "Running system command …"
-            else -> cmd.take(50) + if (cmd.length > 50) "…" else ""
+            else -> clean.take(50) + if (clean.length > 50) "…" else ""
         }
     }
 }
+
+data class ExecuteResult(val success: Boolean, val results: List<CommandResult>)
+data class CommandResult(val summary: String, val success: Boolean, val exitCode: Int)
 
 private fun sh(vararg lines: String): String = lines.joinToString("\n").replace("§", "$")
 
