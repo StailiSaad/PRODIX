@@ -116,30 +116,28 @@ class OptimizationViewModel @Inject constructor(
                 }
             }
 
-            _lastResult.value = if (execResult.success) {
-                "${module.name}: ${if (enable) "enabled" else "disabled"}"
-            } else {
-                "${module.name}: failed"
-            }
+            val successCount = execResult.results.count { it.success }
+            val totalCount = execResult.results.size
+            _lastResult.value = "${module.name}: $successCount/$totalCount commandes OK"
             _isApplying.value = null
 
             if (!execResult.success && !adbGrantActive && !adbDialogDismissed) {
                 _showAdbGrantDialog.value = true
             }
 
-            if (execResult.success) {
-                dataStore.updateSnapshot { snapshot ->
-                    when (moduleId) {
-                        "frame_pacing" -> snapshot.copy(optimFramePacing = enable)
-                        "good_ping" -> snapshot.copy(optimGoodPing = enable)
-                        "perf_ext" -> snapshot.copy(optimPerfExt = enable)
-                        "runtime_control" -> snapshot.copy(optimRuntimeControl = enable)
-                        "game_pulse" -> snapshot.copy(optimGamePulse = enable)
-                        "gpu_boost" -> snapshot.copy(optimGpuBoost = enable)
-                        "audio_tuning" -> snapshot.copy(optimAudioTuning = enable)
-                        "hyper_perf" -> snapshot.copy(optimHyperPerf = enable)
-                        else -> snapshot
-                    }
+            // Always save the toggle state (user intent).
+            // The live log shows which commands actually succeeded/failed.
+            dataStore.updateSnapshot { snapshot ->
+                when (moduleId) {
+                    "frame_pacing" -> snapshot.copy(optimFramePacing = enable)
+                    "good_ping" -> snapshot.copy(optimGoodPing = enable)
+                    "perf_ext" -> snapshot.copy(optimPerfExt = enable)
+                    "runtime_control" -> snapshot.copy(optimRuntimeControl = enable)
+                    "game_pulse" -> snapshot.copy(optimGamePulse = enable)
+                    "gpu_boost" -> snapshot.copy(optimGpuBoost = enable)
+                    "audio_tuning" -> snapshot.copy(optimAudioTuning = enable)
+                    "hyper_perf" -> snapshot.copy(optimHyperPerf = enable)
+                    else -> snapshot
                 }
             }
         }
