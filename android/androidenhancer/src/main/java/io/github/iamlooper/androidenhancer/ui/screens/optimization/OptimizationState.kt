@@ -13,7 +13,8 @@ data class OptimizationState(
     val audioTuning: Boolean = false,
     val hyperPerf: Boolean = false,
     val isApplying: String? = null,
-    val lastResult: String? = null
+    val lastResult: String? = null,
+    val liveLog: List<String> = emptyList()
 ) {
     fun isEnabled(moduleId: String): Boolean = when (moduleId) {
         "frame_pacing" -> framePacing

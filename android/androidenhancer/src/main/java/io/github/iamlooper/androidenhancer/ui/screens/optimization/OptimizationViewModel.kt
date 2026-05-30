@@ -28,12 +28,14 @@ class OptimizationViewModel @Inject constructor(
     private val dataStore = context.appDataStore
     private val _isApplying = MutableStateFlow<String?>(null)
     private val _lastResult = MutableStateFlow<String?>(null)
+    private val _liveLog = MutableStateFlow<List<String>>(emptyList())
 
     val state: StateFlow<OptimizationState> = combine(
         dataStore.snapshotFlow(),
         _isApplying,
-        _lastResult
-    ) { snapshot, applying, result ->
+        _lastResult,
+        _liveLog
+    ) { snapshot, applying, result, log ->
         OptimizationState(
             framePacing = snapshot.optimFramePacing,
             goodPing = snapshot.optimGoodPing,
@@ -44,7 +46,8 @@ class OptimizationViewModel @Inject constructor(
             audioTuning = snapshot.optimAudioTuning,
             hyperPerf = snapshot.optimHyperPerf,
             isApplying = applying,
-            lastResult = result
+            lastResult = result,
+            liveLog = log
         )
     }.stateIn(
         viewModelScope,
@@ -56,11 +59,19 @@ class OptimizationViewModel @Inject constructor(
         val module = OptimizationModule.fromId(moduleId) ?: return
         viewModelScope.launch {
             _isApplying.value = moduleId
+            _liveLog.value = emptyList()
+            _lastResult.value = null
+
+            val outputLines = mutableListOf<String>()
             val success = withContext(Dispatchers.IO) {
+                val onOutput: (String) -> Unit = { line ->
+                    outputLines.add(line)
+                    _liveLog.value = outputLines.toList()
+                }
                 if (enable) {
-                    OptimizationExecutor.applyModule(context, module)
+                    OptimizationExecutor.applyModule(context, module, onOutput)
                 } else {
-                    OptimizationExecutor.disableModule(context, module)
+                    OptimizationExecutor.disableModule(context, module, onOutput)
                 }
             }
             _lastResult.value = if (success) {

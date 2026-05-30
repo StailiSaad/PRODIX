@@ -5,27 +5,86 @@ import java.io.File
 
 object OptimizationExecutor {
 
-    fun applyModule(context: Context, module: OptimizationModule): Boolean {
-        return executeScript(context, module.activeScript)
+    fun applyModule(context: Context, module: OptimizationModule, onOutput: ((String) -> Unit)? = null): Boolean {
+        return executeScript(context, module.activeScript, onOutput)
     }
 
-    fun disableModule(context: Context, module: OptimizationModule): Boolean {
-        return executeScript(context, module.disableScript)
+    fun disableModule(context: Context, module: OptimizationModule, onOutput: ((String) -> Unit)? = null): Boolean {
+        return executeScript(context, module.disableScript, onOutput)
     }
 
-    private fun executeScript(context: Context, script: String): Boolean {
+    private fun executeScript(context: Context, script: String, onOutput: ((String) -> Unit)? = null): Boolean {
         return try {
             val tempScript = File(context.cacheDir, "optim_script_${System.nanoTime()}.sh")
-            tempScript.writeText("#!/system/bin/sh\n$script\n")
+
+            // Inject echo before each command so the user sees live progress
+            val enhancedScript = buildString {
+                appendLine("#!/system/bin/sh")
+                script.lines().forEach { line ->
+                    val trimmed = line.trim()
+                    if (trimmed.isNotEmpty() && !trimmed.startsWith("#") && !trimmed.startsWith("echo ")) {
+                        val summary = summarize(trimmed)
+                        appendLine("echo \"→ $summary\"")
+                    }
+                    appendLine(line)
+                }
+            }
+
+            tempScript.writeText(enhancedScript)
             tempScript.setExecutable(true)
             val process = ProcessBuilder("sh", tempScript.absolutePath)
                 .redirectErrorStream(true)
                 .start()
+
+            process.inputStream.bufferedReader().use { reader ->
+                reader.lineSequence().forEach { line ->
+                    onOutput?.invoke(line)
+                }
+            }
+
             val exitCode = process.waitFor()
             tempScript.delete()
             exitCode == 0
         } catch (e: Exception) {
+            onOutput?.invoke("Error: ${e.message}")
             false
+        }
+    }
+
+    private fun summarize(cmd: String): String {
+        return when {
+            cmd.startsWith("setprop ") -> {
+                val prop = cmd.removePrefix("setprop ").substringBefore(" ")
+                "Setting $prop …"
+            }
+            cmd.startsWith("settings put global ") -> {
+                val key = cmd.removePrefix("settings put global ").substringBefore(" ")
+                "Setting global $key …"
+            }
+            cmd.startsWith("settings put system ") -> {
+                val key = cmd.removePrefix("settings put system ").substringBefore(" ")
+                "Setting system $key …"
+            }
+            cmd.startsWith("settings put secure ") -> {
+                val key = cmd.removePrefix("settings put secure ").substringBefore(" ")
+                "Setting secure $key …"
+            }
+            cmd.startsWith("settings delete ") -> {
+                val key = cmd.removePrefix("settings delete ")
+                    .substringBefore(" 2>/dev/null")
+                    .trimEnd()
+                "Resetting $key …"
+            }
+            cmd.startsWith("device_config put ") -> {
+                val key = cmd.removePrefix("device_config put ").substringBefore(" ")
+                "Configuring $key …"
+            }
+            cmd.startsWith("device_config delete ") -> {
+                val key = cmd.removePrefix("device_config delete ").substringBefore(" ")
+                "Resetting device_config $key …"
+            }
+            cmd.startsWith("cmd ") -> "Running system command …"
+            else -> cmd.take(50) + if (cmd.length > 50) "…" else ""
         }
     }
 }

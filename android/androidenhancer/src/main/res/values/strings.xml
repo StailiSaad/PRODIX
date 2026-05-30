@@ -94,6 +94,12 @@
     <string name="filter_default_format">Default (%1$d)</string>
     <string name="root_access_not_found">Root Access Not Found</string>
     <string name="root_access_not_found_message">The device does not have root access available.</string>
+    <string name="root_access_not_found_optimization_hint">However, you can still use the Optimization modules under the Optimizations section — they are designed to work on non-rooted phones via system permissions.</string>
+    <string name="root_access_not_found_adb_title">Grant ADB permissions for full functionality</string>
+    <string name="root_access_not_found_adb_step1">1. Connect your phone to a computer with USB debugging enabled</string>
+    <string name="root_access_not_found_adb_step2">2. Open a terminal / command prompt on your computer</string>
+    <string name="root_access_not_found_adb_step3">3. Run this command:\nadb shell pm grant com.example.prodix android.permission.WRITE_SECURE_SETTINGS</string>
+    <string name="root_access_not_found_adb_step4">4. Restart Android Enhancer — the root warning will no longer appear</string>
     <string name="notification_channel_boot_service_name">Boot Service</string>
     <string name="notification_channel_boot_service_description">Android Enhancer boot initialization</string>
     <string name="notification_title_boot">Android Enhancer</string>
