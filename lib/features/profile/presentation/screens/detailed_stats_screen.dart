@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:typed_data';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart' show rootBundle, MethodChannel;
 import '../../profile_cubit.dart';
 import '../../../auth/auth_cubit.dart';
 import '../../../gamification/gamification_cubit.dart';
@@ -888,9 +888,38 @@ class _DetailedStatsScreenState extends State<DetailedStatsScreen> {
             const SizedBox(height: 12),
             _themeOption(ctx, themeCubit, AppThemeMode.light, Icons.light_mode, 'Clair', 'Mode clair'),
             const SizedBox(height: 20),
+            // Android Enhancer button (Android only)
+            _settingsButton(
+              icon: Icons.speed,
+              label: 'Android Enhancer',
+              subtitle: 'Optimiser les performances système',
+              onTap: _launchAndroidEnhancer,
+            ),
+            const SizedBox(height: 8),
           ],
         ),
       ),
+    );
+  }
+
+  void _launchAndroidEnhancer() {
+    const channel = MethodChannel('com.example.prodix/android_enhancer');
+    channel.invokeMethod('launchEnhancer');
+  }
+
+  Widget _settingsButton({
+    required IconData icon,
+    required String label,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: AppTheme.primaryColor, size: 28),
+      title: Text(label, style: TextStyle(color: AppTheme.textWhite, fontWeight: FontWeight.w600)),
+      subtitle: Text(subtitle, style: TextStyle(color: AppTheme.textVariant, fontSize: 12)),
+      trailing: Icon(Icons.arrow_forward_ios, color: AppTheme.textVariant, size: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      onTap: onTap,
     );
   }
 
