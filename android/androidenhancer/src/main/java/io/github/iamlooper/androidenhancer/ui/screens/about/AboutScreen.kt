@@ -146,9 +146,11 @@ fun AboutScreen(state: AboutState) {
                         AboutActionType.SOURCE -> Icons.Default.Favorite
                     },
                     onClick = {
-                        context.startActivity(
-                            Intent(Intent.ACTION_VIEW, action.uri.toUri())
-                        )
+                        action.uri?.let {
+                            context.startActivity(
+                                Intent(Intent.ACTION_VIEW, it.toUri())
+                            )
+                        }
                     }
                 )
             }

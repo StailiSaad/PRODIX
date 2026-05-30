@@ -88,5 +88,5 @@
     <string name="prodix_channel">Communauté PRODIX</string>
     <string name="prodix_channel_desc">Contactez-nous sur GitHub</string>
     <string name="prodix_thanks_looper">Remerciements à Looper</string>
-    <string name="prodix_thanks_looper_desc">Merci à iamlooper pour le projet original Android Enhancer</string>
+    <string name="prodix_thanks_looper_desc">Merci à Looper pour son aide sur le développement de ce projet</string>
 </resources>

@@ -6,7 +6,7 @@ import androidx.compose.runtime.Immutable
 data class AboutAction(
     val titleRes: Int,
     val subtitleRes: Int,
-    val uri: String,
+    val uri: String?,
     val type: AboutActionType
 )
 

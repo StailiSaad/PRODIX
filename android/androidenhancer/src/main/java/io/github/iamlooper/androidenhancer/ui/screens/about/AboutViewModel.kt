@@ -31,13 +31,13 @@ class AboutViewModel @Inject constructor() : ViewModel() {
                     AboutAction(
                         titleRes = R.string.prodix_channel,
                         subtitleRes = R.string.prodix_channel_desc,
-                        uri = "https://github.com/anomalyco",
+                        uri = "https://github.com/StailiSaad",
                         type = AboutActionType.CHANNEL
                     ),
                     AboutAction(
                         titleRes = R.string.prodix_thanks_looper,
                         subtitleRes = R.string.prodix_thanks_looper_desc,
-                        uri = "https://github.com/iamlooper",
+                        uri = null,
                         type = AboutActionType.CREDITS
                     )
                 )
