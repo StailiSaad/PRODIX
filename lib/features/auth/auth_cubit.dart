@@ -67,7 +67,7 @@ class AuthCubit extends Cubit<AuthState> {
           emit(state.copyWith(status: AuthStatus.authenticated));
           _profileCubit.loadProfile();
         } else {
-          Future.delayed(const Duration(seconds: 2), () {
+          Future.delayed(const Duration(milliseconds: 100), () {
             if (!isClosed) emit(state.copyWith(status: AuthStatus.unauthenticated));
           });
         }
@@ -103,13 +103,7 @@ class AuthCubit extends Cubit<AuthState> {
     emit(state.copyWith(loading: true, error: null, successMessage: null));
     try {
       await _service.signUp(email, password, pseudo);
-      await _service.signOut();
-      emit(state.copyWith(
-        loading: false,
-        registeredSuccess: true,
-        status: AuthStatus.unauthenticated,
-        successMessage: 'Inscription réussie ! Connectez-vous avec vos identifiants.',
-      ));
+      // Session is managed by onAuthStateChange listener — no manual signOut.
     } catch (e) {
       String msg = e.toString().replaceAll('Exception: ', '');
       if (msg.contains('already registered') || msg.contains('already been registered')) {

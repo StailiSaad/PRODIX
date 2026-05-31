@@ -58,11 +58,14 @@ class SupabaseBackendService {
       data: {'pseudo': pseudo},
     );
     if (res.user == null) throw Exception('Inscription échouée.');
-    await _db.from('users').insert({
+    // Use upsert to handle the case where a public.users row already exists
+    // for this email (e.g. after a previous incomplete registration).
+    await _db.from('users').upsert({
       'id': res.user!.id,
       'email': email,
       'password_hash': 'managed_by_supabase_auth',
-    });
+    }, onConflict: 'email');
+    // Always create or update the profile with the latest pseudo.
     await _db.from('profiles').upsert({
       'id': res.user!.id,
       'pseudo': pseudo,

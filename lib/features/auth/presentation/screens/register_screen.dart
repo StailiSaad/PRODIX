@@ -206,8 +206,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         // Submit Button
                         BlocConsumer<AuthCubit, AuthState>(
                           listener: (context, state) {
-                            if (state.registeredSuccess) {
-                              if (context.mounted) Navigator.of(context).pop();
+                            if (state.status == AuthStatus.authenticated && context.mounted) {
+                              Navigator.of(context).pop();
                             } else if (state.error != null) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
