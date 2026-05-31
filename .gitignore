@@ -43,3 +43,18 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Junk directories
+10_files/
+6_files/
+7_files/
+9_files/
+pictures/
+Get
+Process
+Run
+flutter_*.log
+
+# Keystore (contains secrets)
+*.jks
+key.properties
