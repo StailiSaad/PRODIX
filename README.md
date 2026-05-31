@@ -1,59 +1,65 @@
 <p align="center">
-  <img src="prodix2.png" alt="Prodix Logo" width="128" height="128"/>
+  <img src="prodix2.png" alt="Prodix" width="128" height="128"/>
 </p>
 
 <h1 align="center">Prodix</h1>
 
 <p align="center">
-  <strong>Game Together. Boost Performance. Stay Connected.</strong>
+  <a href="https://github.com/StailiSaad/PRODIX/releases"><img src="https://img.shields.io/badge/release-v1.0.0-blue" alt="Release"></a>
+  <a href="https://github.com/StailiSaad/PRODIX/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-proprietary-red" alt="License"></a>
+  <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.41-blue?logo=flutter" alt="Flutter"></a>
+  <a href="https://supabase.com"><img src="https://img.shields.io/badge/Supabase-3EAE5A?logo=supabase" alt="Supabase"></a>
 </p>
 
 <p align="center">
-  <a href="#features">Features</a> •
-  <a href="#architecture">Architecture</a> •
-  <a href="#installation">Installation</a> •
-  <a href="#tech-stack">Tech Stack</a> •
-  <a href="#license">License</a>
+  A mobile gaming companion that combines <strong>social matchmaking</strong>, <strong>real-time communication</strong>, <strong>AI-powered moderation</strong>, and an <strong>Android performance enhancer</strong>.
 </p>
 
-<hr/>
+---
 
-Prodix is a mobile application for gamers that combines **social matchmaking**, **real‑time chat and calls**, **AI‑powered moderation**, and an **Android performance enhancer** that optimises device settings for gaming.
+## Table of Contents
+
+- [Features](#features)
+- [Architecture](#architecture)
+- [Installation](#installation)
+- [Building from Source](#building-from-source)
+- [Tech Stack](#tech-stack)
+- [License](#license)
 
 ---
 
 ## Features
 
-### Social Gaming Platform
+### Social Platform
 
 | Feature | Description |
 |---------|-------------|
-| **Matchmaking** | Find players by game, region, availability and skill level |
-| **Real‑time Chat** | Direct and group messaging with media sharing |
-| **Voice / Video Calls** | P2P and team calls powered by WebRTC |
-| **Teams & Squads** | Create teams, channels and squad‑based communication |
-| **Activity Feed** | Posts, comments, likes and social interactions |
-| **Reputation System** | Rate teammates on skill, communication and conduct |
-| **Push Notifications** | Firebase Cloud Messaging for calls and messages |
-| **Gamification** | XP, badges and levelling system with quest progression |
+| Matchmaking | Find players by game, region, availability, and skill level |
+| Real-time Chat | Direct and group messaging with media sharing |
+| Voice / Video Calls | Peer-to-peer and team calls via WebRTC |
+| Teams & Squads | Create teams, channels, and squad-based communication |
+| Activity Feed | Posts, comments, likes, and social interactions |
+| Reputation System | Rate teammates on skill, communication, and conduct |
+| Gamification | XP, badges, levels, and quest progression |
+| Push Notifications | Firebase Cloud Messaging for calls and messages |
 
-### Android Performance Enhancer
+### Performance Enhancer
 
 | Module | Effect |
 |--------|--------|
-| **Frame Pacing** | Smooths display refresh and SurfaceFlinger phase offsets |
-| **GoodPing** | DNS, TCP buffers and connectivity tuning for lower latency |
-| **PerfExt** | GPU rendering, power mode and animation speed optimisation |
-| **Runtime Control** | Disables doze, app standby and thermal throttling |
-| **GamePulse** | Game mode overlay and GPU driver optimisation |
-| **GPU Boost** | Skia / Vulkan rendering and hardware composition |
-| **Audio Tuning** | Low‑latency audio flinger optimisation |
-| **Hyper Performance** | Comprehensive CPU / GPU / memory / I / O tuning |
+| Frame Pacing | Smoothens display refresh and SurfaceFlinger phase offsets |
+| GoodPing | Optimises DNS, TCP buffers, and connectivity for lower latency |
+| PerfExt | Enhances GPU rendering, power mode, and animation speed |
+| Runtime Control | Disables doze, app standby, and thermal throttling |
+| GamePulse | Provides game mode overlay and GPU driver optimisation |
+| GPU Boost | Improves Skia / Vulkan rendering and hardware composition |
+| Audio Tuning | Optimises low-latency audio flinger |
+| Hyper Performance | Comprehensive CPU / GPU / memory / I/O tuning |
 
-### AI Integration (Hugging Face)
+### AI Integration
 
-- **Toxicity Detection** — automatic moderation of chat messages
-- **Teammate Recommendations** — AI‑powered player suggestions
+- **Toxicity Detection**: automatic moderation of chat messages via Hugging Face.
+- **Teammate Recommendations**: AI-powered player suggestions.
 
 ---
 
@@ -63,29 +69,29 @@ Prodix is a mobile application for gamers that combines **social matchmaking**, 
 Prodix
 ├── Flutter (Dart)
 │   ├── lib/main.dart                # Entry point
-│   ├── lib/app_root.dart            # Bootstrap & Bloc providers
+│   ├── lib/app_root.dart            # Bootstrap and Bloc providers
 │   ├── lib/core/
-│   │   ├── config/                  # AppConfig (Supabase, AI, env vars)
-│   │   ├── services/                # Notifications, Push, Background, Calls
-│   │   └── theme/                   # Futuristic light / dark themes
+│   │   ├── config/                  # AppConfig (Supabase, AI, environment)
+│   │   ├── services/                # Notifications, push, background, calls
+│   │   └── theme/                   # Futuristic light and dark themes
 │   ├── lib/data/
-│   │   └── services/                # SupabaseBackendService + domain services
+│   │   └── services/                # Supabase backend and domain services
 │   ├── lib/features/
-│   │   ├── auth/                    # AuthCubit, Login, Register, Splash
-│   │   ├── profile/                 # ProfileCubit, Setup, Edit
-│   │   ├── dashboard/               # MainScreen, Home, DM Chat, Feed
-│   │   ├── call/                    # P2P & Team Calls (WebRTC)
-│   │   ├── gamification/            # XP, Badges, Levels
-│   │   ├── theme/                   # ThemeCubit (Light / Dark / System)
+│   │   ├── auth/                    # Authentication flow
+│   │   ├── profile/                 # User profile management
+│   │   ├── dashboard/               # Main screen, home, DM chat
+│   │   ├── call/                    # P2P and team calls (WebRTC)
+│   │   ├── gamification/            # XP, badges, levels
+│   │   ├── theme/                   # Light / dark / system theme
 │   │   └── posts/                   # Social feed, comments, likes
 │   └── lib/shared/widgets/          # Reusable UI components
 │
 ├── Android Native (Kotlin)
-│   ├── app/                         # Flutter host + MethodChannels
+│   ├── app/                         # Flutter host and method channels
 │   └── androidenhancer/             # Performance optimisation modules
 │
 ├── Supabase
-│   ├── supabase_setup.sql           # Full schema + RLS policies
+│   ├── supabase_setup.sql           # Full schema and RLS policies
 │   └── supabase_migrations/         # Incremental migrations
 │
 └── Assets
@@ -97,7 +103,7 @@ Prodix
 
 ```
 User Action → Flutter UI → Bloc / Cubit → SupabaseBackendService
-                                              ├── Supabase Client (Auth, DB, Realtime, Storage)
+                                              ├── Supabase (auth, database, realtime, storage)
                                               └── AiGatewayService → Hugging Face API
 
 Performance Toggle → MethodChannel → Android Enhancer
@@ -109,35 +115,25 @@ Performance Toggle → MethodChannel → Android Enhancer
 
 ## Installation
 
-### Download
+Download the latest APK from the [GitHub Releases](https://github.com/StailiSaad/PRODIX/releases) page.
 
-Download the latest APK from [releases](releases/):
-
-```
-releases/prodix-v1.0.0.apk
-```
-
-**Requirements:** Android 7.0+ (API 24), 2 GB RAM minimum
-
-### Install via ADB
+| File | Size | Requirements |
+|------|------|--------------|
+| `prodix-v1.0.0.apk` | ~102 MB | Android 7.0+ (API 24), 2 GB RAM minimum |
 
 ```bash
-adb install releases/prodix-v1.0.0.apk
-```
+# Install via ADB
+adb install prodix-v1.0.0.apk
 
-### ADB Permissions
-
-To use the Performance Enhancer modules on a **non‑rooted** device, grant the `WRITE_SECURE_SETTINGS` permission:
-
-```bash
+# Grant performance enhancer permissions (non-root devices)
 adb shell pm grant com.example.prodix android.permission.WRITE_SECURE_SETTINGS
 ```
 
-After running the command, press **"J'ai appliqué la commande"** inside the app.
+Rooted users do not need the ADB command — the app auto-detects root access and uses LibSu for shell execution.
 
-**Rooted users:** The app auto‑detects root and uses LibSu for shell execution.
+---
 
-### Build from Source
+## Building from Source
 
 ```bash
 # Install dependencies
@@ -146,7 +142,7 @@ flutter pub get
 # Build release APK
 flutter build apk --release
 
-# The APK will be at build/app/outputs/flutter-apk/app-release.apk
+# Output: build/app/outputs/flutter-apk/app-release.apk
 ```
 
 ---
@@ -155,27 +151,26 @@ flutter build apk --release
 
 | Layer | Technology |
 |-------|------------|
-| **Framework** | Flutter 3.41 • Dart 3.11 |
-| **State Management** | flutter_bloc 8.1 • equatable |
-| **Backend** | Supabase (PostgreSQL, Auth, Realtime, Storage) |
-| **AI** | Hugging Face Inference API |
-| **Push** | Firebase Cloud Messaging |
-| **Calls** | flutter_webrtc • WebRTC |
-| **DI (Android)** | Dagger Hilt 2.57 |
-| **Root Shell** | LibSu 6.0 • HiddenApiBypass |
-| **Background** | Workmanager • AlarmManager |
-| **Local Storage** | SharedPreferences • DataStore |
+| Framework | Flutter 3.41 / Dart 3.11 |
+| State Management | flutter_bloc 8.1, equatable |
+| Backend | Supabase (PostgreSQL, Auth, Realtime, Storage) |
+| Artificial Intelligence | Hugging Face Inference API |
+| Push Notifications | Firebase Cloud Messaging |
+| Real-time Communication | flutter_webrtc, WebRTC |
+| Dependency Injection (Android) | Dagger Hilt 2.57 |
+| Root Shell | LibSu 6.0, HiddenApiBypass |
+| Background Tasks | Workmanager, AlarmManager |
+| Local Storage | SharedPreferences, DataStore |
 
 ---
 
 ## License
 
-```
-© 2026 Prodix. All rights reserved.
-```
+Proprietary. All rights reserved.
 
 ---
 
 <p align="center">
-  Made by <a href="https://github.com/StailiSaad">StailiSaad</a>
+  <a href="https://github.com/StailiSaad">StailiSaad</a> &nbsp;|&nbsp;
+  <a href="https://github.com/StailiSaad/PRODIX">GitHub</a>
 </p>
