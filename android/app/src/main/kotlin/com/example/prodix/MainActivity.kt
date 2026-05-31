@@ -14,6 +14,18 @@ import io.flutter.plugin.common.MethodChannel
 import androidx.lifecycle.LifecycleEventObserver
 
 class MainActivity : FlutterActivity() {
+    override fun getRenderMode(): io.flutter.embedding.android.RenderMode = io.flutter.embedding.android.RenderMode.texture
+
+    override fun onCreate(savedInstanceState: android.os.Bundle?) {
+        val platform = Build.HARDWARE.lowercase()
+        val board = Build.BOARD.lowercase()
+        // Unisoc/Spreadtrum ums9230 (TECNO KL4) GPU can deadlock with
+        // hardware-accelerated rendering (Flutter engine stuck in native
+        // GPU sync, window stays shown=false). Force software rendering.
+        intent.putExtra("enable-software-rendering", platform.contains("ums9230") || board.contains("ums9230"))
+        super.onCreate(savedInstanceState)
+    }
+
     private val CALL_CHANNEL = "com.example.prodix/call_service"
     private val BG_CHANNEL = "com.example.prodix/background_service"
     private val ENHANCER_CHANNEL = "com.example.prodix/android_enhancer"
@@ -21,6 +33,7 @@ class MainActivity : FlutterActivity() {
     private var deferredBgIntent: Intent? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        android.util.Log.d("FlutterEngine", "configureFlutterEngine called")
         super.configureFlutterEngine(flutterEngine)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CALL_CHANNEL)
             .setMethodCallHandler { call, result ->

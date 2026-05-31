@@ -11,6 +11,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
 import android.os.Handler
+import android.os.HandlerThread
 import android.os.IBinder
 import android.os.Looper
 import android.os.SystemClock
@@ -31,8 +32,8 @@ class BackgroundService : Service() {
         const val CHANNEL_CALLS = "prodix_bg_calls"
         const val CHANNEL_MESSAGES = "prodix_bg_messages"
         const val NOTIFICATION_ID = 1001
-        const val POLL_INTERVAL_MS = 30000L // 30 secondes
-        const val WATCHDOG_INTERVAL_MS = 600_000L // 10 minutes
+        const val POLL_INTERVAL_MS = 30000L
+        const val WATCHDOG_INTERVAL_MS = 600_000L
         const val PREF_NAME = "prodix_bg_prefs"
         const val KEY_URL = "supabase_url"
         const val KEY_ANON = "anon_key"
@@ -41,80 +42,77 @@ class BackgroundService : Service() {
         const val ACTION_RESTART = "com.example.prodix.RESTART_BACKGROUND_SERVICE"
     }
 
-    private val handler = Handler(Looper.getMainLooper())
     private var supabaseUrl = ""
     private var anonKey = ""
     private var userId = ""
     private var authToken = ""
     private var prefs: SharedPreferences? = null
     private var polling = false
+    private var bgHandler: Handler? = null
+    private var bgThread: HandlerThread? = null
 
     private val pollRunnable = object : Runnable {
         override fun run() {
             if (!polling) return
             if (userId.isNotEmpty() && authToken.isNotEmpty()) {
-                // Calls are detected via Realtime subscription (foreground) and
-                // FCM push via DB trigger (background). Polling for calls causes
-                // duplicates and phantom notifications from stale rows.
-                // try { checkNewCalls() } catch (_: Exception) {}
                 try { checkNewMessages() } catch (_: Exception) {}
             }
-            handler.postDelayed(this, POLL_INTERVAL_MS)
+            bgHandler?.postDelayed(this, POLL_INTERVAL_MS)
         }
     }
 
     override fun onCreate() {
         super.onCreate()
+        bgThread = HandlerThread("bg-service").apply { start() }
+        bgHandler = Handler(bgThread!!.looper)
         prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         supabaseUrl = prefs?.getString(KEY_URL, "") ?: ""
         anonKey = prefs?.getString(KEY_ANON, "") ?: ""
         userId = prefs?.getString(KEY_UID, "") ?: ""
         authToken = prefs?.getString(KEY_TOKEN, "") ?: ""
-        createNotificationChannels()
+        bgHandler?.post { createNotificationChannels() }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        intent?.let {
-            it.getStringExtra("supabaseUrl")?.let { v ->
-                supabaseUrl = v; prefs?.edit()?.putString(KEY_URL, v)?.apply()
-            }
-            it.getStringExtra("anonKey")?.let { v ->
-                anonKey = v; prefs?.edit()?.putString(KEY_ANON, v)?.apply()
-            }
-            it.getStringExtra("userId")?.let { v ->
-                userId = v; prefs?.edit()?.putString(KEY_UID, v)?.apply()
-            }
-            it.getStringExtra("authToken")?.let { v ->
-                authToken = v; prefs?.edit()?.putString(KEY_TOKEN, v)?.apply()
-            }
-        }
-
-        if (supabaseUrl.isEmpty() || anonKey.isEmpty() || userId.isEmpty() || authToken.isEmpty()) {
-            stopSelf()
-            return START_NOT_STICKY
-        }
-
-        // Run startForeground on a background thread to avoid blocking the main thread.
-        // This prevents ANRs if the NotificationManager IPC is slow or the device is busy.
-        Thread {
+        bgHandler?.post {
             try {
+                intent?.let {
+                    it.getStringExtra("supabaseUrl")?.let { v ->
+                        supabaseUrl = v; prefs?.edit()?.putString(KEY_URL, v)?.apply()
+                    }
+                    it.getStringExtra("anonKey")?.let { v ->
+                        anonKey = v; prefs?.edit()?.putString(KEY_ANON, v)?.apply()
+                    }
+                    it.getStringExtra("userId")?.let { v ->
+                        userId = v; prefs?.edit()?.putString(KEY_UID, v)?.apply()
+                    }
+                    it.getStringExtra("authToken")?.let { v ->
+                        authToken = v; prefs?.edit()?.putString(KEY_TOKEN, v)?.apply()
+                    }
+                }
+
+                if (supabaseUrl.isEmpty() || anonKey.isEmpty() || userId.isEmpty() || authToken.isEmpty()) {
+                    stopSelf()
+                    return@post
+                }
+
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                     startForeground(NOTIFICATION_ID, buildPersistentNotification(),
                         android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
                 } else {
                     startForeground(NOTIFICATION_ID, buildPersistentNotification())
                 }
-                handler.post {
+                bgHandler?.post {
                     polling = true
-                    handler.removeCallbacks(pollRunnable)
-                    handler.post(pollRunnable)
+                    bgHandler?.removeCallbacks(pollRunnable)
+                    bgHandler?.post(pollRunnable)
                     scheduleWatchdog()
                 }
             } catch (e: Exception) {
                 android.util.Log.e("BackgroundService", "startForeground failed", e)
                 stopSelf()
             }
-        }.apply { name = "bg-service-init" }.start()
+        }
 
         return START_STICKY
     }
@@ -123,8 +121,9 @@ class BackgroundService : Service() {
 
     override fun onDestroy() {
         polling = false
-        handler.removeCallbacks(pollRunnable)
+        bgHandler?.removeCallbacks(pollRunnable)
         scheduleWatchdog()
+        bgThread?.quitSafely()
         super.onDestroy()
     }
 

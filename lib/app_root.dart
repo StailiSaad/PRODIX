@@ -28,6 +28,7 @@ import 'features/call/presentation/screens/team_call_screen.dart';
 import 'features/dashboard/presentation/screens/dm_chat_screen.dart';
 
 SupabaseBackendService? globalBackendService;
+void Function()? retryAuth;
 String _supabaseUrl = '';
 String _supabaseAnonKey = '';
 
@@ -154,29 +155,39 @@ Future<void> bootstrapProdix(AppConfig config) async {
     }
   });
 
-  await NotificationService().init();
-  await PushNotificationService().init();
-  await Workmanager().initialize(bg.callbackDispatcher, isInDebugMode: false);
-  if (config.hasSupabase) {
-    _supabaseUrl = config.supabaseUrl;
-    _supabaseAnonKey = config.supabaseAnonKey;
-    await Supabase.initialize(
-      url: config.supabaseUrl,
-      anonKey: config.supabaseAnonKey,
-    );
-    Workmanager().registerPeriodicTask(
-      'periodicCallCheck',
-      bg.periodicCheckTask,
-      frequency: const Duration(minutes: 15),
-      constraints: Constraints(networkType: NetworkType.connected),
-      inputData: {
-        'supabaseUrl': config.supabaseUrl,
-        'supabaseAnonKey': config.supabaseAnonKey,
-      },
-    );
-  }
-
+  // Render first frame immediately so the surface becomes visible.
   runApp(ProdixApp(config: config));
+
+  // Defer non-critical initialisation to avoid blocking the first frame.
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    try { await NotificationService().init(); }
+    catch (e) { debugPrint('NotificationService init error: $e'); }
+    try { await PushNotificationService().init(); }
+    catch (e) { debugPrint('PushNotificationService init error: $e'); }
+    try { await Workmanager().initialize(bg.callbackDispatcher, isInDebugMode: false); }
+    catch (e) { debugPrint('Workmanager init error: $e'); }
+    if (config.hasSupabase) {
+      _supabaseUrl = config.supabaseUrl;
+      _supabaseAnonKey = config.supabaseAnonKey;
+      try {
+        await Supabase.initialize(url: config.supabaseUrl, anonKey: config.supabaseAnonKey);
+        // Retry auth listener now that Supabase is ready
+        retryAuth?.call();
+      } catch (e) { debugPrint('Supabase init error: $e'); }
+      try {
+        Workmanager().registerPeriodicTask(
+          'periodicCallCheck',
+          bg.periodicCheckTask,
+          frequency: const Duration(minutes: 15),
+          constraints: Constraints(networkType: NetworkType.connected),
+          inputData: {
+            'supabaseUrl': config.supabaseUrl,
+            'supabaseAnonKey': config.supabaseAnonKey,
+          },
+        );
+      } catch (e) { debugPrint('Workmanager register error: $e'); }
+    }
+  });
 }
 
 class ProdixApp extends StatelessWidget {
@@ -211,16 +222,20 @@ class ProdixApp extends StatelessWidget {
                 ProfileCubit(context.read<SupabaseBackendService>()),
           ),
           BlocProvider(
-            create: (context) => AuthCubit(
-              context.read<SupabaseBackendService>(),
-              context.read<ProfileCubit>(),
-            ),
+            create: (context) {
+              final cubit = AuthCubit(
+                context.read<SupabaseBackendService>(),
+                context.read<ProfileCubit>(),
+              );
+              retryAuth = cubit.retry;
+              return cubit;
+            },
           ),
           BlocProvider(
             create: (context) => GamificationCubit(
               service: context.read<SupabaseBackendService>(),
               profileCubit: context.read<ProfileCubit>(),
-            )..init(),
+            ),
           ),
           BlocProvider(
             create: (_) => ThemeCubit()..load(),
@@ -277,8 +292,11 @@ class _RootViewState extends State<_RootView> {
   }
 
   StreamSubscription? _authSub;
+  bool _registered = false;
 
   void _doRegister() {
+    if (_registered) return;
+    _registered = true;
     context.read<GamificationCubit>().init();
     try {
       final session = Supabase.instance.client.auth.currentSession;
@@ -311,6 +329,7 @@ class _RootViewState extends State<_RootView> {
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state.status == AuthStatus.unauthenticated) {
+          _registered = false;
           context.read<ProfileCubit>().reset();
           context.read<GamificationCubit>().reset();
           BackgroundServiceBridge.stop();

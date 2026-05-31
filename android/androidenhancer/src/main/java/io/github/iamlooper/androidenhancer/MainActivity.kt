@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import com.topjohnwu.superuser.Shell
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.iamlooper.androidenhancer.data.local.PreferencesSnapshot
@@ -98,8 +99,9 @@ private fun AppRoot(repository: AppRepository) {
         LaunchedEffect(Unit) {
             val isRoot = withContext(Dispatchers.IO) {
                 try {
-                    // Block until shell is acquired
-                    Shell.getShell().isRoot
+                    withTimeout(5000) {
+                        Shell.getShell().isRoot
+                    }
                 } catch (_: Exception) {
                     false
                 }

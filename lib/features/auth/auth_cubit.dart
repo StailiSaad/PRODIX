@@ -82,13 +82,21 @@ class AuthCubit extends Cubit<AuthState> {
           }
         });
       } catch (_) {
-        emit(state.copyWith(status: AuthStatus.unauthenticated));
+        // Supabase not yet initialized — stay on SplashScreen.
+        // retry() will be called after Supabase.initialize() completes.
       }
     } else {
       Future.delayed(const Duration(seconds: 2), () {
         if (!isClosed) emit(state.copyWith(status: AuthStatus.unauthenticated));
       });
     }
+  }
+
+  /// Call after Supabase.initialize() to re-check auth state and set up listener.
+  void retry() {
+    _supabaseAuthSubscription?.cancel();
+    _supabaseAuthSubscription = null;
+    _initAuthListener();
   }
 
   Future<void> signUp(String email, String password, String pseudo) async {

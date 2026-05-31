@@ -3,7 +3,6 @@ package com.example.prodix
 import android.app.Application
 import android.os.Build
 import dagger.hilt.android.HiltAndroidApp
-import io.github.iamlooper.androidenhancer.system.root.RootIpc
 import com.topjohnwu.superuser.Shell
 import org.lsposed.hiddenapibypass.HiddenApiBypass
 
@@ -12,33 +11,43 @@ class ProdixApplication : Application() {
     override fun onCreate() {
         try {
             super.onCreate()
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             android.util.Log.e("Prodix", "Hilt/super.onCreate failed: ${e.message}")
         }
-        try {
-            Shell.enableVerboseLogging = false
-            Shell.setDefaultBuilder(Shell.Builder.create()
-                .setFlags(Shell.FLAG_MOUNT_MASTER).setTimeout(10))
-        } catch (_: Exception) {
-            android.util.Log.w("Prodix", "Shell init failed (device may not be rooted)")
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        // Defer Shell + HiddenApiBypass init to a background thread only if rooted.
+        // Shell.Builder.create() blocks waiting for a root shell;
+        // on non-rooted devices this can hang up to the 10s timeout, causing ANR.
+        Thread {
             try {
-                HiddenApiBypass.addHiddenApiExemptions("")
-            } catch (_: Exception) {
-                android.util.Log.w("Prodix", "HiddenApiBypass failed")
+                // Quick check: if the device is not rooted, skip Shell init entirely.
+                val isRoot = try {
+                    val suFile = java.io.File("/system/bin/su")
+                    val suFile2 = java.io.File("/system/xbin/su")
+                    suFile.exists() || suFile2.exists()
+                } catch (_: Exception) { false }
+
+                if (isRoot) {
+                    Shell.enableVerboseLogging = false
+                    Shell.setDefaultBuilder(Shell.Builder.create()
+                        .setFlags(Shell.FLAG_MOUNT_MASTER).setTimeout(10))
+                }
+            } catch (_: Throwable) {
+                android.util.Log.w("Prodix", "Shell init failed (device may not be rooted)")
             }
-        }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                try {
+                    HiddenApiBypass.addHiddenApiExemptions("")
+                } catch (_: Throwable) {
+                    android.util.Log.w("Prodix", "HiddenApiBypass failed")
+                }
+            }
+        }.apply { isDaemon = true }.start()
+
         setupGlobalExceptionHandler()
         try {
             createNotificationChannel()
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             android.util.Log.e("Prodix", "createNotificationChannel failed", e)
-        }
-        try {
-            RootIpc.init(this)
-        } catch (_: Exception) {
-            android.util.Log.w("Prodix", "RootIpc init failed (device may not be rooted)")
         }
     }
 
