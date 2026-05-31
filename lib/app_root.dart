@@ -253,7 +253,7 @@ class ProdixApp extends StatelessWidget {
             return MaterialApp(
               navigatorKey: navigatorKey,
               debugShowCheckedModeBanner: false,
-              title: 'Prodix - TeamUp',
+              title: 'Prodix',
               theme: AppTheme.futuristicLight(),
               darkTheme: AppTheme.futuristicDark(),
               themeMode: themeMode,

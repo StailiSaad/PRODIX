@@ -104,7 +104,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                         // Header
                         Text(
-                          'TEAMUP',
+                          'PRODIX',
                           textAlign: TextAlign.center,
                           style: theme.textTheme.displayLarge?.copyWith(
                             color: theme.colorScheme.primary,

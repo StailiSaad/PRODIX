@@ -178,7 +178,7 @@ class _ProfileSetupScreensState extends State<ProfileSetupScreens> {
                             onPressed: _previousStep,
                           ),
                           Text(
-                            'TEAMUP',
+                            'PRODIX',
                             style: theme.textTheme.headlineMedium?.copyWith(
                               color: theme.colorScheme.primary,
                               letterSpacing: -1,

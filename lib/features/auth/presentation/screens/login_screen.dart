@@ -112,7 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         // Brand Header
                         Text(
-                          'TEAMUP',
+                          'PRODIX',
                           textAlign: TextAlign.center,
                           style: theme.textTheme.displayLarge?.copyWith(
                             color: theme.colorScheme.primary,
@@ -150,7 +150,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               controller: _emailController,
                               style: theme.textTheme.bodyMedium,
                               decoration: InputDecoration(
-                                hintText: 'player@teamup.gg',
+                                hintText: 'player@email.com',
                                 prefixIcon: const Icon(Icons.mail_outline),
                                 fillColor: const Color(0xFF2D3449).withValues(alpha: 0.6),
                               ),

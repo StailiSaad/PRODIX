@@ -1,70 +1,205 @@
-# Prodix - Mobile Matchmaking App
+<p align="center">
+  <img src="assets/prodix_logo.png" alt="Prodix Logo" width="128" height="128"/>
+</p>
 
-Application Flutter de matchmaking pour joueurs, connectee a Supabase avec option IA Hugging Face.
+<h1 align="center">🚀 PRODIX</h1>
 
-## Modules inclus (12 activites)
+<p align="center">
+  <b>Game Together. Boost Performance. Stay Connected.</b>
+</p>
 
-1. Authentification (signup/login/logout)
-2. Gestion de profil
-3. Matching de joueurs
-4. Invitations
-5. Chat realtime
-6. Notifications
-7. Analyse toxicite (IA Hugging Face)
-8. Systeme de reputation
-9. Catalogue de jeux
-10. Sessions de jeu
-11. Disponibilites
-12. Dashboard KPI
+<p align="center">
+  <a href="#-features">Features</a> •
+  <a href="#-screenshots">Screenshots</a> •
+  <a href="#-installation">Installation</a> •
+  <a href="#-adb-setup">ADB Setup</a> •
+  <a href="#-architecture">Architecture</a>
+</p>
 
-## Prerequis
+<hr/>
 
-- Flutter SDK installe
-- Projet Supabase
-- (Optionnel) Token Hugging Face
+## 📱 Overview
 
-## Configuration
+**Prodix** is an all-in-one mobile application for gamers — combining **social matchmaking**, **real-time chat & calls**, **AI-powered moderation**, and a powerful **Android performance enhancer** that optimizes your device for gaming.
 
-1. Creer les tables et policies:
-   - Ouvrir SQL Editor Supabase
-   - Executer `supabase/schema.sql`
+> Built with Flutter • Supabase • Hugging Face AI • Android Native (Hilt / LibSu)
 
-2. Lancer l'application avec variables d'environnement:
+---
 
-```bash
-flutter run --dart-define=SUPABASE_URL=https://YOUR_PROJECT.supabase.co --dart-define=SUPABASE_ANON_KEY=YOUR_ANON_KEY --dart-define=HUGGING_FACE_TOKEN=hf_xxx
+## ✨ Features
+
+### 🎮 Social Gaming Platform
+| Feature | Description |
+|---------|-------------|
+| **Matchmaking** | Find players by game, region, availability & skill level |
+| **Real-time Chat** | Direct & group messaging with media sharing |
+| **Voice/Video Calls** | P2P & team calls powered by WebRTC |
+| **Teams & Squads** | Create teams, channels, and squad-based communication |
+| **Activity Feed** | Posts, comments, likes, and social interactions |
+| **Reputation System** | Rate teammates on skill, communication & conduct |
+| **Push Notifications** | Firebase Cloud Messaging for calls & messages |
+
+### ⚡ Android Performance Enhancer
+| Module | Effect |
+|--------|--------|
+| **Frame Pacing** | Smooths display refresh & SurfaceFlinger phase offsets |
+| **GoodPing** | DNS, TCP buffers & connectivity tuning for lower latency |
+| **PerfExt** | GPU rendering, power mode & animation speed optimization |
+| **Runtime Control** | Disables doze, app standby, thermal throttling |
+| **GamePulse** | Game mode overlay & GPU driver optimization |
+| **GPU Boost** | Skia/Vulkan rendering & hardware composition |
+| **Audio Tuning** | Low-latency audio flinger optimization |
+| **Hyper Performance** | Comprehensive CPU/GPU/memory/I/O tuning |
+
+### 🤖 AI Integration (Hugging Face)
+- **Toxicity Detection** — automatic moderation of chat messages
+- **Teammate Recommendations** — AI-powered player suggestions
+
+---
+
+## 📸 Screenshots
+
+> *Insert your screenshots here — recommended: PNG, 1080×2340*
+
+| | | |
+|:---:|:---:|:---:|
+| **Splash / Auth** | **Dashboard** | **Matchmaking** |
+| ![Splash](screenshots/splash.png) | ![Dashboard](screenshots/dashboard.png) | ![Matchmaking](screenshots/matching.png) |
+| **Chat** | **Calls** | **Profile** |
+| ![Chat](screenshots/chat.png) | ![Calls](screenshots/calls.png) | ![Profile](screenshots/profile.png) |
+| **Performance Enhancer** | **Modules** | **Notifications** |
+| ![Enhancer](screenshots/enhancer.png) | ![Modules](screenshots/modules.png) | ![Notifications](screenshots/notifications.png) |
+
+---
+
+## ⬇️ Installation
+
+### Download APK
+
+Grab the latest release from [GitHub Releases](https://github.com/YOUR_USERNAME/prodix/releases):
+
+```
+📦 app-release.apk (101.7 MB)
 ```
 
-Sans variables, l'app fonctionne en mode demo local.
+> **Requirements:** Android 7.0+ (API 24), 2 GB RAM minimum
 
-## Tester sur telephone Android
+### Install on Device
 
-1. Activer `Developer options` + `USB debugging` sur le telephone
-2. Connecter le telephone en USB
-3. Verifier qu'il est detecte:
-   - `flutter devices`
-4. Lancer l'app:
-   - `flutter run`
+```bash
+# 1. Enable Developer Options & USB Debugging on your phone
+# 2. Connect via USB
+# 3. Install the APK
+adb install app-release.apk
+```
 
-## Architecture
+---
 
-- `lib/main.dart`: app principale + etats Bloc + services backend/IA
-- `supabase/schema.sql`: schema PostgreSQL + RLS
+## 🛠 ADB Setup
 
-Une separation plus fine (clean architecture complete par dossier) est possible dans l'etape suivante.
-# prodix
+To use the **Performance Enhancer** modules on a **non-rooted** device, grant the `WRITE_SECURE_SETTINGS` permission:
 
-A new Flutter project.
+```bash
+adb shell pm grant com.example.prodix android.permission.WRITE_SECURE_SETTINGS
+```
 
-## Getting Started
+After running the command, press **"J'ai appliqué la commande"** inside the app.
 
-This project is a starting point for a Flutter application.
+> **Rooted users:** The app auto-detects root and uses LibSu for shell execution.
 
-A few resources to get you started if this is your first Flutter project:
+---
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## 🏗 Architecture
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```
+Prodix
+├── Flutter (Dart)
+│   ├── lib/
+│   │   ├── main.dart              # Entry point
+│   │   ├── app_root.dart          # Bootstrap & Bloc providers
+│   │   ├── core/
+│   │   │   ├── config/            # AppConfig (Supabase, AI, env vars)
+│   │   │   ├── services/          # Notifications, Push, Background, Calls
+│   │   │   └── theme/             # Futuristic light/dark themes
+│   │   ├── data/
+│   │   │   └── services/          # SupabaseBackendService + domain services
+│   │   ├── features/
+│   │   │   ├── auth/              # AuthCubit, Login, Register, Splash
+│   │   │   ├── profile/           # ProfileCubit, Setup, Edit
+│   │   │   ├── dashboard/         # MainScreen, Home, DM Chat, Feed
+│   │   │   ├── call/              # P2P & Team Calls (WebRTC)
+│   │   │   ├── gamification/      # XP, Badges, Levels
+│   │   │   ├── theme/             # ThemeCubit (Light/Dark/System)
+│   │   │   └── posts/             # Social feed, comments, likes
+│   │   └── shared/widgets/        # Reusable UI components
+│   └── pubspec.yaml
+│
+├── Android Native (Kotlin)
+│   ├── app/
+│   │   ├── ProdixApplication.kt   # @HiltAndroidApp, Shell init
+│   │   ├── MainActivity.kt        # FlutterActivity + MethodChannels
+│   │   ├── BackgroundService.kt    # Foreground polling (30s)
+│   │   ├── CallForegroundService.kt
+│   │   ├── CallMessagingService.kt # FCM handler
+│   │   ├── OverlayService.kt      # Floating overlay during calls
+│   │   └── DeclineService.kt
+│   └── androidenhancer/
+│       ├── MainActivity.kt        # @AndroidEntryPoint (Compose UI)
+│       ├── AppRepository.kt       # @Singleton — DataStore, RootIpc
+│       ├── OptimizationExecutor.kt # Shell script runner (8 modules)
+│       ├── RootService.kt         # AIDL IPC for root commands
+│       └── BootService.kt         # Auto-start on boot
+│
+├── Supabase
+│   ├── supabase_setup.sql         # Full schema + RLS policies
+│   └── supabase_migrations/       # Incremental migrations
+│
+└── Assets
+    ├── assets/data/games_db.json  # Game catalog
+    └── assets/data/countries.json # Country list
+```
+
+### Data Flow
+
+```
+User Action → Flutter UI → Bloc/Cubit → SupabaseBackendService
+                                              ├── Supabase Client (Auth, DB, Realtime, Storage)
+                                              └── AiGatewayService → Hugging Face API
+
+Performance Toggle → MethodChannel → Android Enhancer
+                                          ├── Shell scripts (root/ADB)
+                                          └── Native JNI → libandroidenhancer.so
+```
+
+---
+
+## 🧰 Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| **Framework** | Flutter 3.41 • Dart 3.11 |
+| **State Management** | flutter_bloc 8.1 • equatable |
+| **Backend** | Supabase (PostgreSQL, Auth, Realtime, Storage) |
+| **AI** | Hugging Face Inference API |
+| **Push** | Firebase Cloud Messaging |
+| **Calls** | flutter_webrtc • WebRTC |
+| **DI (Android)** | Dagger Hilt 2.57 |
+| **Root Shell** | LibSu 6.0 • HiddenApiBypass |
+| **Background** | Workmanager • AlarmManager |
+| **Local Storage** | SharedPreferences • DataStore |
+
+---
+
+## 📄 License
+
+```
+© 2026 Prodix. All rights reserved.
+```
+
+---
+
+<p align="center">
+  Made with ❤️ by <a href="https://github.com/StailiSaad">StailiSaad</a>
+  <br/>
+  <sub>Built with opencode — the AI CLI for software engineering</sub>
+</p>

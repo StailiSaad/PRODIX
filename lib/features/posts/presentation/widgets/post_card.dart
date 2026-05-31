@@ -242,7 +242,7 @@ class PostCard extends StatelessWidget {
     final user = post['user'] as Map<String, dynamic>?;
     final pseudo = user?['pseudo'] as String? ?? 'Inconnu';
     final caption = post['caption'] as String? ?? '';
-    Share.share('Check out $pseudo\'s post on TeamUp: https://teamup.app/post/$postId\n\n$caption');
+    Share.share('Check out $pseudo\'s post on Prodix: https://prodix.app/post/$postId\n\n$caption');
   }
 
   void _showOptions(BuildContext context) {

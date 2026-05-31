@@ -186,7 +186,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         icon: Icon(Icons.share_outlined, color: AppTheme.textVariant, size: 26),
                         onPressed: () {
                           final postId = _post!['id'] as String? ?? '';
-                          Share.share('Check out $pseudo\'s post on TeamUp: https://teamup.app/post/$postId\n\n$caption');
+                          Share.share('Check out $pseudo\'s post on Prodix: https://prodix.app/post/$postId\n\n$caption');
                         },
                       ),
                     ],

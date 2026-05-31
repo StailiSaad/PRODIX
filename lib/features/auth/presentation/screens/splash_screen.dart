@@ -72,7 +72,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                       ),
                     ),
                     Text(
-                      'TEAMUP',
+                      'PRODIX',
                       style: theme.textTheme.displayLarge?.copyWith(
                         color: theme.colorScheme.primary,
                         letterSpacing: -1.5,

@@ -151,7 +151,7 @@ class AuthCubit extends Cubit<AuthState> {
     try {
       await Supabase.instance.client.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: 'teamup://login-callback',
+        redirectTo: 'prodix://login-callback',
       );
       // Loading is cleared by onAuthStateChange listener on redirect return
     } catch (e) {
