@@ -893,7 +893,7 @@ class _DetailedStatsScreenState extends State<DetailedStatsScreen> {
               icon: Icons.speed,
               label: 'Android Tweaker V1',
               subtitle: 'Optimiser les performances système',
-              onTap: _launchAndroidEnhancer,
+              onTap: _launchAndroidTweaker,
             ),
             const SizedBox(height: 8),
           ],
@@ -902,9 +902,9 @@ class _DetailedStatsScreenState extends State<DetailedStatsScreen> {
     );
   }
 
-  void _launchAndroidEnhancer() {
-    const channel = MethodChannel('com.example.prodix/android_enhancer');
-    channel.invokeMethod('launchEnhancer');
+  void _launchAndroidTweaker() {
+    const channel = MethodChannel('com.example.prodix/android_tweaker');
+    channel.invokeMethod('launchTweaker');
   }
 
   Widget _settingsButton({

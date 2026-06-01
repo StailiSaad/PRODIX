@@ -142,7 +142,13 @@ async fn run_loop(
 
             Some(cmd) = cmd_rx.recv() => {
                 match cmd {
-                    Cmd::Apps(a) => app_modes = a,
+                    Cmd::Apps(a) => {
+                        app_modes = a;
+                        app_override = current_app.as_ref()
+                            .and_then(|pkg| app_modes.get(pkg))
+                            .copied()
+                            .filter(|m| *m != Mode::Auto);
+                    }
                     Cmd::App(pkg, mode) => {
                         let new_override = mode.filter(|m| *m != Mode::Auto);
                         current_app = pkg.clone();

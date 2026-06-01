@@ -68,10 +68,10 @@ class ProdixApplication : Application() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = android.app.NotificationChannel(
                 "boot_service",
-                getString(io.github.iamlooper.androidenhancer.R.string.notification_channel_boot_service_name),
+                getString(com.androidtweaker.com.R.string.notification_channel_boot_service_name),
                 android.app.NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = getString(io.github.iamlooper.androidenhancer.R.string.notification_channel_boot_service_description)
+                description = getString(com.androidtweaker.com.R.string.notification_channel_boot_service_description)
             }
             val manager = getSystemService(NOTIFICATION_SERVICE) as android.app.NotificationManager
             manager.createNotificationChannel(channel)

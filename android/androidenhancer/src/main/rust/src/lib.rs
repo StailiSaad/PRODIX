@@ -1,4 +1,4 @@
-//! Android Enhancer - JNI Bridge
+//! Android Tweaker - JNI Bridge
 //!
 //! The JNI bridge remains synchronous (required by JNI spec) but uses
 //! block_on to interact with the async Engine internals.
@@ -27,7 +27,7 @@ fn set_active(code: u32) {
 // JNI Bridge - all functions remain synchronous as required by JNI
 
 #[unsafe(no_mangle)]
-pub extern "C" fn Java_io_github_iamlooper_androidenhancer_system_jni_JniBridge_start(
+pub extern "C" fn Java_com_androidtweaker_com_system_jni_JniBridge_start(
     mut env: JNIEnv,
     _class: JClass,
     log_path: JString,
@@ -49,7 +49,7 @@ pub extern "C" fn Java_io_github_iamlooper_androidenhancer_system_jni_JniBridge_
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn Java_io_github_iamlooper_androidenhancer_system_jni_JniBridge_stop(
+pub extern "C" fn Java_com_androidtweaker_com_system_jni_JniBridge_stop(
     _env: JNIEnv,
     _class: JClass,
 ) {
@@ -57,7 +57,7 @@ pub extern "C" fn Java_io_github_iamlooper_androidenhancer_system_jni_JniBridge_
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn Java_io_github_iamlooper_androidenhancer_system_jni_JniBridge_clearLog(
+pub extern "C" fn Java_com_androidtweaker_com_system_jni_JniBridge_clearLog(
     _env: JNIEnv,
     _class: JClass,
 ) {
@@ -65,7 +65,7 @@ pub extern "C" fn Java_io_github_iamlooper_androidenhancer_system_jni_JniBridge_
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn Java_io_github_iamlooper_androidenhancer_system_jni_JniBridge_isRunning(
+pub extern "C" fn Java_com_androidtweaker_com_system_jni_JniBridge_isRunning(
     _env: JNIEnv,
     _class: JClass,
 ) -> jboolean {
@@ -77,7 +77,7 @@ pub extern "C" fn Java_io_github_iamlooper_androidenhancer_system_jni_JniBridge_
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn Java_io_github_iamlooper_androidenhancer_system_jni_JniBridge_getMode(
+pub extern "C" fn Java_com_androidtweaker_com_system_jni_JniBridge_getMode(
     _env: JNIEnv,
     _class: JClass,
 ) -> jint {
@@ -85,7 +85,7 @@ pub extern "C" fn Java_io_github_iamlooper_androidenhancer_system_jni_JniBridge_
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn Java_io_github_iamlooper_androidenhancer_system_jni_JniBridge_setMode(
+pub extern "C" fn Java_com_androidtweaker_com_system_jni_JniBridge_setMode(
     _env: JNIEnv,
     _class: JClass,
     mode: jint,
@@ -97,7 +97,7 @@ pub extern "C" fn Java_io_github_iamlooper_androidenhancer_system_jni_JniBridge_
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn Java_io_github_iamlooper_androidenhancer_system_jni_JniBridge_pushForegroundApp(
+pub extern "C" fn Java_com_androidtweaker_com_system_jni_JniBridge_pushForegroundApp(
     mut env: JNIEnv,
     _class: JClass,
     package: JString,
@@ -111,7 +111,7 @@ pub extern "C" fn Java_io_github_iamlooper_androidenhancer_system_jni_JniBridge_
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn Java_io_github_iamlooper_androidenhancer_system_jni_JniBridge_setAppOverride(
+pub extern "C" fn Java_com_androidtweaker_com_system_jni_JniBridge_setAppOverride(
     mut env: JNIEnv,
     _class: JClass,
     package: JString,
@@ -130,7 +130,7 @@ pub extern "C" fn Java_io_github_iamlooper_androidenhancer_system_jni_JniBridge_
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn Java_io_github_iamlooper_androidenhancer_system_jni_JniBridge_removeAppOverride(
+pub extern "C" fn Java_com_androidtweaker_com_system_jni_JniBridge_removeAppOverride(
     mut env: JNIEnv,
     _class: JClass,
     package: JString,
@@ -146,7 +146,7 @@ pub extern "C" fn Java_io_github_iamlooper_androidenhancer_system_jni_JniBridge_
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn Java_io_github_iamlooper_androidenhancer_system_jni_JniBridge_setScreenState(
+pub extern "C" fn Java_com_androidtweaker_com_system_jni_JniBridge_setScreenState(
     _env: JNIEnv,
     _class: JClass,
     is_on: jboolean,
@@ -155,7 +155,7 @@ pub extern "C" fn Java_io_github_iamlooper_androidenhancer_system_jni_JniBridge_
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn Java_io_github_iamlooper_androidenhancer_system_jni_JniBridge_setBatteryInfo(
+pub extern "C" fn Java_com_androidtweaker_com_system_jni_JniBridge_setBatteryInfo(
     _env: JNIEnv,
     _class: JClass,
     level: jint,
@@ -167,7 +167,7 @@ pub extern "C" fn Java_io_github_iamlooper_androidenhancer_system_jni_JniBridge_
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn Java_io_github_iamlooper_androidenhancer_system_jni_JniBridge_setScreenInfo(
+pub extern "C" fn Java_com_androidtweaker_com_system_jni_JniBridge_setScreenInfo(
     _env: JNIEnv,
     _class: JClass,
     dpi: jint,
@@ -178,7 +178,7 @@ pub extern "C" fn Java_io_github_iamlooper_androidenhancer_system_jni_JniBridge_
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn Java_io_github_iamlooper_androidenhancer_system_jni_JniBridge_setTouchBoostEnabled(
+pub extern "C" fn Java_com_androidtweaker_com_system_jni_JniBridge_setTouchBoostEnabled(
     _env: JNIEnv,
     _class: JClass,
     enabled: jboolean,
@@ -187,7 +187,7 @@ pub extern "C" fn Java_io_github_iamlooper_androidenhancer_system_jni_JniBridge_
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn Java_io_github_iamlooper_androidenhancer_system_jni_JniBridge_isTouchBoostEnabled(
+pub extern "C" fn Java_com_androidtweaker_com_system_jni_JniBridge_isTouchBoostEnabled(
     _env: JNIEnv,
     _class: JClass,
 ) -> jboolean {

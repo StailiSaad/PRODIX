@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.iamlooper.androidenhancer"
+    namespace = "com.androidtweaker.com"
     compileSdk = 36
 
     defaultConfig {

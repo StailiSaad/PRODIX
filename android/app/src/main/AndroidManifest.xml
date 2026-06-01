@@ -32,7 +32,7 @@
         android:icon="@mipmap/ic_launcher"
         android:localeConfig="@xml/locales_config"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AndroidEnhancer"
+        android:theme="@style/Theme.AndroidTweaker"
         tools:targetApi="tiramisu">
 
         <!-- Prodix Main Activity -->
@@ -60,11 +60,11 @@
             </intent-filter>
         </activity>
 
-        <!-- Android Enhancer Activity -->
+        <!-- Android Tweaker Activity -->
         <activity
-            android:name="io.github.iamlooper.androidenhancer.MainActivity"
+            android:name="com.androidtweaker.com.MainActivity"
             android:exported="false"
-            android:theme="@style/Theme.AndroidEnhancer" />
+            android:theme="@style/Theme.AndroidTweaker" />
 
         <!-- Prodix services -->
         <service
@@ -90,14 +90,14 @@
             </intent-filter>
         </service>
 
-        <!-- Android Enhancer services -->
+        <!-- Android Tweaker services -->
         <service
-            android:name="io.github.iamlooper.androidenhancer.system.root.RootService"
+            android:name="com.androidtweaker.com.system.root.RootService"
             android:enabled="true"
             android:exported="false"
             tools:ignore="Instantiatable" />
         <service
-            android:name="io.github.iamlooper.androidenhancer.system.service.AccessibilityService"
+            android:name="com.androidtweaker.com.system.service.AccessibilityService"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
             android:exported="false"
             tools:ignore="AccessibilityPolicy">
@@ -109,13 +109,13 @@
                 android:resource="@xml/accessibility_service_config" />
         </service>
         <service
-            android:name="io.github.iamlooper.androidenhancer.system.service.BootService"
+            android:name="com.androidtweaker.com.system.service.BootService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Android Enhancer boot initialization" />
+                android:value="Android Tweaker boot initialization" />
         </service>
 
         <!-- Prodix receivers -->
@@ -133,9 +133,9 @@
             </intent-filter>
         </receiver>
 
-        <!-- Android Enhancer receiver -->
+        <!-- Android Tweaker receiver -->
         <receiver
-            android:name="io.github.iamlooper.androidenhancer.system.receiver.BootReceiver"
+            android:name="com.androidtweaker.com.system.receiver.BootReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>

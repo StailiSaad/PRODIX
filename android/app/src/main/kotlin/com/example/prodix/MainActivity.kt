@@ -28,7 +28,7 @@ class MainActivity : FlutterActivity() {
 
     private val CALL_CHANNEL = "com.example.prodix/call_service"
     private val BG_CHANNEL = "com.example.prodix/background_service"
-    private val ENHANCER_CHANNEL = "com.example.prodix/android_enhancer"
+    private val ENHANCER_CHANNEL = "com.example.prodix/android_tweaker"
     private var pendingIntent: Intent? = null
     private var deferredBgIntent: Intent? = null
 
@@ -168,12 +168,12 @@ class MainActivity : FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, ENHANCER_CHANNEL)
             .setMethodCallHandler { call, _ ->
                 when (call.method) {
-                    "launchEnhancer" -> {
+                    "launchTweaker" -> {
                         try {
-                            val enhancerIntent = Intent(this, io.github.iamlooper.androidenhancer.MainActivity::class.java)
-                            startActivity(enhancerIntent)
+                            val tweakerIntent = Intent(this, com.androidtweaker.com.MainActivity::class.java)
+                            startActivity(tweakerIntent)
                         } catch (e: Exception) {
-                            android.util.Log.e("MainActivity", "launchEnhancer failed", e)
+                            android.util.Log.e("MainActivity", "launchTweaker failed", e)
                         }
                     }
                 }

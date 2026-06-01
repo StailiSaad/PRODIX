@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="app_name">Android Enhancer</string>
+    <string name="app_name">Android Tweaker</string>
     <string name="app_description">Переосмысление настройки Android</string>
     <string name="dismiss">Закрыть</string>
     <string name="developer">Разработчик</string>
@@ -29,7 +29,7 @@
     <string name="per_app_modes_hint">Нажмите, чтобы настроить режимы для приложений</string>
     <string name="per_app_modes_disabled">Нажмите, чтобы настроить режимы для приложений (требуется режим Авто)</string>
     <string name="per_app_mode_dialog_title">Выберите режим для %1$s</string>
-    <string name="per_app_mode_dialog_body">Выберите, как Android Enhancer должен вести себя, когда %1$s находится на переднем плане.</string>
+    <string name="per_app_mode_dialog_body">Выберите, как Android Tweaker должен вести себя, когда %1$s находится на переднем плане.</string>
     <string name="per_app_mode_dialog_remove">Удалить переопределение</string>
     <string name="per_app_mode_dialog_secondary">Специфичные для приложения переопределения сохраняют предсказуемость Авто.</string>
     <string name="per_app_mode_remove_content_desc">Удалить переопределение режима</string>
@@ -43,7 +43,7 @@
     <string name="mode_balanced_label">Баланс</string>
     <string name="mode_performance_label">Производ.</string>
     <string name="mode_gaming_label">Игровой</string>
-    <string name="mode_selector_description_auto">Позвольте Android Enhancer реагировать на контекст в реальном времени, автоматически балансируя мощность и производительность.</string>
+    <string name="mode_selector_description_auto">Позвольте Android Tweaker реагировать на контекст в реальном времени, автоматически балансируя мощность и производительность.</string>
     <string name="mode_selector_description_powersaver">Снизьте ускорение ЦП, ГП и сети, чтобы продлить время работы от батареи.</string>
     <string name="mode_selector_description_balanced">Сохраняйте плавность с отзывчивой производительностью, которая по-прежнему бережет заряд батареи.</string>
     <string name="mode_selector_description_performance">Разблокируйте агрессивное ускорение для игр и творческих приложений, требующих максимальной скорости.</string>
@@ -59,7 +59,7 @@
     <!-- Settings -->
     <string name="settings">Настройки</string>
     <string name="settings_start_on_boot_title">Запуск при загрузке</string>
-    <string name="settings_start_on_boot_subtitle">Запускать логику Android Enhancer при загрузке устройства</string>
+    <string name="settings_start_on_boot_subtitle">Запускать логику Android Tweaker при загрузке устройства</string>
     <string name="settings_touch_boost_title">Ускорение при касании</string>
     <string name="settings_touch_boost_subtitle">Ускорять CPU/GPU при касании для быстрого отклика</string>
     <string name="settings_language_title">Язык</string>
@@ -80,7 +80,7 @@
     <string name="root_access_not_found">Root-доступ не найден</string>
     <string name="root_access_not_found_message">На устройстве нет root-доступа.</string>
     <string name="notification_channel_boot_service_name">Служба загрузки</string>
-    <string name="notification_channel_boot_service_description">Инициализация загрузки Android Enhancer</string>
-    <string name="notification_title_boot">Android Enhancer</string>
+    <string name="notification_channel_boot_service_description">Инициализация загрузки Android Tweaker</string>
+    <string name="notification_title_boot">Android Tweaker</string>
     <string name="notification_text_boot_init">Инициализация при загрузке...</string>
 </resources>

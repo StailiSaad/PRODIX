@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="app_name">Android Enhancer</string>
+    <string name="app_name">Android Tweaker</string>
     <string name="app_description">Androidチューニングの再構築</string>
     <string name="dismiss">閉じる</string>
     <string name="developer">開発者</string>
@@ -29,7 +29,7 @@
     <string name="per_app_modes_hint">タップしてアプリごとのモードを調整</string>
     <string name="per_app_modes_disabled">タップしてアプリごとのモードを調整（自動モードが必要）</string>
     <string name="per_app_mode_dialog_title">%1$s のモードを選択</string>
-    <string name="per_app_mode_dialog_body">%1$s がフォアグラウンドにあるときのAndroid Enhancerの動作を選択します。</string>
+    <string name="per_app_mode_dialog_body">%1$s がフォアグラウンドにあるときのAndroid Tweakerの動作を選択します。</string>
     <string name="per_app_mode_dialog_remove">オーバーライドを削除</string>
     <string name="per_app_mode_dialog_secondary">アプリ固有のオーバーライドにより、自動モードの予測可能性が維持されます。</string>
     <string name="per_app_mode_remove_content_desc">モードオーバーライドを削除</string>
@@ -43,7 +43,7 @@
     <string name="mode_balanced_label">バランス</string>
     <string name="mode_performance_label">パフォーマンス</string>
     <string name="mode_gaming_label">ゲーミング</string>
-    <string name="mode_selector_description_auto">Android Enhancerがリアルタイムのコンテキストに反応し、電力とパフォーマンスのバランスを自動的に調整します。</string>
+    <string name="mode_selector_description_auto">Android Tweakerがリアルタイムのコンテキストに反応し、電力とパフォーマンスのバランスを自動的に調整します。</string>
     <string name="mode_selector_description_powersaver">CPU、GPU、ネットワークのブーストを抑えて、バッテリー寿命を長持ちさせます。</string>
     <string name="mode_selector_description_balanced">バッテリー寿命を尊重しながら、応答性の高いパフォーマンスですべてをスムーズに保ちます。</string>
     <string name="mode_selector_description_performance">あらゆる速度を必要とするゲームやクリエイティブアプリのために、積極的なブーストを解除します。</string>
@@ -57,7 +57,7 @@
     <!-- Settings -->
     <string name="settings">設定</string>
     <string name="settings_start_on_boot_title">起動時に開始</string>
-    <string name="settings_start_on_boot_subtitle">デバイス起動時にAndroid Enhancerロジックを開始</string>
+    <string name="settings_start_on_boot_subtitle">デバイス起動時にAndroid Tweakerロジックを開始</string>
     <string name="settings_touch_boost_title">タッチブースト</string>
     <string name="settings_touch_boost_subtitle">タッチ時にCPU/GPUをブーストして応答性を向上</string>
     <string name="settings_language_title">言語</string>
@@ -78,7 +78,7 @@
     <string name="root_access_not_found">Rootアクセスが見つかりません</string>
     <string name="root_access_not_found_message">このデバイスにはRootアクセスがありません。</string>
     <string name="notification_channel_boot_service_name">ブートサービス</string>
-    <string name="notification_channel_boot_service_description">Android Enhancer ブート初期化</string>
-    <string name="notification_title_boot">Android Enhancer</string>
+    <string name="notification_channel_boot_service_description">Android Tweaker ブート初期化</string>
+    <string name="notification_title_boot">Android Tweaker</string>
     <string name="notification_text_boot_init">起動時に初期化中...</string>
 </resources>

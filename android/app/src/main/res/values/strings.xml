@@ -29,7 +29,7 @@
     <string name="per_app_modes_hint">Tap to tune per-app modes</string>
     <string name="per_app_modes_disabled">Tap to tune per-app modes (requires Auto mode)</string>
     <string name="per_app_mode_dialog_title">Select mode for %1$s</string>
-    <string name="per_app_mode_dialog_body">Pick how Android Enhancer should behave whenever %1$s is in the foreground.</string>
+    <string name="per_app_mode_dialog_body">Pick how Android Tweaker should behave whenever %1$s is in the foreground.</string>
     <string name="per_app_mode_dialog_remove">Remove override</string>
     <string name="per_app_mode_dialog_secondary">App-specific overrides keep Auto predictable.</string>
     <string name="per_app_mode_remove_content_desc">Remove mode override</string>
@@ -44,7 +44,7 @@
     <string name="mode_balanced_label">Balanced</string>
     <string name="mode_performance_label">Performance</string>
     <string name="mode_gaming_label">Gaming</string>
-    <string name="mode_selector_description_auto">Let Android Enhancer react to real-time context, balancing power and performance automatically.</string>
+    <string name="mode_selector_description_auto">Let Android Tweaker react to real-time context, balancing power and performance automatically.</string>
     <string name="mode_selector_description_powersaver">Tone down CPU, GPU, and network boosts to stretch battery life for the long haul.</string>
     <string name="mode_selector_description_balanced">Keep everything smooth with responsive performance that still respects battery life.</string>
     <string name="mode_selector_description_performance">Unlock aggressive boosts for games and creative apps that demand every ounce of speed.</string>
@@ -57,7 +57,7 @@
     
     <string name="settings">Settings</string>
     <string name="settings_start_on_boot_title">Start on boot</string>
-    <string name="settings_start_on_boot_subtitle">Start Android Enhancer logic when device boots</string>
+    <string name="settings_start_on_boot_subtitle">Start Android Tweaker logic when device boots</string>
     <string name="settings_touch_boost_title">Touch boost</string>
     <string name="settings_touch_boost_subtitle">Boost CPU/GPU on touch for responsive interaction</string>
     <string name="settings_language_title">Language</string>
@@ -87,7 +87,7 @@
     <string name="root_access_not_found">Root Access Not Found</string>
     <string name="root_access_not_found_message">The device does not have root access available.</string>
     <string name="notification_channel_boot_service_name">Boot Service</string>
-    <string name="notification_channel_boot_service_description">Android Enhancer boot initialization</string>
-    <string name="notification_title_boot">Android Enhancer</string>
+    <string name="notification_channel_boot_service_description">Android Tweaker boot initialization</string>
+    <string name="notification_title_boot">Android Tweaker</string>
     <string name="notification_text_boot_init">Initializing on boot...</string>
 </resources>
