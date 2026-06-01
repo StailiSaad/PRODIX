@@ -8,7 +8,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
@@ -69,17 +68,7 @@ private fun AppRoot(repository: AppRepository) {
     val preferencesFlow = remember { dataStore.snapshotFlow() }
     val preferences by preferencesFlow.collectAsState(initial = PreferencesSnapshot())
 
-    val systemDark = isSystemInDarkTheme()
-    val darkTheme = when (preferences.themeMode) {
-        0 -> systemDark
-        1 -> false
-        2 -> true
-        else -> systemDark
-    }
-
     AppTheme(
-        darkTheme = darkTheme,
-        dynamicColor = preferences.useDynamicTheme,
         pureBlack = preferences.pureBlackTheme
     ) {
         val navController = rememberNavController()

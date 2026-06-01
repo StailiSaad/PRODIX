@@ -1,32 +1,31 @@
 package com.androidtweaker.com.ui.screens.home
 
-import androidx.compose.animation.core.Spring
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
-import androidx.compose.material3.InputChip
-import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,39 +35,45 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.androidtweaker.com.R
 import com.androidtweaker.com.system.jni.AndroidEnhancerMode
-import com.androidtweaker.com.ui.components.LoadingIndicatorDialog
-import kotlinx.coroutines.delay
+import com.androidtweaker.com.ui.theme.Accent
+import com.androidtweaker.com.ui.theme.Error as ThemeError
+import com.androidtweaker.com.ui.theme.Primary
+import com.androidtweaker.com.ui.theme.Secondary
+import com.androidtweaker.com.ui.theme.Success
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
     state: HomeState,
     onModeSelected: (AndroidEnhancerMode) -> Unit,
     onOpenPerAppMode: () -> Unit,
-    onOpenOptimization: () -> Unit
+    onOpenOptimization: () -> Unit,
+    onToggleService: ((Boolean) -> Unit)? = null
 ) {
     val perAppModeEnabled = state.mode == AndroidEnhancerMode.AUTO && state.serviceEnabled
 
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 20.dp),
+            .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        item {
-            GlobalModeCard(
-                currentMode = state.mode,
-                serviceEnabled = state.serviceEnabled,
-                onModeSelected = onModeSelected
-            )
-        }
+        item { HeaderSection(serviceEnabled = state.serviceEnabled, onToggleService = onToggleService) }
+
+        item { HeroCard(currentMode = state.mode) }
+
+        item { ModeGrid(currentMode = state.mode, onModeSelected = onModeSelected) }
 
         item {
             Row(
@@ -88,184 +93,266 @@ fun HomeScreen(
                 )
             }
         }
+
+        item { Spacer(modifier = Modifier.height(16.dp)) }
     }
 }
 
-
-
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun GlobalModeCard(
-    currentMode: AndroidEnhancerMode,
+private fun HeaderSection(
     serviceEnabled: Boolean,
-    onModeSelected: (AndroidEnhancerMode) -> Unit
+    onToggleService: ((Boolean) -> Unit)?
 ) {
-    var guardVisible by remember { mutableStateOf(false) }
-    var pendingMode by remember { mutableStateOf<AndroidEnhancerMode?>(null) }
-
-    LaunchedEffect(guardVisible) {
-        if (!guardVisible && pendingMode != null) {
-            pendingMode = null
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                text = "Android Tweaker",
+                style = MaterialTheme.typography.displayLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = "Optimisation intelligente du système",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        if (onToggleService != null) {
+            Switch(
+                checked = serviceEnabled,
+                onCheckedChange = onToggleService
+            )
         }
     }
+}
 
-    val showLoading = guardVisible
-    val buttonsEnabled = !guardVisible && serviceEnabled
-    val displayMode = pendingMode ?: currentMode
-    val modes = AndroidEnhancerMode.entries
-
+@Composable
+private fun HeroCard(currentMode: AndroidEnhancerMode) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.extraLarge,
+        shape = RoundedCornerShape(28.dp),
         colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
         ),
-        elevation = CardDefaults.elevatedCardElevation(
-            defaultElevation = 3.dp,
-            pressedElevation = 6.dp
-        )
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp)
     ) {
-        Column(
+        Box(
             modifier = Modifier
-                .padding(24.dp)
-                .alpha(if (serviceEnabled) 1f else 0.78f),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Primary.copy(alpha = 0.12f),
+                            Accent.copy(alpha = 0.06f),
+                            MaterialTheme.colorScheme.surfaceContainer
+                        )
+                    ),
+                    shape = RoundedCornerShape(28.dp)
+                )
+                .padding(28.dp)
         ) {
             Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(Primary.copy(alpha = 0.15f)),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(56.dp)
-                            .clip(MaterialTheme.shapes.large)
-                            .background(MaterialTheme.colorScheme.primary),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_bolt),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.global_mode_title),
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
+                    Icon(
+                        painter = painterResource(R.drawable.ic_bolt),
+                        contentDescription = null,
+                        tint = Primary,
+                        modifier = Modifier.size(32.dp)
+                    )
                 }
 
-                Text(
-                    text = displayMode.description(),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
-                    lineHeight = 20.sp
-                )
-            }
-
-            // MD3 Expressive: InputChip group with spring physics
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                modes.forEach { mode ->
-                    val selected = mode == displayMode
-                    val scale by animateFloatAsState(
-                        targetValue = if (selected) 1.03f else 1f,
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessMedium
-                        ),
-                        label = "mode_chip_scale"
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = "Mode Intelligent",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
+                    Text(
+                        text = currentMode.description(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 22.sp
+                    )
+                }
 
-                    InputChip(
-                        selected = selected,
-                        onClick = {
-                            if (!selected && buttonsEnabled) {
-                                pendingMode = mode
-                                guardVisible = true
-                                onModeSelected(mode)
-                            }
-                        },
-                        label = {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    AndroidEnhancerMode.entries.forEach { mode ->
+                        val selected = mode == currentMode
+                        val bgColor by animateColorAsState(
+                            targetValue = if (selected) mode.color() else MaterialTheme.colorScheme.surfaceContainerHigh,
+                            animationSpec = tween(300),
+                            label = "chip_bg"
+                        )
+                        val textColor by animateColorAsState(
+                            targetValue = if (selected) mode.onColor() else MaterialTheme.colorScheme.onSurfaceVariant,
+                            animationSpec = tween(300),
+                            label = "chip_text"
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(bgColor)
+                                .clickable { /* handled by grid below */ }
+                                .padding(horizontal = 14.dp, vertical = 8.dp)
+                        ) {
                             Text(
                                 text = mode.displayName(),
                                 style = MaterialTheme.typography.labelLarge,
-                                fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold
+                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                                color = textColor
                             )
-                        },
-                        modifier = Modifier.scale(scale),
-                        enabled = buttonsEnabled,
-                        shape = MaterialTheme.shapes.large,
-                        colors = InputChipDefaults.inputChipColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                            labelColor = MaterialTheme.colorScheme.onSurface,
-                            selectedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                            selectedLabelColor = MaterialTheme.colorScheme.onTertiaryContainer,
-                            disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                            disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            disabledSelectedContainerColor = MaterialTheme.colorScheme.tertiaryContainer
-                        ),
-                        border = InputChipDefaults.inputChipBorder(
-                            enabled = buttonsEnabled,
-                            selected = selected,
-                            borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
-                            selectedBorderColor = MaterialTheme.colorScheme.tertiary,
-                            disabledBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                            disabledSelectedBorderColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.7f),
-                            borderWidth = 1.dp,
-                            selectedBorderWidth = 1.5.dp
-                        )
-                    )
+                        }
+                    }
                 }
             }
         }
     }
-
-    LaunchedEffect(guardVisible) {
-        if (guardVisible) {
-            delay(3_000)
-            guardVisible = false
-        }
-    }
-
-    LoadingIndicatorDialog(visible = showLoading)
 }
 
 @Composable
-private fun AndroidEnhancerMode.displayName(): String =
-    when (this) {
-        AndroidEnhancerMode.AUTO -> stringResource(R.string.mode_auto_label)
-        AndroidEnhancerMode.POWERSAVER -> stringResource(R.string.mode_powersaver_label)
-        AndroidEnhancerMode.BALANCED -> stringResource(R.string.mode_balanced_label)
-        AndroidEnhancerMode.PERFORMANCE -> stringResource(R.string.mode_performance_label)
-        AndroidEnhancerMode.GAMING -> stringResource(R.string.mode_gaming_label)
+private fun ModeGrid(
+    currentMode: AndroidEnhancerMode,
+    onModeSelected: (AndroidEnhancerMode) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        AndroidEnhancerMode.entries.chunked(2).forEach { row ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                row.forEach { mode ->
+                    ModeCard(
+                        mode = mode,
+                        selected = mode == currentMode,
+                        onClick = { onModeSelected(mode) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                if (row.size < 2) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
+        }
     }
+}
 
 @Composable
-private fun AndroidEnhancerMode.description(): String =
-    when (this) {
-        AndroidEnhancerMode.AUTO -> stringResource(R.string.mode_selector_description_auto)
-        AndroidEnhancerMode.POWERSAVER -> stringResource(R.string.mode_selector_description_powersaver)
-        AndroidEnhancerMode.BALANCED -> stringResource(R.string.mode_selector_description_balanced)
-        AndroidEnhancerMode.PERFORMANCE -> stringResource(R.string.mode_selector_description_performance)
-        AndroidEnhancerMode.GAMING -> stringResource(R.string.mode_selector_description_gaming)
+private fun ModeCard(
+    mode: AndroidEnhancerMode,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val elevation by animateFloatAsState(
+        targetValue = if (selected) 8f else 2f,
+        animationSpec = spring(dampingRatio = 0.7f, stiffness = 300f),
+        label = "card_elevation"
+    )
+    val borderAlpha by animateFloatAsState(
+        targetValue = if (selected) 1f else 0f,
+        animationSpec = tween(300),
+        label = "border_alpha"
+    )
+
+    ElevatedCard(
+        onClick = onClick,
+        modifier = modifier.aspectRatio(1f),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = if (selected) mode.color().copy(alpha = 0.12f)
+            else MaterialTheme.colorScheme.surfaceContainer
+        ),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = elevation.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(2.dp)
+                .clip(RoundedCornerShape(18.dp))
+                .background(
+                    if (selected) mode.color().copy(alpha = borderAlpha * 0.15f)
+                    else androidx.compose.ui.graphics.Color.Transparent
+                )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(
+                            if (selected) mode.color().copy(alpha = 0.2f)
+                            else MaterialTheme.colorScheme.surfaceContainerHigh
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(mode.iconRes()),
+                        contentDescription = null,
+                        tint = if (selected) mode.color() else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = mode.displayName(),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                    color = if (selected) mode.color() else MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            if (selected) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(
+                            Brush.horizontalGradient(
+                                colors = listOf(
+                                    mode.color().copy(alpha = borderAlpha * 0.3f),
+                                    androidx.compose.ui.graphics.Color.Transparent,
+                                    mode.color().copy(alpha = borderAlpha * 0.3f)
+                                )
+                            )
+                        )
+                )
+            }
+        }
     }
+}
 
 @Composable
 private fun PerAppModeCard(
@@ -285,30 +372,31 @@ private fun PerAppModeCard(
     ElevatedCard(
         onClick = { if (enabled) onViewProfileOverrides() },
         modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.extraLarge,
-        elevation = CardDefaults.elevatedCardElevation(
-            defaultElevation = 3.dp,
-            pressedElevation = 6.dp
-        )
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        ),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
     ) {
         Column(
             modifier = Modifier
+                .fillMaxWidth()
                 .padding(20.dp)
-                .alpha(if (enabled) 1f else 0.78f),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .alpha(if (enabled) 1f else 0.6f),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .clip(MaterialTheme.shapes.large)
-                    .background(MaterialTheme.colorScheme.secondaryContainer),
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Secondary.copy(alpha = 0.15f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_apps),
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                    tint = Secondary,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -324,7 +412,8 @@ private fun PerAppModeCard(
                 text = subtitle,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2
+                maxLines = 2,
+                textAlign = TextAlign.Center
             )
         }
     }
@@ -338,28 +427,30 @@ private fun OptimizationCard(
     ElevatedCard(
         onClick = onOpen,
         modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.extraLarge,
-        elevation = CardDefaults.elevatedCardElevation(
-            defaultElevation = 3.dp,
-            pressedElevation = 6.dp
-        )
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        ),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
     ) {
         Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .clip(MaterialTheme.shapes.large)
-                    .background(MaterialTheme.colorScheme.tertiaryContainer),
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Accent.copy(alpha = 0.15f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_bolt),
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                    tint = Accent,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -375,8 +466,53 @@ private fun OptimizationCard(
                 text = stringResource(R.string.optimization_home_hint),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2
+                maxLines = 2,
+                textAlign = TextAlign.Center
             )
         }
     }
+}
+
+@Composable
+private fun AndroidEnhancerMode.displayName(): String =
+    when (this) {
+        AndroidEnhancerMode.POWERSAVER -> "Eco"
+        AndroidEnhancerMode.BALANCED -> "Équilibré"
+        AndroidEnhancerMode.PERFORMANCE -> "Turbo"
+        AndroidEnhancerMode.GAMING -> "Gaming"
+        AndroidEnhancerMode.AUTO -> "Auto"
+    }
+
+@Composable
+private fun AndroidEnhancerMode.description(): String =
+    when (this) {
+        AndroidEnhancerMode.AUTO -> "L'application analyse automatiquement\nles performances du système et applique\nles optimisations adaptées."
+        AndroidEnhancerMode.POWERSAVER -> "Économie d'énergie maximale\npour prolonger l'autonomie."
+        AndroidEnhancerMode.BALANCED -> "Équilibre parfait entre\nperformances et autonomie."
+        AndroidEnhancerMode.PERFORMANCE -> "Performances maximales\npour les applications exigeantes."
+        AndroidEnhancerMode.GAMING -> "Optimisation gaming\npour une expérience de jeu fluide."
+    }
+
+private fun AndroidEnhancerMode.color() = when (this) {
+    AndroidEnhancerMode.POWERSAVER -> Success
+    AndroidEnhancerMode.BALANCED -> Primary
+    AndroidEnhancerMode.PERFORMANCE -> Accent
+    AndroidEnhancerMode.GAMING -> ThemeError
+    AndroidEnhancerMode.AUTO -> Primary
+}
+
+private fun AndroidEnhancerMode.onColor() = when (this) {
+    AndroidEnhancerMode.POWERSAVER -> Success
+    AndroidEnhancerMode.BALANCED -> Primary
+    AndroidEnhancerMode.PERFORMANCE -> Accent
+    AndroidEnhancerMode.GAMING -> ThemeError
+    AndroidEnhancerMode.AUTO -> Primary
+}
+
+private fun AndroidEnhancerMode.iconRes() = when (this) {
+    AndroidEnhancerMode.POWERSAVER -> R.drawable.ic_brightness_2
+    AndroidEnhancerMode.BALANCED -> R.drawable.ic_description
+    AndroidEnhancerMode.PERFORMANCE -> R.drawable.ic_bolt
+    AndroidEnhancerMode.GAMING -> R.drawable.ic_campaign
+    AndroidEnhancerMode.AUTO -> R.drawable.ic_bolt
 }
