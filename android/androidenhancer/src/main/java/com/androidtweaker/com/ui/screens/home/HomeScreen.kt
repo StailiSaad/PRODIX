@@ -6,6 +6,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
@@ -32,14 +34,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -53,6 +51,13 @@ import com.androidtweaker.com.ui.theme.Primary
 import com.androidtweaker.com.ui.theme.Secondary
 import com.androidtweaker.com.ui.theme.Success
 
+private val performanceModes = listOf(
+    AndroidEnhancerMode.POWERSAVER,
+    AndroidEnhancerMode.BALANCED,
+    AndroidEnhancerMode.PERFORMANCE,
+    AndroidEnhancerMode.GAMING
+)
+
 @Composable
 fun HomeScreen(
     state: HomeState,
@@ -61,8 +66,6 @@ fun HomeScreen(
     onOpenOptimization: () -> Unit,
     onToggleService: ((Boolean) -> Unit)? = null
 ) {
-    val perAppModeEnabled = state.mode == AndroidEnhancerMode.AUTO && state.serviceEnabled
-
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -76,22 +79,17 @@ fun HomeScreen(
         item { ModeGrid(currentMode = state.mode, onModeSelected = onModeSelected) }
 
         item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                PerAppModeCard(
-                    modeOverrideCount = state.apps.size,
-                    enabled = perAppModeEnabled,
-                    serviceEnabled = state.serviceEnabled,
-                    onViewProfileOverrides = onOpenPerAppMode,
-                    modifier = Modifier.weight(1f)
-                )
-                OptimizationCard(
-                    onOpen = onOpenOptimization,
-                    modifier = Modifier.weight(1f)
-                )
-            }
+            PerAppModeCard(
+                onOpen = onOpenPerAppMode,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        item {
+            OptimizationCard(
+                onOpen = onOpenOptimization,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
 
         item { Spacer(modifier = Modifier.height(16.dp)) }
@@ -196,6 +194,9 @@ private fun HeroCard(currentMode: AndroidEnhancerMode) {
                 }
 
                 Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -207,7 +208,7 @@ private fun HeroCard(currentMode: AndroidEnhancerMode) {
                             label = "chip_bg"
                         )
                         val textColor by animateColorAsState(
-                            targetValue = if (selected) mode.onColor() else MaterialTheme.colorScheme.onSurfaceVariant,
+                            targetValue = if (selected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
                             animationSpec = tween(300),
                             label = "chip_text"
                         )
@@ -239,7 +240,7 @@ private fun ModeGrid(
     onModeSelected: (AndroidEnhancerMode) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        AndroidEnhancerMode.entries.chunked(2).forEach { row ->
+        performanceModes.chunked(2).forEach { row ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -251,9 +252,6 @@ private fun ModeGrid(
                         onClick = { onModeSelected(mode) },
                         modifier = Modifier.weight(1f)
                     )
-                }
-                if (row.size < 2) {
-                    Spacer(modifier = Modifier.weight(1f))
                 }
             }
         }
@@ -295,7 +293,7 @@ private fun ModeCard(
                 .clip(RoundedCornerShape(18.dp))
                 .background(
                     if (selected) mode.color().copy(alpha = borderAlpha * 0.15f)
-                    else androidx.compose.ui.graphics.Color.Transparent
+                    else Color.Transparent
                 )
         ) {
             Column(
@@ -343,7 +341,7 @@ private fun ModeCard(
                             Brush.horizontalGradient(
                                 colors = listOf(
                                     mode.color().copy(alpha = borderAlpha * 0.3f),
-                                    androidx.compose.ui.graphics.Color.Transparent,
+                                    Color.Transparent,
                                     mode.color().copy(alpha = borderAlpha * 0.3f)
                                 )
                             )
@@ -356,21 +354,11 @@ private fun ModeCard(
 
 @Composable
 private fun PerAppModeCard(
-    modeOverrideCount: Int,
-    enabled: Boolean,
-    serviceEnabled: Boolean,
-    onViewProfileOverrides: () -> Unit,
+    onOpen: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val subtitle = when {
-        !serviceEnabled -> stringResource(R.string.per_app_modes_hint)
-        !enabled -> stringResource(R.string.per_app_modes_disabled)
-        modeOverrideCount == 0 -> stringResource(R.string.per_app_modes_hint)
-        else -> pluralStringResource(R.plurals.per_app_modes_count, modeOverrideCount, modeOverrideCount)
-    }
-
     ElevatedCard(
-        onClick = { if (enabled) onViewProfileOverrides() },
+        onClick = onOpen,
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.elevatedCardColors(
@@ -378,13 +366,12 @@ private fun PerAppModeCard(
         ),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp)
-                .alpha(if (enabled) 1f else 0.6f),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(20.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
@@ -401,19 +388,25 @@ private fun PerAppModeCard(
                 )
             }
 
-            Text(
-                text = stringResource(R.string.per_app_modes_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Mode par application",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "Personnaliser les performances par application",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
-                textAlign = TextAlign.Center
+            Icon(
+                painter = painterResource(R.drawable.ic_chevron_right),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(24.dp)
             )
         }
     }
@@ -433,12 +426,12 @@ private fun OptimizationCard(
         ),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
@@ -455,19 +448,25 @@ private fun OptimizationCard(
                 )
             }
 
-            Text(
-                text = stringResource(R.string.optimization_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.optimization_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = stringResource(R.string.optimization_home_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
-            Text(
-                text = stringResource(R.string.optimization_home_hint),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
-                textAlign = TextAlign.Center
+            Icon(
+                painter = painterResource(R.drawable.ic_chevron_right),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(24.dp)
             )
         }
     }
@@ -494,14 +493,6 @@ private fun AndroidEnhancerMode.description(): String =
     }
 
 private fun AndroidEnhancerMode.color() = when (this) {
-    AndroidEnhancerMode.POWERSAVER -> Success
-    AndroidEnhancerMode.BALANCED -> Primary
-    AndroidEnhancerMode.PERFORMANCE -> Accent
-    AndroidEnhancerMode.GAMING -> ThemeError
-    AndroidEnhancerMode.AUTO -> Primary
-}
-
-private fun AndroidEnhancerMode.onColor() = when (this) {
     AndroidEnhancerMode.POWERSAVER -> Success
     AndroidEnhancerMode.BALANCED -> Primary
     AndroidEnhancerMode.PERFORMANCE -> Accent
