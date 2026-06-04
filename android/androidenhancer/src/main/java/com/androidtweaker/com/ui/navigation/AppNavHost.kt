@@ -1,5 +1,6 @@
 package com.androidtweaker.com.ui.navigation
 
+import android.app.Activity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -23,7 +24,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -69,7 +70,8 @@ import kotlinx.coroutines.delay
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    isRootAvailable: Boolean = false
 ) {
     val homeViewModel: HomeViewModel = viewModel()
     val aboutViewModel: AboutViewModel = viewModel()
@@ -149,6 +151,7 @@ fun AppNavHost(
             }
         },
         bottomBar = {
+            val context = LocalContext.current
             AnimatedVisibility(
                 visible = showBottomBar,
                 enter = slideInVertically(initialOffsetY = { it }),
@@ -157,11 +160,18 @@ fun AppNavHost(
                 BottomNavBar(
                     currentRoute = currentDestination?.route ?: AppDestination.Home.route,
                     onNavigate = { route ->
-                        navController.navigate(route) {
-                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
+                        if (route == AppDestination.Home.route) {
+                            navController.popBackStack(AppDestination.Home.route, false)
+                        } else {
+                            navController.navigate(route) {
+                                popUpTo(AppDestination.Home.route) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
                         }
+                    },
+                    onGoToProdix = {
+                        (context as? Activity)?.finish()
                     }
                 )
             }
@@ -179,10 +189,10 @@ fun AppNavHost(
                     onModeSelected = homeViewModel::setMode,
                     onOpenPerAppMode = { navController.navigate(AppDestination.PerAppMode.route) },
                     onOpenOptimization = { navController.navigate(AppDestination.Optimization.route) },
-                    onToggleService = { enabled ->
+                    onToggleService = if (isRootAvailable) { enabled ->
                         showLoading = true
                         homeViewModel.toggleService(enabled)
-                    }
+                    } else null
                 )
             }
             composable(AppDestination.About.route) {
@@ -223,7 +233,8 @@ fun AppNavHost(
 @Composable
 private fun BottomNavBar(
     currentRoute: String,
-    onNavigate: (String) -> Unit
+    onNavigate: (String) -> Unit,
+    onGoToProdix: () -> Unit
 ) {
     val items = listOf(
         NavItem(AppDestination.Home.route, R.drawable.ic_home, "Accueil"),
@@ -278,6 +289,33 @@ private fun BottomNavBar(
                         fontSize = 10.sp
                     )
                 }
+            }
+
+            // Prodix close button
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable { onGoToProdix() }
+                    .padding(vertical = 6.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_person),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(24.dp)
+                )
+                Text(
+                    text = "Prodix",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontSize = 10.sp
+                )
             }
         }
     }

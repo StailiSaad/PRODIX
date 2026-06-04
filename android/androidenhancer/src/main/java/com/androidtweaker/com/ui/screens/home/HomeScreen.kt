@@ -47,6 +47,7 @@ import com.androidtweaker.com.R
 import com.androidtweaker.com.system.jni.AndroidEnhancerMode
 import com.androidtweaker.com.ui.theme.Accent
 import com.androidtweaker.com.ui.theme.Error as ThemeError
+import com.androidtweaker.com.ui.theme.NeonGray
 import com.androidtweaker.com.ui.theme.Primary
 import com.androidtweaker.com.ui.theme.Secondary
 import com.androidtweaker.com.ui.theme.Success
@@ -73,6 +74,10 @@ fun HomeScreen(
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         item { HeaderSection(serviceEnabled = state.serviceEnabled, onToggleService = onToggleService) }
+
+        if (onToggleService == null) {
+            item { NonRootBanner() }
+        }
 
         item { HeroCard(currentMode = state.mode, onModeSelected = onModeSelected) }
 
@@ -233,6 +238,36 @@ private fun HeroCard(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun NonRootBanner() {
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
+        ),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_power_settings_new),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(24.dp)
+            )
+            Text(
+                text = "Root requis — les optimisations système nécessitent un accès root. Passez en mode ADB ou activez le root.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

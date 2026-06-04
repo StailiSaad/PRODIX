@@ -44,6 +44,7 @@ import com.androidtweaker.com.ui.theme.AppTheme
 import javax.inject.Inject
 import com.androidtweaker.com.data.repository.AppRepository
 import com.androidtweaker.com.system.root.RootIpc
+import androidx.compose.foundation.isSystemInDarkTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @AndroidEntryPoint
@@ -69,62 +70,60 @@ private fun AppRoot(repository: AppRepository) {
     val preferencesFlow = remember { dataStore.snapshotFlow() }
     val preferences by preferencesFlow.collectAsState(initial = PreferencesSnapshot())
 
+    val isRootAvailable = remember { mutableStateOf<Boolean?>(null) }
+    val navController = rememberNavController()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Request notification permission on Android 13+
+    val permissionLauncher = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission(),
+            onResult = { /* Handle permission result if needed */ }
+        )
+    } else {
+        null
+    }
+
+    LaunchedEffect(Unit) {
+        val root = withContext(Dispatchers.IO) {
+            try {
+                withTimeout(5000) {
+                    Shell.getShell().isRoot
+                }
+            } catch (_: Exception) {
+                false
+            }
+        }
+
+        isRootAvailable.value = root
+
+        if (root) {
+            RootIpc.init(context)
+            val snapshot = dataStore.snapshotFlow().first()
+            if (snapshot.serviceEnabled) {
+                repository.startService()
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissionLauncher?.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    val useDarkTheme = when (preferences.themeMode) {
+        1 -> false
+        2 -> true
+        else -> isSystemInDarkTheme()
+    }
+
     AppTheme(
-        pureBlack = preferences.pureBlackTheme
+        darkTheme = useDarkTheme,
+        pureBlack = if (useDarkTheme) preferences.pureBlackTheme else false
     ) {
-        val navController = rememberNavController()
-        val snackbarHostState = remember { SnackbarHostState() }
-        val showRootErrorDialog = remember { mutableStateOf(false) }
-
-        // Request notification permission on Android 13+
-        val permissionLauncher = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.RequestPermission(),
-                onResult = { /* Handle permission result if needed */ }
-            )
-        } else {
-            null
-        }
-
-        LaunchedEffect(Unit) {
-            val isRoot = withContext(Dispatchers.IO) {
-                try {
-                    withTimeout(5000) {
-                        Shell.getShell().isRoot
-                    }
-                } catch (_: Exception) {
-                    false
-                }
-            }
-
-            if (isRoot) {
-                // Ensure IPC is initialized after root is granted
-                RootIpc.init(context)
-                // Wait for DataStore to emit the actual persisted value (not the default)
-                val snapshot = dataStore.snapshotFlow().first()
-                if (snapshot.serviceEnabled) {
-                    repository.startService()
-                }
-            } else {
-                showRootErrorDialog.value = true
-            }
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                permissionLauncher?.launch(Manifest.permission.POST_NOTIFICATIONS)
-            }
-        }
-
-        if (showRootErrorDialog.value) {
-            RootAccessErrorDialog(
-                onDismiss = {
-                    showRootErrorDialog.value = false
-                }
-            )
-        }
-
         AppNavHost(
             navController = navController,
-            snackbarHostState = snackbarHostState
+            snackbarHostState = snackbarHostState,
+            isRootAvailable = isRootAvailable.value == true
         )
     }
 }
