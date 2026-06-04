@@ -34,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -65,7 +66,8 @@ fun HomeScreen(
     onModeSelected: (AndroidEnhancerMode) -> Unit,
     onOpenPerAppMode: () -> Unit,
     onOpenOptimization: () -> Unit,
-    onToggleService: ((Boolean) -> Unit)? = null
+    onToggleService: ((Boolean) -> Unit)? = null,
+    isRootAvailable: Boolean = false
 ) {
     LazyColumn(
         modifier = Modifier
@@ -75,24 +77,35 @@ fun HomeScreen(
     ) {
         item { HeaderSection(serviceEnabled = state.serviceEnabled, onToggleService = onToggleService) }
 
-        if (onToggleService == null) {
+        if (!isRootAvailable) {
             item { NonRootBanner() }
         }
 
-        item { HeroCard(currentMode = state.mode, onModeSelected = onModeSelected) }
+        item {
+            HeroCard(
+                currentMode = state.mode,
+                onModeSelected = if (isRootAvailable) onModeSelected else null
+            )
+        }
 
-        item { ModeGrid(currentMode = state.mode, onModeSelected = onModeSelected) }
+        item {
+            ModeGrid(
+                currentMode = state.mode,
+                onModeSelected = if (isRootAvailable) onModeSelected else null
+            )
+        }
 
         item {
             PerAppModeCard(
-                onOpen = onOpenPerAppMode,
+                onOpen = if (isRootAvailable) onOpenPerAppMode else null,
                 modifier = Modifier.fillMaxWidth()
             )
         }
 
         item {
             OptimizationCard(
-                onOpen = onOpenOptimization,
+                onOpen = if (isRootAvailable) onOpenOptimization else null,
+                rootMissing = !isRootAvailable,
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -138,8 +151,9 @@ private fun HeaderSection(
 @Composable
 private fun HeroCard(
     currentMode: AndroidEnhancerMode,
-    onModeSelected: (AndroidEnhancerMode) -> Unit
+    onModeSelected: ((AndroidEnhancerMode) -> Unit)?
 ) {
+    val enabled = onModeSelected != null
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(28.dp),
@@ -225,7 +239,10 @@ private fun HeroCard(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(bgColor)
-                                .clickable { onModeSelected(mode) }
+                                .then(
+                                    if (enabled) Modifier.clickable { onModeSelected!!(mode) }
+                                    else Modifier
+                                )
                                 .padding(horizontal = 14.dp, vertical = 8.dp)
                         ) {
                             Text(
@@ -275,8 +292,9 @@ private fun NonRootBanner() {
 @Composable
 private fun ModeGrid(
     currentMode: AndroidEnhancerMode,
-    onModeSelected: (AndroidEnhancerMode) -> Unit
+    onModeSelected: ((AndroidEnhancerMode) -> Unit)?
 ) {
+    val enabled = onModeSelected != null
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         performanceModes.chunked(2).forEach { row ->
             Row(
@@ -287,7 +305,7 @@ private fun ModeGrid(
                     ModeCard(
                         mode = mode,
                         selected = mode == currentMode,
-                        onClick = { onModeSelected(mode) },
+                        onClick = if (enabled) ({ onModeSelected!!(mode) }) else null,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -300,7 +318,7 @@ private fun ModeGrid(
 private fun ModeCard(
     mode: AndroidEnhancerMode,
     selected: Boolean,
-    onClick: () -> Unit,
+    onClick: (() -> Unit)?,
     modifier: Modifier = Modifier
 ) {
     val elevation by animateFloatAsState(
@@ -315,8 +333,10 @@ private fun ModeCard(
     )
 
     ElevatedCard(
-        onClick = onClick,
-        modifier = modifier.aspectRatio(1f),
+        onClick = onClick ?: {},
+        modifier = modifier
+            .then(if (onClick == null) Modifier.alpha(0.5f) else Modifier)
+            .aspectRatio(1f),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.elevatedCardColors(
             containerColor = if (selected) mode.color().copy(alpha = 0.12f)
@@ -392,12 +412,15 @@ private fun ModeCard(
 
 @Composable
 private fun PerAppModeCard(
-    onOpen: () -> Unit,
+    onOpen: (() -> Unit)?,
     modifier: Modifier = Modifier
 ) {
+    val disabled = onOpen == null
     ElevatedCard(
-        onClick = onOpen,
-        modifier = modifier.fillMaxWidth(),
+        onClick = onOpen ?: {},
+        modifier = modifier
+            .fillMaxWidth()
+            .then(if (disabled) Modifier.alpha(0.5f) else Modifier),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer
@@ -452,12 +475,16 @@ private fun PerAppModeCard(
 
 @Composable
 private fun OptimizationCard(
-    onOpen: () -> Unit,
+    onOpen: (() -> Unit)?,
+    rootMissing: Boolean = false,
     modifier: Modifier = Modifier
 ) {
+    val disabled = onOpen == null
     ElevatedCard(
-        onClick = onOpen,
-        modifier = modifier.fillMaxWidth(),
+        onClick = onOpen ?: {},
+        modifier = modifier
+            .fillMaxWidth()
+            .then(if (disabled) Modifier.alpha(0.5f) else Modifier),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer

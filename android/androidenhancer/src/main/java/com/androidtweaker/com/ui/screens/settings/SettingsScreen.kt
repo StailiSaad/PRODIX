@@ -45,7 +45,8 @@ fun SettingsScreen(
     onLanguageModeChanged: (LanguageMode) -> Unit,
     onThemeModeChanged: (ThemeMode) -> Unit,
     onPureBlackThemeChanged: (Boolean) -> Unit,
-    onUseDynamicThemeChanged: (Boolean) -> Unit
+    onUseDynamicThemeChanged: (Boolean) -> Unit,
+    isRootAvailable: Boolean = false
 ) {
     var showLanguageDialog by rememberSaveable { mutableStateOf(false) }
     var showThemeDialog by rememberSaveable { mutableStateOf(false) }
@@ -81,9 +82,11 @@ fun SettingsScreen(
         SettingSwitchCard(
             iconRes = R.drawable.ic_touch_app,
             title = stringResource(R.string.settings_touch_boost_title),
-            subtitle = stringResource(R.string.settings_touch_boost_subtitle),
+            subtitle = if (isRootAvailable) stringResource(R.string.settings_touch_boost_subtitle)
+                      else "Root requis — le touch boost nécessite l'accès root.",
             checked = state.touchBoostEnabled,
-            onCheckedChange = onTouchBoostEnabledChanged
+            onCheckedChange = onTouchBoostEnabledChanged,
+            enabled = isRootAvailable
         )
 
         SettingClickableCard(

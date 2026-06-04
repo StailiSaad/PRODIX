@@ -9,6 +9,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -46,12 +47,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -73,14 +76,51 @@ import kotlinx.coroutines.withContext
 fun PerAppModeScreen(
     state: PerAppModeState,
     onSetModeOverride: (InstalledApp, AndroidEnhancerMode) -> Unit,
-    onRemoveModeOverride: (String) -> Unit
+    onRemoveModeOverride: (String) -> Unit,
+    isRootAvailable: Boolean = false
 ) {
+    if (!isRootAvailable) {
+        NoRootPerAppBanner()
+    }
     PerAppModeList(
         installedApps = state.installedApps,
         modeOverrides = state.apps,
         onSetModeOverride = onSetModeOverride,
-        onRemoveModeOverride = onRemoveModeOverride
+        onRemoveModeOverride = onRemoveModeOverride,
+        enabled = isRootAvailable
     )
+}
+
+@Composable
+private fun NoRootPerAppBanner() {
+    androidx.compose.material3.ElevatedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        shape = RoundedCornerShape(20.dp),
+        colors = androidx.compose.material3.CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
+        ),
+        elevation = androidx.compose.material3.CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(
+                painter = painterResource(com.androidtweaker.com.R.drawable.ic_power_settings_new),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(24.dp)
+            )
+            Text(
+                text = "Root requis — le mode par application nécessite l'accès root pour fonctionner.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
 }
 
 enum class AppFilter {
@@ -108,7 +148,8 @@ private fun PerAppModeList(
     installedApps: List<InstalledApp>,
     modeOverrides: Map<String, AndroidEnhancerMode>,
     onSetModeOverride: (InstalledApp, AndroidEnhancerMode) -> Unit,
-    onRemoveModeOverride: (String) -> Unit
+    onRemoveModeOverride: (String) -> Unit,
+    enabled: Boolean = true
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf(AppFilter.ALL) }
@@ -239,7 +280,8 @@ private fun PerAppModeList(
                     hasOverride = currentMode != null,
                     iconCache = iconCache,
                     onModeSelected = { newMode -> onSetModeOverride(app, newMode) },
-                    onRemoveModeOverride = { onRemoveModeOverride(app.packageName) }
+                    onRemoveModeOverride = { onRemoveModeOverride(app.packageName) },
+                    enabled = enabled
                 )
             }
         }
@@ -254,7 +296,8 @@ private fun PerAppModeItemCard(
     hasOverride: Boolean,
     iconCache: IconCache,
     onModeSelected: (AndroidEnhancerMode) -> Unit,
-    onRemoveModeOverride: () -> Unit
+    onRemoveModeOverride: () -> Unit,
+    enabled: Boolean = true
 ) {
     var showModeSelection by remember { mutableStateOf(false) }
     
@@ -275,7 +318,11 @@ private fun PerAppModeItemCard(
     val subtextColor = MaterialTheme.colorScheme.onSurfaceVariant
 
     ElevatedCard(
-        modifier = Modifier.fillMaxWidth(),
+        onClick = {},
+
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(if (!enabled) Modifier.alpha(0.5f) else Modifier),
         shape = MaterialTheme.shapes.extraLarge,
         colors = CardDefaults.elevatedCardColors(containerColor = containerColor),
         elevation = CardDefaults.elevatedCardElevation(
@@ -341,12 +388,12 @@ private fun PerAppModeItemCard(
 
             ModeIndicatorBadge(
                 mode = mode,
-                onClick = { showModeSelection = true }
+                onClick = if (enabled) ({ showModeSelection = true }) else null
             )
 
             if (hasOverride) {
                 IconButton(
-                    onClick = onRemoveModeOverride,
+                    onClick = { if (enabled) onRemoveModeOverride() },
                     modifier = Modifier.size(44.dp)
                 ) {
                     Icon(
@@ -376,7 +423,7 @@ private fun PerAppModeItemCard(
 @Composable
 private fun ModeIndicatorBadge(
     mode: AndroidEnhancerMode,
-    onClick: () -> Unit
+    onClick: (() -> Unit)?
 ) {
     val (backgroundColor, textColor) = when (mode) {
         AndroidEnhancerMode.AUTO -> {
@@ -408,7 +455,10 @@ private fun ModeIndicatorBadge(
         modifier = Modifier
             .clip(MaterialTheme.shapes.medium)
             .background(backgroundColor)
-            .clickable(onClick = onClick)
+            .then(
+                if (onClick != null) Modifier.clickable { onClick() }
+                else Modifier
+            )
             .padding(horizontal = 12.dp, vertical = 6.dp)
     ) {
         Text(

@@ -192,7 +192,8 @@ fun AppNavHost(
                     onToggleService = if (isRootAvailable) { enabled ->
                         showLoading = true
                         homeViewModel.toggleService(enabled)
-                    } else null
+                    } else null,
+                    isRootAvailable = isRootAvailable
                 )
             }
             composable(AppDestination.About.route) {
@@ -206,7 +207,8 @@ fun AppNavHost(
                     onLanguageModeChanged = settingsViewModel::setLanguageMode,
                     onThemeModeChanged = settingsViewModel::setThemeMode,
                     onPureBlackThemeChanged = settingsViewModel::setPureBlackTheme,
-                    onUseDynamicThemeChanged = settingsViewModel::setUseDynamicTheme
+                    onUseDynamicThemeChanged = settingsViewModel::setUseDynamicTheme,
+                    isRootAvailable = isRootAvailable
                 )
             }
             composable(AppDestination.PerAppMode.route) {
@@ -214,6 +216,7 @@ fun AppNavHost(
                     state = modeChangeState,
                     onSetModeOverride = modeChangeViewModel::setModeOverride,
                     onRemoveModeOverride = modeChangeViewModel::removeModeOverride,
+                    isRootAvailable = isRootAvailable
                 )
             }
             composable(AppDestination.Optimization.route) {
@@ -221,7 +224,8 @@ fun AppNavHost(
                     state = optimizationState,
                     onToggleModule = optimizationViewModel::toggleModule,
                     onDismissAdbGrant = optimizationViewModel::dismissAdbGrantDialog,
-                    onConfirmAdbGrant = optimizationViewModel::confirmAdbGrantApplied
+                    onConfirmAdbGrant = optimizationViewModel::confirmAdbGrantApplied,
+                    isRootAvailable = isRootAvailable
                 )
             }
         }

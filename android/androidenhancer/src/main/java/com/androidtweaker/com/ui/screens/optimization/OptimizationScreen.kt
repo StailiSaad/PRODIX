@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -46,8 +48,11 @@ fun OptimizationScreen(
     state: OptimizationState,
     onToggleModule: (String, Boolean) -> Unit,
     onDismissAdbGrant: () -> Unit = {},
-    onConfirmAdbGrant: () -> Unit = {}
+    onConfirmAdbGrant: () -> Unit = {},
+    isRootAvailable: Boolean = false
 ) {
+    val blocked = !isRootAvailable && !state.adbWriteSecureGranted
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -55,6 +60,10 @@ fun OptimizationScreen(
             .padding(horizontal = 16.dp, vertical = 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        if (blocked) {
+            OptimizationNoRootBanner()
+        }
+
         Text(
             text = stringResource(R.string.optimization_section_title),
             style = MaterialTheme.typography.titleMedium,
@@ -68,7 +77,8 @@ fun OptimizationScreen(
                 module = module,
                 enabled = state.isEnabled(module.id),
                 isApplying = state.isApplying == module.id,
-                onToggle = { enable -> onToggleModule(module.id, enable) }
+                onToggle = { enable -> onToggleModule(module.id, enable) },
+                rootMissing = blocked
             )
         }
 
@@ -212,10 +222,14 @@ private fun ModuleToggleCard(
     module: OptimizationModule,
     enabled: Boolean,
     isApplying: Boolean,
-    onToggle: (Boolean) -> Unit
+    onToggle: (Boolean) -> Unit,
+    rootMissing: Boolean = false
 ) {
     ElevatedCard(
-        modifier = Modifier.fillMaxWidth(),
+        onClick = {},
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(if (rootMissing) Modifier.alpha(0.5f) else Modifier),
         shape = MaterialTheme.shapes.extraLarge,
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
@@ -276,9 +290,39 @@ private fun ModuleToggleCard(
             ) {
                 Switch(
                     checked = enabled,
-                    onCheckedChange = onToggle
+                    onCheckedChange = if (rootMissing) null else onToggle
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun OptimizationNoRootBanner() {
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
+        ),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_power_settings_new),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(24.dp)
+            )
+            Text(
+                text = "Root requis — les optimisations système nécessitent un accès root.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

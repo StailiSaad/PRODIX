@@ -38,6 +38,7 @@ object PreferenceKeys {
     val OPTIM_GPU_BOOST = booleanPreferencesKey("optim_gpu_boost")
     val OPTIM_AUDIO_TUNING = booleanPreferencesKey("optim_audio_tuning")
     val OPTIM_HYPER_PERF = booleanPreferencesKey("optim_hyper_perf")
+    val ADB_WRITE_SECURE_GRANTED = booleanPreferencesKey("adb_write_secure_granted")
 }
 
 @Serializable
@@ -60,7 +61,8 @@ data class PreferencesSnapshot(
     val optimGamePulse: Boolean = false,
     val optimGpuBoost: Boolean = false,
     val optimAudioTuning: Boolean = false,
-    val optimHyperPerf: Boolean = false
+    val optimHyperPerf: Boolean = false,
+    val adbWriteSecureGranted: Boolean = false
 ) {
 
     companion object {
@@ -87,7 +89,8 @@ data class PreferencesSnapshot(
                 optimGamePulse = preferences[PreferenceKeys.OPTIM_GAME_PULSE] ?: false,
                 optimGpuBoost = preferences[PreferenceKeys.OPTIM_GPU_BOOST] ?: false,
                 optimAudioTuning = preferences[PreferenceKeys.OPTIM_AUDIO_TUNING] ?: false,
-                optimHyperPerf = preferences[PreferenceKeys.OPTIM_HYPER_PERF] ?: false
+                optimHyperPerf = preferences[PreferenceKeys.OPTIM_HYPER_PERF] ?: false,
+                adbWriteSecureGranted = preferences[PreferenceKeys.ADB_WRITE_SECURE_GRANTED] ?: false
             )
         }
 
@@ -132,6 +135,7 @@ suspend fun DataStore<Preferences>.updateSnapshot(transform: (PreferencesSnapsho
         prefs[PreferenceKeys.OPTIM_GPU_BOOST] = updated.optimGpuBoost
         prefs[PreferenceKeys.OPTIM_AUDIO_TUNING] = updated.optimAudioTuning
         prefs[PreferenceKeys.OPTIM_HYPER_PERF] = updated.optimHyperPerf
+        prefs[PreferenceKeys.ADB_WRITE_SECURE_GRANTED] = updated.adbWriteSecureGranted
     }
 }
 
