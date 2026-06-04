@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.res.Configuration
 import android.os.Build
 import android.view.accessibility.AccessibilityEvent
 import dagger.hilt.android.AndroidEntryPoint
@@ -92,6 +93,11 @@ class AccessibilityService : AccessibilityService() {
 
     override fun onInterrupt() {
         // no-op
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        sendScreenInfo()
     }
 
     override fun onUnbind(intent: Intent?): Boolean {

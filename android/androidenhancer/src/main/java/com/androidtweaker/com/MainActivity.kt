@@ -31,6 +31,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import com.topjohnwu.superuser.Shell
@@ -99,8 +100,9 @@ private fun AppRoot(repository: AppRepository) {
             if (isRoot) {
                 // Ensure IPC is initialized after root is granted
                 RootIpc.init(context)
-                // Only start service if it was previously enabled by the user
-                if (preferences.serviceEnabled) {
+                // Wait for DataStore to emit the actual persisted value (not the default)
+                val snapshot = dataStore.snapshotFlow().first()
+                if (snapshot.serviceEnabled) {
                     repository.startService()
                 }
             } else {

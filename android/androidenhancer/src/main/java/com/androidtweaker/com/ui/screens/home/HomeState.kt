@@ -13,5 +13,5 @@ data class HomeState(
     val androidEnhancerRunning: Boolean = false,
     val installedApps: List<InstalledApp> = emptyList(),
     val isModeUpdating: Boolean = false,
-    val serviceEnabled: Boolean = true
+    val serviceEnabled: Boolean = false
 )

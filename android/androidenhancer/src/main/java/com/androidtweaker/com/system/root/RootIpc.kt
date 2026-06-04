@@ -8,6 +8,7 @@ import android.os.IBinder
 import com.topjohnwu.superuser.ipc.RootService as SuRootService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeout
 
 /**
  * Simple IPC facade.
@@ -36,7 +37,9 @@ object RootIpc : ServiceConnection {
     }
 
     private suspend fun awaitService(): IAndroidEnhancerService? {
-        return serviceFlow.value ?: serviceFlow.first { it != null }
+        return serviceFlow.value ?: runCatching {
+            withTimeout(10_000L) { serviceFlow.first { it != null } }
+        }.getOrNull()
     }
 
     suspend fun <R> invoke(block: suspend (IAndroidEnhancerService) -> R): R? {

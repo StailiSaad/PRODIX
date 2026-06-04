@@ -74,7 +74,7 @@ fun HomeScreen(
     ) {
         item { HeaderSection(serviceEnabled = state.serviceEnabled, onToggleService = onToggleService) }
 
-        item { HeroCard(currentMode = state.mode) }
+        item { HeroCard(currentMode = state.mode, onModeSelected = onModeSelected) }
 
         item { ModeGrid(currentMode = state.mode, onModeSelected = onModeSelected) }
 
@@ -131,7 +131,10 @@ private fun HeaderSection(
 }
 
 @Composable
-private fun HeroCard(currentMode: AndroidEnhancerMode) {
+private fun HeroCard(
+    currentMode: AndroidEnhancerMode,
+    onModeSelected: (AndroidEnhancerMode) -> Unit
+) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(28.dp),
@@ -217,7 +220,7 @@ private fun HeroCard(currentMode: AndroidEnhancerMode) {
                             modifier = Modifier
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(bgColor)
-                                .clickable { /* handled by grid below */ }
+                                .clickable { onModeSelected(mode) }
                                 .padding(horizontal = 14.dp, vertical = 8.dp)
                         ) {
                             Text(

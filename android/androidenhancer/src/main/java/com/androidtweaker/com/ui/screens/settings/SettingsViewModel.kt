@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -109,7 +110,10 @@ class SettingsViewModel @Inject constructor(
     fun setTouchBoostEnabled(enabled: Boolean) {
         viewModelScope.launch {
             dataStore.updateSnapshot { it.copy(touchBoostEnabled = enabled) }
-            RootIpc.invoke { it.setTouchBoostEnabled(enabled) }
+            val snapshot = dataStore.snapshotFlow().first()
+            if (snapshot.serviceEnabled) {
+                RootIpc.invoke { it.setTouchBoostEnabled(enabled) }
+            }
         }
     }
 }

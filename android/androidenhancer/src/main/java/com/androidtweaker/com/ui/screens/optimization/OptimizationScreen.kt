@@ -90,7 +90,7 @@ fun OptimizationScreen(
 
             LaunchedEffect(logSnapshot.size) {
                 if (logSnapshot.isNotEmpty()) {
-                    logScrollState.animateScrollTo(logScrollState.maxValue)
+                    logScrollState.scrollTo(logScrollState.maxValue)
                 }
             }
 

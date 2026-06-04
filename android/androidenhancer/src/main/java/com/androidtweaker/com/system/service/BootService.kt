@@ -86,9 +86,10 @@ class BootService : Service() {
 
     private suspend fun performTask() {
         try {
-            // Force-enable the service on boot since startOnBoot is true.
-            // This ensures the service starts regardless of previous serviceEnabled state.
-            repository.setServiceEnabled(true)
+            val current = repository.snapshot.value
+            if (current.startOnBoot) {
+                repository.setServiceEnabled(true)
+            }
         } catch (e: Exception) {
             e.printStackTrace()
         }
