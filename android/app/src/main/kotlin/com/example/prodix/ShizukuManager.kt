@@ -43,15 +43,5 @@ object ShizukuManager {
         }
     }
 
-    fun runCommand(cmd: String): String? {
-        return try {
-            val process = Shizuku.newProcess(arrayOf("sh", "-c", cmd), null, null)
-            val output = process.inputStream.bufferedReader().readText()
-            val error = process.errorStream.bufferedReader().readText()
-            process.waitFor()
-            if (error.isNotBlank() && output.isBlank()) error.trim() else output.trim()
-        } catch (_: Exception) {
-            null
-        }
-    }
+
 }
