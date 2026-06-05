@@ -39,6 +39,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import com.androidtweaker.com.data.local.PreferencesSnapshot
 import com.androidtweaker.com.data.local.appDataStore
 import com.androidtweaker.com.data.local.snapshotFlow
+import com.androidtweaker.com.data.local.updateSnapshot
 import com.androidtweaker.com.ui.navigation.AppNavHost
 import com.androidtweaker.com.ui.theme.AppTheme
 import javax.inject.Inject
@@ -95,11 +96,23 @@ private fun AppRoot(repository: AppRepository) {
             }
         }
 
-        isRootAvailable.value = root
+        val snapshot = dataStore.snapshotFlow().first()
+        // Also authorized via ADB (WRITE_SECURE_SETTINGS) or Shizuku
+        var adbGranted = snapshot.adbWriteSecureGranted
+        val shizukuGranted = try {
+            val checkSelfPerm = Class.forName("rikka.shizuku.Shizuku")
+                .getMethod("checkSelfPermission")
+            checkSelfPerm.invoke(null) as Int == 0
+        } catch (_: Exception) { false }
+        // Persist Shizuku grant to DataStore so future checks don't need reflection
+        if (shizukuGranted && !adbGranted) {
+            dataStore.updateSnapshot { it.copy(adbWriteSecureGranted = true) }
+            adbGranted = true
+        }
+        isRootAvailable.value = root || adbGranted || shizukuGranted
 
         if (root) {
             RootIpc.init(context)
-            val snapshot = dataStore.snapshotFlow().first()
             if (snapshot.serviceEnabled) {
                 repository.startService()
             }
