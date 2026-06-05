@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 /// Game entry from the local database (sourced from EveryVideoGameEver repo).
@@ -8,6 +9,19 @@ class GameEntry {
   final String platform;
 
   const GameEntry({required this.name, required this.genre, required this.platform});
+}
+
+List<GameEntry> _parseGamesJson(String raw) {
+  final List<dynamic> data = jsonDecode(raw);
+  return data
+      .whereType<Map<String, dynamic>>()
+      .where((e) => e['n'] is String)
+      .map<GameEntry>((e) => GameEntry(
+            name: e['n'] as String,
+            genre: e['g'] is String ? e['g'] as String : '',
+            platform: e['p'] is String ? e['p'] as String : '',
+          ))
+      .toList();
 }
 
 /// Service that loads 68,000+ games from the bundled asset (cloned from
@@ -23,16 +37,7 @@ class GamesService {
     _loading = true;
     try {
       final raw = await rootBundle.loadString('assets/data/games_db.json');
-      final List<dynamic> data = jsonDecode(raw);
-      _cache = data
-          .whereType<Map<String, dynamic>>()
-          .where((e) => e['n'] is String)
-          .map<GameEntry>((e) => GameEntry(
-                name: e['n'] as String,
-                genre: e['g'] is String ? e['g'] as String : '',
-                platform: e['p'] is String ? e['p'] as String : '',
-              ))
-          .toList();
+      _cache = await compute(_parseGamesJson, raw);
     } catch (e) {
       _cache = [];
     }

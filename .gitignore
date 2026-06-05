@@ -58,3 +58,4 @@ flutter_*.log
 # Keystore (contains secrets)
 *.jks
 key.properties
+*.apk

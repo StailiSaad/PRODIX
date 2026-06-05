@@ -13,7 +13,6 @@ import '../../../../data/services/supabase_backend_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/foreground_call_service.dart';
 import 'dart:async';
-import 'dart:ui';
 import '../../../../core/services/push_notification_service.dart';
 
 class MainScreen extends StatefulWidget {
@@ -35,23 +34,16 @@ class MainScreenState extends State<MainScreen> {
   StreamSubscription<Map<String, dynamic>>? _pushNavSub;
 
   void switchToTab(int index) {
-    if (index >= 0 && index < _pages.length) {
+    if (index >= 0 && index < 5) {
       setState(() => _currentIndex = index);
     }
   }
 
-  late final List<Widget> _pages;
+  final Map<int, Widget> _pageCache = {};
 
   @override
   void initState() {
     super.initState();
-    _pages = [
-      const HomeDashboardScreen(),
-      const MatchmakingSearchScreen(),
-      const TeamListScreen(),
-      const _TeammatesTab(),
-      const DetailedStatsScreen(),
-    ];
     _subscribeToInvitations();
     _pollUnread();
     _pollTeamUnread();
@@ -67,6 +59,19 @@ class MainScreenState extends State<MainScreen> {
     });
   }
 
+  Widget _pageForIndex(int index) {
+    final i = index.clamp(0, 4);
+    return _pageCache.putIfAbsent(i, () {
+      const pages = [
+        HomeDashboardScreen(),
+        MatchmakingSearchScreen(),
+        TeamListScreen(),
+        _TeammatesTab(),
+        DetailedStatsScreen(),
+      ];
+      return pages[i];
+    });
+  }
 
   @override
   void dispose() {
@@ -350,14 +355,12 @@ class MainScreenState extends State<MainScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      body: _pages[_currentIndex],
+      body: _pageForIndex(_currentIndex),
       bottomNavigationBar: ClipRRect(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: Container(
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface.withValues(alpha: 0.9),
+        child: Container(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface.withValues(alpha: 0.95),
               border: Border(
                 top: BorderSide(color: AppTheme.outlineColor.withValues(alpha: 0.2)),
               ),
@@ -393,7 +396,6 @@ class MainScreenState extends State<MainScreen> {
               ],
             ),
           ),
-        ),
       ),
     );
   }
