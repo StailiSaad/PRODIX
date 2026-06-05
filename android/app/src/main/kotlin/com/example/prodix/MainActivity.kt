@@ -166,16 +166,68 @@ class MainActivity : FlutterActivity() {
                 }
             }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, ENHANCER_CHANNEL)
-            .setMethodCallHandler { call, _ ->
-                when (call.method) {
-                    "launchTweaker" -> {
-                        try {
+            .setMethodCallHandler { call, result ->
+                try {
+                    when (call.method) {
+                        "launchTweaker" -> {
                             val tweakerIntent = Intent(this, com.androidtweaker.com.MainActivity::class.java)
                             startActivity(tweakerIntent)
-                        } catch (e: Exception) {
-                            android.util.Log.e("MainActivity", "launchTweaker failed", e)
+                            result.success(true)
                         }
+                        "getStatus" -> {
+                            EnhancerBridge.init(this)
+                            kotlinx.coroutines.runBlocking {
+                                result.success(EnhancerBridge.getStatus(this@MainActivity))
+                            }
+                        }
+                        "setEnabled" -> {
+                            val enabled = call.argument<Boolean>("enabled") ?: false
+                            EnhancerBridge.setEnabled(this, enabled)
+                            result.success(true)
+                        }
+                        "setMode" -> {
+                            val modeCode = call.argument<Int>("modeCode") ?: 0
+                            EnhancerBridge.setMode(this, modeCode)
+                            result.success(true)
+                        }
+                        "setTouchBoost" -> {
+                            val enabled = call.argument<Boolean>("enabled") ?: false
+                            EnhancerBridge.setTouchBoost(this, enabled)
+                            result.success(true)
+                        }
+                        "setStartOnBoot" -> {
+                            val enabled = call.argument<Boolean>("enabled") ?: false
+                            EnhancerBridge.setStartOnBoot(this, enabled)
+                            result.success(true)
+                        }
+                        "getInstalledApps" -> {
+                            EnhancerBridge.init(this)
+                            kotlinx.coroutines.runBlocking {
+                                result.success(EnhancerBridge.getInstalledApps(this@MainActivity))
+                            }
+                        }
+                        "getAppModes" -> {
+                            EnhancerBridge.init(this)
+                            kotlinx.coroutines.runBlocking {
+                                result.success(EnhancerBridge.getAppModes(this@MainActivity))
+                            }
+                        }
+                        "setAppMode" -> {
+                            val pkg = call.argument<String>("packageName") ?: ""
+                            val modeCode = call.argument<Int>("modeCode") ?: 0
+                            EnhancerBridge.setAppMode(this, pkg, modeCode)
+                            result.success(true)
+                        }
+                        "removeAppMode" -> {
+                            val pkg = call.argument<String>("packageName") ?: ""
+                            EnhancerBridge.removeAppMode(this, pkg)
+                            result.success(true)
+                        }
+                        else -> result.notImplemented()
                     }
+                } catch (e: Exception) {
+                    android.util.Log.e("MainActivity", "ENHANCER_CHANNEL error: ${e.message}", e)
+                    result.error("ENHANCER_ERROR", e.message, null)
                 }
             }
         // Defer intent handling so Flutter's MethodChannel handler is registered
