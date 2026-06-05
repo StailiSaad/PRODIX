@@ -12,9 +12,6 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import androidx.lifecycle.LifecycleEventObserver
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 
 class MainActivity : FlutterActivity() {
     override fun getRenderMode(): io.flutter.embedding.android.RenderMode = io.flutter.embedding.android.RenderMode.texture
@@ -179,9 +176,8 @@ class MainActivity : FlutterActivity() {
                         }
                         "getStatus" -> {
                             EnhancerBridge.init(this)
-                            GlobalScope.launch(Dispatchers.IO) {
-                                val status = EnhancerBridge.getStatus(this@MainActivity)
-                                result.success(status)
+                            kotlinx.coroutines.runBlocking {
+                                result.success(EnhancerBridge.getStatus(this@MainActivity))
                             }
                         }
                         "setEnabled" -> {
@@ -206,16 +202,14 @@ class MainActivity : FlutterActivity() {
                         }
                         "getInstalledApps" -> {
                             EnhancerBridge.init(this)
-                            GlobalScope.launch(Dispatchers.IO) {
-                                val apps = EnhancerBridge.getInstalledApps(this@MainActivity)
-                                result.success(apps)
+                            kotlinx.coroutines.runBlocking {
+                                result.success(EnhancerBridge.getInstalledApps(this@MainActivity))
                             }
                         }
                         "getAppModes" -> {
                             EnhancerBridge.init(this)
-                            GlobalScope.launch(Dispatchers.IO) {
-                                val modes = EnhancerBridge.getAppModes(this@MainActivity)
-                                result.success(modes)
+                            kotlinx.coroutines.runBlocking {
+                                result.success(EnhancerBridge.getAppModes(this@MainActivity))
                             }
                         }
                         "setAppMode" -> {
