@@ -156,7 +156,13 @@ class OptimizationViewModel @Inject constructor(
 
             val successCount = execResult.results.count { it.success }
             val totalCount = execResult.results.size
-            _lastResult.value = "${module.name}: $successCount/$totalCount commandes OK"
+            val failedResults = execResult.results.filter { !it.success }
+            _lastResult.value = if (failedResults.isEmpty()) {
+                "${module.name}: ✅ $successCount/$totalCount"
+            } else {
+                val details = failedResults.joinToString(" ⚠️ ") { it.summary }
+                "${module.name}: ⚠️ $successCount/$totalCount — $details"
+            }
             _isApplying.value = null
 
             if (!execResult.success) {
