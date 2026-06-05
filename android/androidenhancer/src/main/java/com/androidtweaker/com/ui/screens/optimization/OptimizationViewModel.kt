@@ -122,9 +122,18 @@ class OptimizationViewModel @Inject constructor(
         val module = OptimizationModule.fromId(moduleId) ?: return
         viewModelScope.launch {
             val snapshot = dataStore.snapshotFlow().first()
+            val shizukuGranted = try {
+                val checkSelfPerm = Class.forName("rikka.shizuku.Shizuku")
+                    .getMethod("checkSelfPermission")
+                checkSelfPerm.invoke(null) as Int == 0
+            } catch (_: Exception) { false }
             if (!snapshot.adbWriteSecureGranted) {
-                _showAdbGrantDialog.value = true
-                return@launch
+                if (shizukuGranted) {
+                    dataStore.updateSnapshot { it.copy(adbWriteSecureGranted = true) }
+                } else {
+                    _showAdbGrantDialog.value = true
+                    return@launch
+                }
             }
 
             _isApplying.value = moduleId
@@ -152,8 +161,13 @@ class OptimizationViewModel @Inject constructor(
 
             if (!execResult.success) {
                 val granted = testAdbGrant()
-                dataStore.updateSnapshot { it.copy(adbWriteSecureGranted = granted) }
-                if (!granted) {
+                val shizukuOk = try {
+                    val checkSelfPerm = Class.forName("rikka.shizuku.Shizuku")
+                        .getMethod("checkSelfPermission")
+                    checkSelfPerm.invoke(null) as Int == 0
+                } catch (_: Exception) { false }
+                dataStore.updateSnapshot { it.copy(adbWriteSecureGranted = granted || shizukuOk) }
+                if (!granted && !shizukuOk) {
                     _showAdbGrantDialog.value = true
                     return@launch
                 }
