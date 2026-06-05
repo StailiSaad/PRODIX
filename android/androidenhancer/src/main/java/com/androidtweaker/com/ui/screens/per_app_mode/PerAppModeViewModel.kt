@@ -44,6 +44,10 @@ class PerAppModeViewModel @Inject constructor(
         viewModelScope.launch {
             updatingPackage.value = app.packageName
             try {
+                val current = repository.snapshot.value
+                if (!current.serviceEnabled) {
+                    repository.setServiceEnabled(true)
+                }
                 repository.setAppMode(app.packageName, mode)
             } finally {
                 updatingPackage.value = null
@@ -55,6 +59,10 @@ class PerAppModeViewModel @Inject constructor(
         viewModelScope.launch {
             updatingPackage.value = packageName
             try {
+                val current = repository.snapshot.value
+                if (!current.serviceEnabled) {
+                    repository.setServiceEnabled(true)
+                }
                 repository.removeAppMode(packageName)
             } finally {
                 updatingPackage.value = null

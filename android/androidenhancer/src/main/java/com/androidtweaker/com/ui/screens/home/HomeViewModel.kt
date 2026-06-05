@@ -46,6 +46,10 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             modeUpdating.value = true
             try {
+                val current = repository.snapshot.value
+                if (!current.serviceEnabled) {
+                    repository.setServiceEnabled(true)
+                }
                 repository.setMode(mode)
             } finally {
                 modeUpdating.value = false
