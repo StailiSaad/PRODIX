@@ -16,7 +16,7 @@ object OptimizationExecutor {
 
     private val CMD_PREFIXES = listOf("setprop ", "settings ", "device_config ", "cmd ")
 
-    private fun shizukuExecLines(cmd: Array<String>): List<String>? {
+    private fun shizukuExecLines(cmd: Array<String>, stdinInput: String? = null): List<String>? {
         return try {
             val shizukuClass = Class.forName("rikka.shizuku.Shizuku")
             val method = shizukuClass.getDeclaredMethod("newProcess",
@@ -24,6 +24,16 @@ object OptimizationExecutor {
             method.isAccessible = true
             val remote = method.invoke(null, cmd, null, null)
             val cls = remote::class.java
+            // Write stdin if provided
+            if (stdinInput != null) {
+                val output = cls.getMethod("getOutputStream").invoke(remote)
+                if (output != null) {
+                    val os = output as java.io.OutputStream
+                    os.write(stdinInput.toByteArray(Charsets.UTF_8))
+                    os.flush()
+                    os.close()
+                }
+            }
             val input = cls.getMethod("getInputStream").invoke(remote) as InputStream
             val error = cls.getMethod("getErrorStream").invoke(remote) as InputStream
             val merged = input.bufferedReader().readLines() + error.bufferedReader().readLines()
@@ -59,14 +69,14 @@ object OptimizationExecutor {
             }
 
             tempScript.writeText(enhancedScript)
-            tempScript.setExecutable(true)
+            tempScript.setExecutable(true, false)
 
-            val shizukuLines = shizukuExecLines(arrayOf("sh", tempScript.absolutePath))
+            // First try via Shizuku (shell user). Pass script via stdin.
+            val shizukuLines = shizukuExecLines(arrayOf("sh"), stdinInput = enhancedScript)
 
+            tempScript.delete()
             if (shizukuLines != null) {
-                val lines = shizukuLines
-                tempScript.delete()
-                return parseOutputLines(lines, onOutput)
+                return parseOutputLines(shizukuLines, onOutput)
             }
 
             val process = ProcessBuilder("sh", tempScript.absolutePath)
