@@ -18,6 +18,8 @@
   <a href="https://firebase.google.com"><img src="https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase" alt="Firebase"></a>
   <a href="https://webrtc.org"><img src="https://img.shields.io/badge/WebRTC-333333?style=for-the-badge&logo=webrtc" alt="WebRTC"></a>
   <a href="https://huggingface.co"><img src="https://img.shields.io/badge/Hugging%20Face-FFD21E?style=for-the-badge&logo=huggingface" alt="Hugging Face"></a>
+  <a href="https://dart.dev"><img src="https://img.shields.io/badge/Dart-3.11-0175C2?style=for-the-badge&logo=dart" alt="Dart"></a>
+  <a href="https://developer.android.com/jetpack/compose"><img src="https://img.shields.io/badge/Compose-2024.12-4285F4?style=for-the-badge&logo=jetpackcompose" alt="Jetpack Compose"></a>
 </p>
 
 ---
