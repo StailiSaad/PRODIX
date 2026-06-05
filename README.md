@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/prodix_logo.png" alt="Prodix Logo" width="180" height="180"/>
+  <img src="screenshots/prodix_logo.png" alt="Prodix Logo" width="180" height="180"/>
 </p>
 
 <h1 align="center">🚀 PRODIX</h1>
