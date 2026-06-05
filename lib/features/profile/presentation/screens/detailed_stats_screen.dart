@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:typed_data';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart' show rootBundle, MethodChannel;
 import '../../profile_cubit.dart';
 import '../../../auth/auth_cubit.dart';
 import '../../../gamification/gamification_cubit.dart';
@@ -14,7 +14,6 @@ import '../../../../core/config/profile_defaults.dart';
 import '../../../../shared/widgets/animated_badge.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../posts/presentation/screens/user_posts_screen.dart';
-import '../../../tweaker/presentation/screens/tweaker_screen.dart';
 
 
 class DetailedStatsScreen extends StatefulWidget {
@@ -904,9 +903,8 @@ class _DetailedStatsScreenState extends State<DetailedStatsScreen> {
   }
 
   void _launchAndroidTweaker() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const TweakerScreen()),
-    );
+    const channel = MethodChannel('com.example.prodix/android_tweaker');
+    channel.invokeMethod('launchTweaker');
   }
 
   Widget _settingsButton({
