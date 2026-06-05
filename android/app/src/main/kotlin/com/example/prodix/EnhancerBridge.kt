@@ -61,6 +61,7 @@ object EnhancerBridge {
             put("shizukuInstalled", ShizukuManager.isShizukuInstalled(context))
             put("shizukuRunning", ShizukuManager.isShizukuRunning())
             put("shizukuGranted", ShizukuManager.hasShizukuPermission())
+            put("adbWriteSecureGranted", snapshot.adbWriteSecureGranted)
             put("mode", snapshot.mode.code)
             put("touchBoostEnabled", snapshot.touchBoostEnabled)
             put("startOnBoot", snapshot.startOnBoot)

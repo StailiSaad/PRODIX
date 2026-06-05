@@ -909,14 +909,10 @@ class _DetailedStatsScreenState extends State<DetailedStatsScreen> {
       final raw = await statusChannel.invokeMethod<String>('getStatus') ?? '{}';
       final status = jsonDecode(raw) as Map<String, dynamic>;
       final isRoot = status['isRootAvailable'] as bool? ?? false;
+      final shizukuGranted = status['shizukuGranted'] as bool? ?? false;
+      final adbGranted = status['adbWriteSecureGranted'] as bool? ?? false;
 
-      if (isRoot) {
-        statusChannel.invokeMethod('launchTweaker');
-        return;
-      }
-
-      final shizukuStatus = await NonRootService.getShizukuStatus();
-      if (shizukuStatus.installed && shizukuStatus.running && shizukuStatus.granted) {
+      if (isRoot || shizukuGranted || adbGranted) {
         statusChannel.invokeMethod('launchTweaker');
         return;
       }
