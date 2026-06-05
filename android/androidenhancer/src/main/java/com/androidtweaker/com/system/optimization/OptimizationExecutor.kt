@@ -2,6 +2,7 @@ package com.androidtweaker.com.system.optimization
 
 import android.content.Context
 import java.io.File
+import java.io.InputStream
 
 object OptimizationExecutor {
 
@@ -14,6 +15,24 @@ object OptimizationExecutor {
     }
 
     private val CMD_PREFIXES = listOf("setprop ", "settings ", "device_config ", "cmd ")
+
+    private fun shizukuExecLines(cmd: Array<String>): List<String>? {
+        return try {
+            val shizukuClass = Class.forName("rikka.shizuku.Shizuku")
+            val method = shizukuClass.getDeclaredMethod("newProcess",
+                Array<String>::class.java, Array<String>::class.java, String::class.java)
+            method.isAccessible = true
+            val remote = method.invoke(null, cmd, null, null)
+            val cls = remote::class.java
+            val input = cls.getMethod("getInputStream").invoke(remote) as InputStream
+            val error = cls.getMethod("getErrorStream").invoke(remote) as InputStream
+            val merged = input.bufferedReader().readLines() + error.bufferedReader().readLines()
+            cls.getMethod("waitFor").invoke(remote)
+            merged
+        } catch (_: Exception) {
+            null
+        }
+    }
 
     private fun executeScript(context: Context, script: String, onOutput: ((String) -> Unit)? = null): ExecuteResult {
         return try {
@@ -41,43 +60,61 @@ object OptimizationExecutor {
 
             tempScript.writeText(enhancedScript)
             tempScript.setExecutable(true)
+
+            val shizukuLines = shizukuExecLines(arrayOf("sh", tempScript.absolutePath))
+
+            if (shizukuLines != null) {
+                val lines = shizukuLines
+                tempScript.delete()
+                return parseOutputLines(lines, onOutput)
+            }
+
             val process = ProcessBuilder("sh", tempScript.absolutePath)
-                .redirectErrorStream(true)
-                .start()
+                    .redirectErrorStream(true)
+                    .start()
 
             val results = mutableListOf<CommandResult>()
-            var currentSummary: String? = null
-            var anyFailed = false
+            val streamLines = mutableListOf<String>()
 
             process.inputStream.bufferedReader().use { reader ->
                 reader.lineSequence().forEach { line ->
-                    when {
-                        line.startsWith("→ ") -> {
-                            currentSummary = line.removePrefix("→ ")
-                            onOutput?.invoke(line)
-                        }
-                        line.startsWith("⟐EXIT:") -> {
-                            val code = line.removePrefix("⟐EXIT:").toIntOrNull() ?: 1
-                            val ok = code == 0
-                            val summary = currentSummary ?: "unknown"
-                            results.add(CommandResult(summary, ok, code))
-                            currentSummary = null
-                            if (!ok) anyFailed = true
-                            val status = if (ok) "✓" else "✗"
-                            onOutput?.invoke("  $status $summary")
-                        }
-                        else -> onOutput?.invoke(line)
-                    }
+                    streamLines.add(line)
                 }
             }
-
             process.waitFor()
             tempScript.delete()
-            ExecuteResult(success = !anyFailed, results = results)
+            return parseOutputLines(streamLines, onOutput)
         } catch (e: Exception) {
             onOutput?.invoke("Error: ${e.message}")
             ExecuteResult(success = false, results = listOf(CommandResult("Script execution", false, -1)))
         }
+    }
+
+    private fun parseOutputLines(lines: List<String>, onOutput: ((String) -> Unit)?): ExecuteResult {
+        val results = mutableListOf<CommandResult>()
+        var currentSummary: String? = null
+        var anyFailed = false
+
+        lines.forEach { line ->
+            when {
+                line.startsWith("→ ") -> {
+                    currentSummary = line.removePrefix("→ ")
+                    onOutput?.invoke(line)
+                }
+                line.startsWith("⟐EXIT:") -> {
+                    val code = line.removePrefix("⟐EXIT:").toIntOrNull() ?: 1
+                    val ok = code == 0
+                    val summary = currentSummary ?: "unknown"
+                    results.add(CommandResult(summary, ok, code))
+                    currentSummary = null
+                    if (!ok) anyFailed = true
+                    val status = if (ok) "✓" else "✗"
+                    onOutput?.invoke("  $status $summary")
+                }
+                else -> onOutput?.invoke(line)
+            }
+        }
+        return ExecuteResult(success = !anyFailed, results = results)
     }
 
     private fun isModificationCommand(cmd: String): Boolean =
