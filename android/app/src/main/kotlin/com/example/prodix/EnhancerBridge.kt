@@ -51,6 +51,7 @@ object EnhancerBridge {
     suspend fun getStatus(context: Context): String {
         val root = isRootAvailable()
         val snapshot = context.appDataStore.snapshotFlow().first()
+        val shizukuGranted = ShizukuManager.hasShizukuPermission()
         val isRunning = if (root && snapshot.serviceEnabled) {
             RootIpc.invoke { it.isRunning } ?: false
         } else false
@@ -60,8 +61,8 @@ object EnhancerBridge {
             put("isRootAvailable", root)
             put("shizukuInstalled", ShizukuManager.isShizukuInstalled(context))
             put("shizukuRunning", ShizukuManager.isShizukuRunning())
-            put("shizukuGranted", ShizukuManager.hasShizukuPermission())
-            put("adbWriteSecureGranted", snapshot.adbWriteSecureGranted)
+            put("shizukuGranted", shizukuGranted)
+            put("adbWriteSecureGranted", snapshot.adbWriteSecureGranted || shizukuGranted)
             put("mode", snapshot.mode.code)
             put("touchBoostEnabled", snapshot.touchBoostEnabled)
             put("startOnBoot", snapshot.startOnBoot)
@@ -78,8 +79,14 @@ object EnhancerBridge {
         }.toString()
     }
 
-    fun requestShizukuPermission(): Boolean {
-        return ShizukuManager.requestPermission()
+    fun requestShizukuPermission(context: Context): Boolean {
+        return ShizukuManager.requestPermission(context)
+    }
+
+    fun applyShizukuGrant(context: Context) {
+        scope.launch {
+            context.appDataStore.updateSnapshot { it.copy(adbWriteSecureGranted = true) }
+        }
     }
 
     fun setEnabled(context: Context, enabled: Boolean) {

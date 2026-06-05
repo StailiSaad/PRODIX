@@ -227,7 +227,11 @@ class MainActivity : FlutterActivity() {
                             result.success(EnhancerBridge.getShizukuStatus(this))
                         }
                         "requestShizukuPermission" -> {
-                            result.success(EnhancerBridge.requestShizukuPermission())
+                            result.success(EnhancerBridge.requestShizukuPermission(this))
+                        }
+                        "applyShizukuGrant" -> {
+                            EnhancerBridge.applyShizukuGrant(this)
+                            result.success(true)
                         }
                         else -> result.notImplemented()
                     }

@@ -2,12 +2,12 @@ package com.example.prodix
 
 import android.content.Context
 import android.content.pm.PackageManager
-import android.os.Process
 import rikka.shizuku.Shizuku
-import rikka.shizuku.ShizukuProvider
 
 object ShizukuManager {
     private const val SHIZUKU_PACKAGE = "moe.shizuku.privileged.api"
+    private var listenerRegistered = false
+    private var pendingContext: Context? = null
 
     fun isShizukuInstalled(context: Context): Boolean {
         return try {
@@ -34,8 +34,14 @@ object ShizukuManager {
         }
     }
 
-    fun requestPermission(): Boolean {
+    fun requestPermission(context: Context): Boolean {
         return try {
+            if (!listenerRegistered) {
+                pendingContext = context.applicationContext
+                Shizuku.addRequestPermissionResultListener(permissionListener)
+                listenerRegistered = true
+                pendingContext = context.applicationContext
+            }
             Shizuku.requestPermission(0)
             true
         } catch (_: Exception) {
@@ -43,5 +49,11 @@ object ShizukuManager {
         }
     }
 
-
+    private val permissionListener = Shizuku.OnRequestPermissionResultListener { _, grantResult ->
+        if (grantResult == PackageManager.PERMISSION_GRANTED) {
+            pendingContext?.let { ctx ->
+                EnhancerBridge.applyShizukuGrant(ctx)
+            }
+        }
+    }
 }
