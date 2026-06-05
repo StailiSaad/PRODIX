@@ -143,6 +143,14 @@
             </intent-filter>
         </receiver>
 
+        <!-- Shizuku -->
+        <provider
+            android:name="rikka.shizuku.ShizukuProvider"
+            android:authorities="${applicationId}.shizuku"
+            android:enabled="true"
+            android:exported="false"
+            android:multiprocess="false" />
+
         <!-- FileProvider -->
         <provider
             android:name="androidx.core.content.FileProvider"

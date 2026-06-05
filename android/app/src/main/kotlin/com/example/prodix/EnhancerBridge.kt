@@ -58,12 +58,27 @@ object EnhancerBridge {
             put("serviceEnabled", snapshot.serviceEnabled)
             put("isRunning", isRunning)
             put("isRootAvailable", root)
+            put("shizukuInstalled", ShizukuManager.isShizukuInstalled(context))
+            put("shizukuRunning", ShizukuManager.isShizukuRunning())
+            put("shizukuGranted", ShizukuManager.hasShizukuPermission())
             put("mode", snapshot.mode.code)
             put("touchBoostEnabled", snapshot.touchBoostEnabled)
             put("startOnBoot", snapshot.startOnBoot)
             put("accessibilityEnabled", snapshot.accessibilityEnabled)
             put("currentApp", snapshot.currentApp)
         }.toString()
+    }
+
+    fun getShizukuStatus(context: Context): String {
+        return JSONObject().apply {
+            put("installed", ShizukuManager.isShizukuInstalled(context))
+            put("running", ShizukuManager.isShizukuRunning())
+            put("granted", ShizukuManager.hasShizukuPermission())
+        }.toString()
+    }
+
+    fun requestShizukuPermission(): Boolean {
+        return ShizukuManager.requestPermission()
     }
 
     fun setEnabled(context: Context, enabled: Boolean) {

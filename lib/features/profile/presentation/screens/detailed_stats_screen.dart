@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:typed_data';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart' show rootBundle, MethodChannel;
+import '../../../../core/services/non_root_service.dart';
 import '../../profile_cubit.dart';
 import '../../../auth/auth_cubit.dart';
 import '../../../gamification/gamification_cubit.dart';
@@ -902,9 +903,202 @@ class _DetailedStatsScreenState extends State<DetailedStatsScreen> {
     );
   }
 
-  void _launchAndroidTweaker() {
-    const channel = MethodChannel('com.example.prodix/android_tweaker');
-    channel.invokeMethod('launchTweaker');
+  void _launchAndroidTweaker() async {
+    try {
+      const statusChannel = MethodChannel('com.example.prodix/android_tweaker');
+      final raw = await statusChannel.invokeMethod<String>('getStatus') ?? '{}';
+      final status = jsonDecode(raw) as Map<String, dynamic>;
+      final isRoot = status['isRootAvailable'] as bool? ?? false;
+
+      if (isRoot) {
+        statusChannel.invokeMethod('launchTweaker');
+        return;
+      }
+
+      final shizukuStatus = await NonRootService.getShizukuStatus();
+      if (shizukuStatus.installed && shizukuStatus.running && shizukuStatus.granted) {
+        statusChannel.invokeMethod('launchTweaker');
+        return;
+      }
+
+      if (!context.mounted) return;
+      _showNonRootDialog(context);
+    } catch (_) {
+      if (!context.mounted) return;
+      _showNonRootDialog(context);
+    }
+  }
+
+  void _showNonRootDialog(BuildContext ctx) {
+    showModalBottomSheet(
+      context: ctx,
+      backgroundColor: const Color(0xFF0F1729),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      isScrollControlled: true,
+      builder: (sheetCtx) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (_, scrollCtrl) => SingleChildScrollView(
+          controller: scrollCtrl,
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(width: 40, height: 4,
+                    decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: Text('Accès Root requis',
+                    style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+              ),
+              const SizedBox(height: 8),
+              Center(
+                child: Text('Activez les optimisations via ADB ou Shizuku',
+                    style: const TextStyle(color: Colors.white38, fontSize: 13)),
+              ),
+              const SizedBox(height: 24),
+
+              // ── ADB Option ──
+              _nonRootOption(
+                icon: Icons.terminal,
+                title: 'Commande ADB',
+                subtitle: 'Nécessite un ordinateur et un câble USB',
+                steps: const [
+                  '1. Activez le Mode Développeur sur votre téléphone',
+                  '2. Activez le Débogage USB',
+                  '3. Connectez votre téléphone à un ordinateur',
+                  '4. Ouvrez un terminal et exécutez :',
+                ],
+                code: 'adb shell pm grant com.example.prodix\n  android.permission.WRITE_SECURE_SETTINGS',
+                note: 'Après avoir exécuté la commande, redémarrez l\'application.',
+              ),
+              const SizedBox(height: 16),
+
+              // ── Shizuku Option ──
+              _nonRootOption(
+                icon: Icons.shield,
+                title: 'Shizuku',
+                subtitle: 'Alternative sans ordinateur (Android 11+)',
+                steps: const [
+                  '1. Installez Shizuku depuis le Play Store',
+                  '2. Ouvrez Shizuku → Démarrer via le débogage sans fil',
+                  '3. Activez le Débogage sans fil dans les Options Développeur',
+                  '4. Dans Shizuku, appuyez sur "Démarrer"',
+                  '5. Revenez ici et appuyez sur "Accorder la permission"',
+                ],
+                code: null,
+                note: null,
+              ),
+
+              if (context.mounted) ...[
+                const SizedBox(height: 20),
+                // Shizuku grant button (shown only if Shizuku is installed & running)
+                FutureBuilder<ShizukuStatus>(
+                  future: NonRootService.getShizukuStatus(),
+                  builder: (_, snap) {
+                    final s = snap.data;
+                    if (s != null && s.installed && s.running && !s.granted) {
+                      return SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            await NonRootService.requestShizukuPermission();
+                            if (sheetCtx.mounted) Navigator.pop(sheetCtx);
+                          },
+                          icon: const Icon(Icons.check_circle_outline),
+                          label: const Text('Accorder la permission Shizuku'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF7C3AED),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _nonRootOption({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required List<String> steps,
+    String? code,
+    String? note,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: const Color(0xFF7C3AED), size: 24),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 2),
+                    Text(subtitle, style: const TextStyle(color: Colors.white38, fontSize: 12)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ...steps.map((step) => Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('• ', style: TextStyle(color: Color(0xFF7C3AED))),
+                Expanded(child: Text(step, style: const TextStyle(color: Colors.white70, fontSize: 12))),
+              ],
+            ),
+          )),
+          if (code != null) ...[
+            const SizedBox(height: 8),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.black26,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: SelectableText(
+                code,
+                style: const TextStyle(color: Color(0xFF00E676), fontSize: 11, fontFamily: 'monospace'),
+              ),
+            ),
+          ],
+          if (note != null) ...[
+            const SizedBox(height: 8),
+            Text(note, style: const TextStyle(color: Colors.amber, fontSize: 11, fontStyle: FontStyle.italic)),
+          ],
+        ],
+      ),
+    );
   }
 
   Widget _settingsButton({

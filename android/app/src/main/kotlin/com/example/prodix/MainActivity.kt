@@ -223,6 +223,12 @@ class MainActivity : FlutterActivity() {
                             EnhancerBridge.removeAppMode(this, pkg)
                             result.success(true)
                         }
+                        "getShizukuStatus" -> {
+                            result.success(EnhancerBridge.getShizukuStatus(this))
+                        }
+                        "requestShizukuPermission" -> {
+                            result.success(EnhancerBridge.requestShizukuPermission())
+                        }
                         else -> result.notImplemented()
                     }
                 } catch (e: Exception) {
